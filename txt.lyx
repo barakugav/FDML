@@ -336,7 +336,7 @@ Denote
 \begin_inset Formula $f_{e}(\theta,x)$
 \end_inset
 
- represent the maximum visible distance seen at 
+ represents the maximum visible distance seen at 
 \begin_inset Formula $x$
 \end_inset
 
@@ -356,7 +356,7 @@ Discrete Angles Approach
 \end_layout
 
 \begin_layout Standard
-For our preprocessing, we will discretise the angle 
+For our preprocessing, we will discretize the angle 
 \begin_inset Formula $\theta$
 \end_inset
 
@@ -374,7 +374,7 @@ For our preprocessing, we will discretise the angle
 \noun off
 \color none
 
-\begin_inset Formula $k$
+\begin_inset Formula $q$
 \end_inset
 
 
@@ -403,20 +403,7 @@ For our preprocessing, we will discretise the angle
 \begin_inset Formula $e$
 \end_inset
 
-, and each other edge 
-\begin_inset Formula $e'$
-\end_inset
-
  the function 
-\begin_inset Formula $f_{e,e'}$
-\end_inset
-
- described above.
- Then, for each edge 
-\begin_inset Formula $e$
-\end_inset
-
- we will calculate 
 \begin_inset Formula $f_{e}(\theta,x)$
 \end_inset
 
@@ -425,7 +412,7 @@ For our preprocessing, we will discretise the angle
 \begin_inset Formula $O(n)$
 \end_inset
 
- times, because it can be change only when a vertex is seen, and no more
+ times, because it can be changed only when a vertex is seen, and no more
  than 
 \begin_inset Formula $n$
 \end_inset
@@ -447,11 +434,107 @@ For our preprocessing, we will discretise the angle
 \end_inset
 
 ).
- The preprocessing requires 
-\begin_inset Formula $O(kn^{2})$
+ There are two options in which we can define 
+\begin_inset Formula $\theta$
 \end_inset
 
- time and space.
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset Formula $\text{Relative angle:}$
+\end_inset
+
+ 
+\begin_inset Formula $\theta$
+\end_inset
+
+ will be defined exactly as described in the calculations above - the angle
+ between the measurement line and the measured edge.
+ This can be used if somehow we know the angle of our measurement and the
+ measured edge.
+ Will be used in 
+\begin_inset Quotes eld
+\end_inset
+
+Second Measurement Variant - same edge
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset Formula $\text{Absolute angle:}$
+\end_inset
+
+ 
+\begin_inset Formula $\theta$
+\end_inset
+
+ will be defined as the angle between the measurement line and the 
+\begin_inset Formula $x$
+\end_inset
+
+ axis of the room.
+ Note that for a fixed 
+\begin_inset Formula $\theta$
+\end_inset
+
+ defined like this, the 
+\series bold
+total
+\series default
+ complexity of all 
+\begin_inset Formula $\forall e,f_{e}(\theta,x)$
+\end_inset
+
+ is 
+\begin_inset Formula $O(n)$
+\end_inset
+
+, which is a stronger claim than the above one on a single function 
+\begin_inset Formula $f_{e}(\theta,x)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+We will alternate between these two approaches in different variants.
+ In the current setting, we will prefer to use an 
+\series bold
+absolute
+\series default
+ angle, this way the total complexity of all 
+\begin_inset Formula $f_{e}$
+\end_inset
+
+ for a fixed angle is 
+\begin_inset Formula $O(n)$
+\end_inset
+
+.
+ For each absolute angle 
+\begin_inset Formula $\theta$
+\end_inset
+
+ we can calculate all intervals of all edges in 
+\begin_inset Formula $O(nlogn)$
+\end_inset
+
+ time by a plane sweep.
+ Therefore the preprocessing of all angles requires 
+\begin_inset Formula $O(qnlogn)$
+\end_inset
+
+ time and 
+\begin_inset Formula $O(qn)$
+\end_inset
+
+ space.
 \end_layout
 
 \begin_layout Standard
@@ -475,22 +558,25 @@ Given a query with distance
 \begin_inset Formula $d$
 \end_inset
 
-, which we can calculate in 
-\begin_inset Formula $O(n)$
-\end_inset
-
- time.
- The result for the query is union of all the intervals of all angles and
- all edges.
- Time complexity for a query 
-\begin_inset Formula $O(kn^{2})$
+, which we can calculate in time proportional to the number of intervals.
+ The result for the query is a set of all the intervals of all angles and
+ all edges that match the query.
+ Therefore the total time complexity for a query is 
+\begin_inset Formula $O(qn)$
 \end_inset
 
 .
 \end_layout
 
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsubsection*
-Output Sensitive Optimization
+Output Sensitive Optimizations
 \end_layout
 
 \begin_layout Standard
@@ -498,11 +584,7 @@ The function
 \begin_inset Formula $f_{e}(\theta,x)$
 \end_inset
 
- is composed of at most 
-\begin_inset Formula $O(n)$
-\end_inset
-
- straight lines, denote the 
+ is composed of straight lines, denote the 
 \begin_inset Formula $x$
 \end_inset
 
@@ -512,7 +594,7 @@ The function
 
 .
  Denote 
-\begin_inset Formula $m_{\theta}(I_{i}^{e})=\underset{x\in I_{i}^{e}}{max}\,f_{e}(\theta,x)$
+\begin_inset Formula $max_{\theta}(I_{i}^{e})=\underset{x\in I_{i}^{e}}{max}\,f_{e}(\theta,x)$
 \end_inset
 
 .
@@ -521,7 +603,7 @@ The function
 \end_inset
 
 , we know if 
-\begin_inset Formula $d>m_{\theta}(I_{i}^{e})$
+\begin_inset Formula $d>max_{\theta}(I_{i}^{e})$
 \end_inset
 
 , there is no points in the room that the robot can be in to measure 
@@ -551,34 +633,22 @@ The function
 \end_inset
 
  we calculate for each interval the value 
-\begin_inset Formula $m_{\theta}(I_{i}^{e})$
+\begin_inset Formula $max_{\theta}(I_{i}^{e})$
 \end_inset
 
 .
- For each angle 
-\begin_inset Formula $\theta$
-\end_inset
-
- we take all intervals of all edges and sort them by 
-\begin_inset Formula $m_{\theta}(I_{i}^{e})$
-\end_inset
-
-.
- Denote 
-\begin_inset Formula $m_{\theta}=\underset{e,i}{max}\,m_{\theta}(I_{i}^{e})$
-\end_inset
-
-, and sort the angles by 
-\begin_inset Formula $m_{\theta}$
+ We take the total collection of all intervals of all angles and all edges
+ sort them by 
+\begin_inset Formula $max_{\theta}(I_{i}^{e})$
 \end_inset
 
 .
  The preprocessing requires 
-\begin_inset Formula $O(kn^{2}logn+klogk)$
+\begin_inset Formula $O(qnlogqn)$
 \end_inset
 
  time and 
-\begin_inset Formula $O(kn^{2})$
+\begin_inset Formula $O(qn)$
 \end_inset
 
  space.
@@ -598,7 +668,7 @@ Given a query with distance
  the number of different intervals of positions the robot can be relative
  to any edge in any of the discrete angles.
  The time complexity of the query is 
-\begin_inset Formula $O(logk+logn+L)$
+\begin_inset Formula $O(logq+logn+L)$
 \end_inset
 
 .
@@ -607,18 +677,298 @@ Given a query with distance
 \end_inset
 
  can be 
-\begin_inset Formula $O(kn^{2})$
+\begin_inset Formula $O(qn)$
 \end_inset
 
 .
 \end_layout
 
-\begin_layout Subsection*
-Continuous Angles Approach
+\begin_layout Standard
+In this setting, where we use discrete angles, and therefore the output
+ of any such algorithm will consist of a set of lines, 
+\begin_inset Formula $L$
+\end_inset
+
+ is actually proportional to the optimal solution length.
+ We will assume from now on a fixed angle 
+\begin_inset Formula $\theta$
+\end_inset
+
+, as we compare our algorithm to an optimal one which also outputs lines
+ of fixed angles, and if their output is proportional for a fixed angle,
+ it is also proportional for all the angles.
+ Each interval of our algorithm must be included in the optimal algorithm
+ output, but the optimal algorithm may 
+\begin_inset Quotes eld
+\end_inset
+
+union
+\begin_inset Quotes erd
+\end_inset
+
+ some of our lines into one continuous one if possible to reduce the output
+ size.
+ If a partial interval was outputted from our algorithm (left figure), meaning
+ part of the line the interval represents is not valid, the optimal algorithm
+ must also output only a part of it, and we can 
+\begin_inset Quotes eld
+\end_inset
+
+associate
+\begin_inset Quotes erd
+\end_inset
+
+ our interval with the output algorithm endpoint of the line (the endpoint
+ which is included in our interval, 
+\begin_inset Formula $c_{1}$
+\end_inset
+
+).
+ If a full interval was outputted from our algorithm (right figure), we
+ 
+\begin_inset Quotes eld
+\end_inset
+
+associate
+\begin_inset Quotes erd
+\end_inset
+
+ it with the endpoint of the line in the opposite angle of the edge of the
+ vertex that caused our interval to terminate (
+\begin_inset Formula $c_{2}$
+\end_inset
+
+).
 \end_layout
 
 \begin_layout Standard
-TODO
+\begin_inset Graphics
+	filename figure6.png
+	scale 35
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Therefore, for a fixed angle, we can associate each of our algorithm output
+ intervals to one of the optimal algorithm output vertices, and no more
+ than two intervals are associated with each vertex, and if we look at all
+ the angles together, 
+\begin_inset Formula $L$
+\end_inset
+
+ is proportional to an optimal output length.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+Second Measurement Variant - same edge 
+\end_layout
+
+\begin_layout Standard
+If we are given the ability to measure a second distance measurement, after
+ the first measurement of 
+\begin_inset Formula $d_{1}$
+\end_inset
+
+ we can turn the robot a small angle 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+ without changing its position and measure a second time a distance 
+\begin_inset Formula $d_{2}$
+\end_inset
+
+.
+ If we assume the turn we did is small enough, we can assume we measured
+ the same edge.
+ Denote 
+\begin_inset Formula $\alpha=\epsilon$
+\end_inset
+
+, the difference along the edge between the two measurements by 
+\begin_inset Formula $c$
+\end_inset
+
+ and 
+\begin_inset Formula $\theta$
+\end_inset
+
+ the angle of the first measurement 
+\series bold
+relative
+\series default
+ to the edge.
+ We can calculate 
+\begin_inset Formula $\theta$
+\end_inset
+
+ as follows:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+c=\sqrt{d_{1}^{2}+d_{2}^{2}-2d_{1}d_{2}cos\alpha}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\theta=cos^{-1}\left(\frac{d_{1}^{2}+c^{2}-d_{2}^{2}}{2d_{1}c}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename figure5.png
+	scale 27
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So given the angle between the measurement and the measured edge, we can
+ use the same data structure as before, but this time with 
+\series bold
+relative 
+\series default
+
+\begin_inset Formula $\theta$
+\end_inset
+
+, and instead of considering all the possible angles, consider only the
+ two angles which are most close to 
+\begin_inset Formula $\theta$
+\end_inset
+
+ in our discrete angles representation.
+ This increases the preprocessing to 
+\begin_inset Formula $O(qn^{2}logqn)$
+\end_inset
+
+ time and 
+\begin_inset Formula $O(qn^{2})$
+\end_inset
+
+ space (as the total number of intervals per 
+\begin_inset Formula $\theta$
+\end_inset
+
+ can now be 
+\begin_inset Formula $O(n^{2})$
+\end_inset
+
+) and reduces the query complexity to 
+\begin_inset Formula $O(logn+L)$
+\end_inset
+
+, but 
+\begin_inset Formula $L$
+\end_inset
+
+ is expected to be much smaller but can be 
+\begin_inset Formula $O(n^{2})$
+\end_inset
+
+ in the worst case.
+\end_layout
+
+\begin_layout Subsubsection*
+Second Measurement Variant - different edge 
+\end_layout
+
+\begin_layout Standard
+After the robot performed a single measuerement 
+\begin_inset Formula $d_{1}$
+\end_inset
+
+, if we can't assume we will always measure the same edge by turning a small
+ angle, we can gurantee a second measurement to a different edge by turning
+ 
+\begin_inset Formula $180\text{°}$
+\end_inset
+
+, denoted 
+\begin_inset Formula $d_{2}$
+\end_inset
+
+.
+ Then we can use the definitions as described above, and calculate another
+ field for each interval 
+\begin_inset Formula $min_{\theta}(I_{i}^{e})=\underset{x\in I_{i}^{e}}{min}\,f_{e}(\theta,x)$
+\end_inset
+
+.
+ The robot could have measured 
+\begin_inset Formula $e$
+\end_inset
+
+ at angle 
+\begin_inset Formula $\theta$
+\end_inset
+
+ a distance 
+\begin_inset Formula $d_{1}$
+\end_inset
+
+ and a second measurement 
+\begin_inset Formula $d_{2}$
+\end_inset
+
+ only if 
+\begin_inset Formula $min_{\theta}(I_{i}^{e})\leq d_{1}+d_{2}\leq max_{\theta}(I_{i}^{e})$
+\end_inset
+
+.
+ In preprocessing, we can build an interval tree (data structure of number
+ intervals) of the intervals 
+\begin_inset Formula $[min_{\theta}(I_{i}^{e}),max_{\theta}(I_{i}^{e})]$
+\end_inset
+
+ which we can build in 
+\begin_inset Formula $O(qnlogqn)$
+\end_inset
+
+ time.
+ Given a query 
+\begin_inset Formula $(d_{1},d_{2})$
+\end_inset
+
+ we search in the interval tree the value 
+\begin_inset Formula $d_{1}+d_{2}$
+\end_inset
+
+ which takes 
+\begin_inset Formula $O(logn+logq+L)$
+\end_inset
+
+ where 
+\begin_inset Formula $L$
+\end_inset
+
+ is the number of intervals that match the query.
+ For each interval we find in the interval tree we will output a single
+ point (or all the interval points, if the two edges are parallel).
 \end_layout
 
 \end_body
