@@ -266,7 +266,7 @@ Given a fixed angle
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename figure4.png
+	filename img_discrete_angles/figure4.png
 	scale 40
 
 \end_inset
@@ -546,7 +546,7 @@ Given a query with distance
 \begin_inset Formula $e$
 \end_inset
 
-, and each discetizided angle 
+, and each discretized angle 
 \begin_inset Formula $\theta$
 \end_inset
 
@@ -743,7 +743,7 @@ associate
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename figure6.png
+	filename img_discrete_angles/figure6.png
 	scale 35
 
 \end_inset
@@ -838,7 +838,7 @@ c=\sqrt{d_{1}^{2}+d_{2}^{2}-2d_{1}d_{2}cos\alpha}
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename figure5.png
+	filename img_discrete_angles/figure5.png
 	scale 27
 
 \end_inset
@@ -898,12 +898,12 @@ Second Measurement Variant - different edge
 \end_layout
 
 \begin_layout Standard
-After the robot performed a single measuerement 
+After the robot performed a single measurement 
 \begin_inset Formula $d_{1}$
 \end_inset
 
 , if we can't assume we will always measure the same edge by turning a small
- angle, we can gurantee a second measurement to a different edge by turning
+ angle, we can guarantee a second measurement to a different edge by turning
  
 \begin_inset Formula $180\text{°}$
 \end_inset
