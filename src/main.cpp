@@ -1,10 +1,14 @@
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Arr_vertical_decomposition_2.h>
 #include <CGAL/Arrangement_2.h>
+#include <CGAL/Object.h>
+#include <CGAL/Polygon_vertical_decomposition_2.h>
 #include <CGAL/Rotational_sweep_visibility_2.h>
+#include <CGAL/Visibility_2/visibility_utils.h>
 #include <CGAL/basic.h>
 #include <iostream>
 #include <set>
+#include <type_traits>
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
 typedef CGAL::Segment_2<Kernel> Segment;
@@ -15,70 +19,16 @@ typedef CGAL::Arrangement_2<Traits> Arrangement;
 typedef Arrangement::Vertex_const_handle Vertex_const_handle;
 typedef std::pair<Vertex_const_handle, std::pair<CGAL::Object, CGAL::Object>>
     Vert_decomp_entry;
-typedef std::list<Vert_decomp_entry> Vert_decomp_list;
 
 typedef Arrangement::Halfedge_const_handle Halfedge_const_handle;
 typedef Arrangement::Face_const_handle Face_const_handle;
 
 typedef CGAL::Rotational_sweep_visibility_2<Arrangement> Rotational_sweep;
 
-#define ARR_SIZE(a) (sizeof(a) / sizeof(a[0]))
-
-static int calc_trapezoids_old() {
-  Segment segments[] = {
-      Segment(Point(0, 0), Point(3, 3)), Segment(Point(3, 3), Point(6, 0)),
-      Segment(Point(2, 0), Point(5, 3)), Segment(Point(5, 3), Point(8, 0)),
-      Segment(Point(8, 0), Point(0, 0))};
-  Arrangement arr;
-  insert(arr, segments, segments + ARR_SIZE(segments));
-
-  // Polygon_vertical_decomposition d;
-  // d.init();
-
-  // d(arr);
-  // // Polygon_vertical_decomposition::vertical_decomposition(arr)
-
-  Vert_decomp_list vd_list;
-  CGAL::decompose(arr, std::back_inserter(vd_list));
-
-  std::cout << "Hello World! size = " << vd_list.size() << std::endl;
-
-  //   Print the results.
-  for (auto it = vd_list.begin(); it != vd_list.end(); ++it) {
-    std::cout << "Vertex (" << it->first->point() << ") : ";
-    // Vertex_const_handle vh;
-    // Halfedge_const_handle hh;
-    // Face_const_handle fh;
-    // std::cout << " feature below: ";
-    // if (hh.assign(it->first))
-    // if (CGAL::assign(hh, it->first))
-    // std::cout << '[' << hh->curve() << ']';
-    // else if (CGAL::assign(vh, it->first))
-    // 	std::cout << '(' << vh->point() << ')';
-    // else if (CGAL::assign(fh, it->first))
-    // 	std::cout << "NONE";
-    // else
-    // 	std::cout << "EMPTY";
-    // std::cout << "   feature above: ";
-    // if (CGAL::assign(hh, it->second))
-    // 	std::cout << '[' << hh->curve() << "]\n";
-    // else if (CGAL::assign(vh, it->second))
-    // 	std::cout << '(' << vh->point() << ")\n";
-    // else if (CGAL::assign(fh, it->second))
-    // 	std::cout << "NONE\n";
-    // else
-    // 	std::cout << "EMPTY\n";
-  }
-
-  // boost::OutputIterator oi;
-  // CGAL::decompose(arrm oi);
-
-  return 0;
-}
-
-// typedef CGAL::Lazy_exact_nt<typename Exact_kernel::FT>  FT;
-
-#include <CGAL/Visibility_2/visibility_utils.h>
+// TODO remove
+#define DEBUG_PRINT_EN 1
+#define DEBUG_PRINT() std::cout << "L" << __LINE__ << std::endl
+// #define DEBUG_PRINT() std::cout << __func__ << ":" << __LINE__ << std::endl
 
 class Closer_edge
     : public CGAL::cpp98::binary_function<Halfedge_const_handle,
@@ -128,9 +78,6 @@ public:
     }
 
     if (e1->target() == e2->source()) {
-      //          const Point_2& p1 = s1,
-      //                   p2 = t2,
-      //                   c = s2;
       int vt1 = vtype(t1, s1), vt2 = vtype(t1, t2);
       if (vt1 != vt2)
         return vt1 > vt2;
@@ -140,9 +87,6 @@ public:
     }
 
     if (e1->source() == e2->target()) {
-      //            const Point_2& p1 = t1,
-      //                     p2 = s2,
-      //                     c = s1;
       int vt1 = vtype(s1, t1), vt2 = vtype(s1, s2);
       if (vt1 != vt2)
         return vt1 > vt2;
@@ -152,9 +96,6 @@ public:
     }
 
     if (e1->target() == e2->target()) {
-      //              const Point_2& p1 = s1,
-      //                       p2 = s2,
-      //                       c = t1;
       int vt1 = vtype(t1, s1), vt2 = vtype(t1, s2);
       if (vt1 != vt2)
         return vt1 > vt2;
@@ -237,146 +178,503 @@ public:
 
 class Event {
 public:
-  Arrangement::Vertex_const_handle v1;
-  Arrangement::Vertex_const_handle v2;
-  Kernel::FT angle;
+  Vertex_const_handle v1;
+  Vertex_const_handle v2;
 
-  Event(Arrangement::Vertex_const_handle v1,
-        Arrangement::Vertex_const_handle v2, Kernel::FT angle)
-      : v1(v1), v2(v2), angle(angle) {}
+  Event(Vertex_const_handle v1, Vertex_const_handle v2) : v1(v1), v2(v2) {}
 };
 
 class Trapezoid {
+private:
+  static unsigned int ID_COUNTER;
+  unsigned int id;
+
 public:
-  Kernel::FT angle_begin;
-  Kernel::FT angle_end;
-  Arrangement::Halfedge_const_handle top_edge;
-  Arrangement::Halfedge_const_handle bottom_edge;
-  Arrangement::Vertex_const_handle left_vertex;
-  Arrangement::Vertex_const_handle right_vertex;
+  Kernel::FT angle_begin; // TODO remove
+  Kernel::FT angle_end;   // TODO remove
+  Halfedge_const_handle top_edge;
+  Halfedge_const_handle bottom_edge;
+  Vertex_const_handle left_vertex;
+  Vertex_const_handle right_vertex;
+  Trapezoid() = default;
+  Trapezoid(Halfedge_const_handle top_edge, Halfedge_const_handle bottom_edge,
+            Vertex_const_handle left_vertex, Vertex_const_handle right_vertex)
+      : id(++ID_COUNTER), top_edge(top_edge), bottom_edge(bottom_edge),
+        left_vertex(left_vertex), right_vertex(right_vertex) {}
+  Trapezoid(const Trapezoid &) = default;
+  unsigned int get_id() const { return id; }
+};
+unsigned int Trapezoid::ID_COUNTER = 0;
+
+#define INVALID_TRAPEZOID_ID -1
+
+struct VertexData {
+  unsigned int top_left_trapezoid;
+  unsigned int top_right_trapezoid;
+  unsigned int bottom_left_trapezoid;
+  unsigned int bottom_right_trapezoid;
+  std::set<Halfedge_const_handle, Closer_edge> ray_edges;
+  VertexData() {}
+  VertexData(Point &v, const Arrangement::Geometry_traits_2 *geom_traits) {
+    top_left_trapezoid = top_right_trapezoid = INVALID_TRAPEZOID_ID;
+    bottom_left_trapezoid = bottom_right_trapezoid = INVALID_TRAPEZOID_ID;
+    ray_edges = std::set<Halfedge_const_handle, Closer_edge>(
+        Closer_edge(geom_traits, v));
+  }
 };
 
-static int calc_trapezoids(std::vector<Segment> segments) {
-  Arrangement arr;
+template <typename OP>
+static void foreach_vertex_edge(Vertex_const_handle v, OP op) {
+  auto edge = v->incident_halfedges();
+  for (auto edges_end = edge;;) {
+    auto directed_edge = edge->source() == v ? edge : edge->twin();
+    assert(directed_edge->source() == v);
+    op(directed_edge);
+    if (++edge == edges_end)
+      break;
+  }
+}
+
+static Kernel::FT calc_angle(Point source, Point target) {
+  if (source.hx() != target.hx())
+    return (target.hy() - source.hy()) / (target.hx() - source.hx());
+  else
+    return source.hy() > target.hy() ? -10000 : 10000;
+  // TODO #define  numeric_limits<T>::min()
+}
+
+static void direct_line(Point &p1, Point &p2) {
+  if (p1.hx() != p2.hx()) {
+    if (p1.hx() > p2.hx())
+      std::swap(p1, p2);
+  } else if (p1.hy() > p2.hy())
+    std::swap(p1, p2);
+}
+
+static void get_source_target(Halfedge_const_handle e, Point &p1, Point &p2) {
+  p1 = e->source()->point();
+  p2 = e->target()->point();
+  direct_line(p1, p2);
+}
+
+static Kernel::FT calc_edge_angle(Halfedge_const_handle e) {
+  auto source = e->source()->point(), target = e->target()->point();
+  direct_line(source, target);
+  return calc_angle(source, target);
+}
+
+static bool find_vertex_left_edge_with_min_angle(Vertex_const_handle v,
+                                                 Halfedge_const_handle &res) {
+  bool found = false;
+  Halfedge_const_handle best;
+  foreach_vertex_edge(v, [&v, &found, &best](auto &edge) {
+    auto source = edge->source()->point(), target = edge->target()->point();
+    direct_line(source, target);
+    if (source.hx() < v->point().hx()) { // TODO maybe <=
+      DEBUG_PRINT();
+      if (!found || calc_angle(source, target) < calc_edge_angle(best)) {
+        best = edge;
+        found = true;
+      }
+    }
+  });
+  if (found)
+    res = best;
+  return found;
+}
+
+static bool find_vertex_left_edge_with_max_angle(Vertex_const_handle v,
+                                                 Halfedge_const_handle &res) {
+  bool found = false;
+  Halfedge_const_handle best;
+  foreach_vertex_edge(v, [&v, &found, &best](auto &edge) {
+    auto source = edge->source()->point(), target = edge->target()->point();
+    direct_line(source, target);
+    if (source.hx() < v->point().hx()) { // TODO maybe <=
+      Kernel::FT angle;
+      if (!found ||
+          (angle = calc_angle(source, target)) > calc_edge_angle(best)) {
+        best = edge;
+        found = true;
+      }
+    }
+  });
+  if (found)
+    res = best;
+  return found;
+}
+
+static void create_arrangement(Arrangement &arr,
+                               const std::vector<Segment> &segments) {
+  if (segments.size() == 0)
+    throw std::invalid_argument("no segments provided");
+  Point prev = segments[0].start();
+  for (unsigned int i = 0; i < segments.size(); i++) {
+    auto &segment = segments[i];
+    if (segment.start() == segment.end())
+      throw std::invalid_argument("zero length segment");
+    if (segment.start() != prev)
+      throw std::invalid_argument("non continuous segments");
+    for (unsigned int j = 0; j < segments.size(); j++) {
+      if (CGAL::do_intersect(segment, segments[j])) {
+        unsigned int i1 = i != 0 ? i - 1 : segments.size() - 1;
+        unsigned int i2 = i != segments.size() - 1 ? i + 1 : 0;
+        if (j != i1 && j != i && j != i2) {
+          std::ostringstream oss;
+          oss << "segments intersect: " << segment << " " << segments[j];
+          throw std::invalid_argument(oss.str());
+        }
+      }
+    }
+    prev = segment.end();
+  }
+  if (segments.begin()->start() != segments.back().end())
+    throw std::invalid_argument("segments doesn't close a cycle");
+
   insert(arr, segments.begin(), segments.end());
 
-  std::cout << "arr.number_of_vertices() = " << arr.number_of_vertices()
-            << std::endl;
+  std::set<Face_const_handle> faces;
+  for (auto v = arr.vertices_begin(); v != arr.vertices_end(); ++v)
+    foreach_vertex_edge(v, [&faces](auto &e) { faces.insert(e->face()); });
+  if (faces.size() != 2)
+    throw std::invalid_argument("Invalid faces number, expected 2.");
+  // Expecting one bounded and one unbounded faces. The bounded is the interiour
+  // of the room. std::cout << "\t" << face->is_unbounded() << std::endl;
+}
 
+static Halfedge_const_handle direct_edge(const Halfedge_const_handle &edge) {
+  if (edge->curve().target().hx() != edge->curve().source().hx())
+    return edge->curve().target().hx() >= edge->curve().source().hx()
+               ? edge
+               : edge->twin();
+  return edge->curve().target().hy() >= edge->curve().source().hy()
+             ? edge
+             : edge->twin();
+}
+
+class DecompVertexData {
+public:
+  bool is_edge_above;
+  bool is_edge_below;
+  Halfedge_const_handle edge_above;
+  Halfedge_const_handle edge_below;
+  DecompVertexData() { is_edge_above = is_edge_below = false; }
+};
+
+class Less_edge
+    : public CGAL::cpp98::binary_function<Halfedge_const_handle,
+                                          Halfedge_const_handle, bool> {
+  const Arrangement::Geometry_traits_2 *geom_traits;
+
+public:
+  Less_edge() {}
+  Less_edge(const Arrangement::Geometry_traits_2 *traits)
+      : geom_traits(traits) {}
+  bool operator()(Halfedge_const_handle e1, Halfedge_const_handle e2) const {
+    if (e1 == e2 || e1 == e2->twin())
+      return false;
+    else
+      return &(*e1) < &(*e2);
+  }
+};
+
+static void vertical_decomposition(
+    const Arrangement &arr, std::vector<Vertex_const_handle> &vertices,
+    std::map<Vertex_const_handle, DecompVertexData> &decomp) {
+  std::vector<Vert_decomp_entry> vd_list;
+  CGAL::decompose(arr, std::back_inserter(vd_list));
+
+  std::map<Vertex_const_handle, CGAL::Object> above_orig;
+  std::map<Vertex_const_handle, CGAL::Object> below_orig;
+  for (auto &decomp_entry : vd_list) {
+    above_orig[decomp_entry.first] = decomp_entry.second.second;
+    below_orig[decomp_entry.first] = decomp_entry.second.first;
+  }
+
+  for (auto &decomp_entry : vd_list)
+    vertices.push_back(decomp_entry.first);
+
+  sort(vertices.begin(), vertices.end(), [](const auto &v1, const auto &v2) {
+    if (v1->point().hx() != v2->point().hx())
+      return v1->point().hx() < v2->point().hx();
+    return v1->point().hy() < v2->point().hy();
+  });
+  for (auto &v : vertices) {
+    DecompVertexData v_data;
+    Halfedge_const_handle edge;
+    bool is_edge;
+    for (Vertex_const_handle p = v, up_vertex;; p = up_vertex) {
+      auto &above_obj = above_orig[p];
+      if (CGAL::assign(edge, above_obj)) {
+        v_data.edge_above = direct_edge(edge);
+        v_data.is_edge_above = true;
+        break;
+      }
+      if (!CGAL::assign(up_vertex, above_obj))
+        break;
+    }
+    for (Vertex_const_handle p = v, below_vertex;; p = below_vertex) {
+      auto &below_obj = below_orig[p];
+      if (CGAL::assign(edge, below_obj)) {
+        v_data.edge_below = direct_edge(edge);
+        v_data.is_edge_below = true;
+        break;
+      }
+      if (!CGAL::assign(below_vertex, below_obj))
+        break;
+    }
+    decomp[v] = v_data;
+  }
+}
+
+static bool is_free(Face_const_handle face) { return !face->is_unbounded(); }
+
+static int calc_trapezoids(const std::vector<Segment> &segments) {
+  // Create arrangement
+  Arrangement arr;
+  create_arrangement(arr, segments);
+
+  // Calc all events
   std::vector<Event> events;
   events.reserve(arr.number_of_vertices() * arr.number_of_vertices());
-  for (auto vit1 = arr.vertices_begin(); vit1 != arr.vertices_end(); ++vit1) {
-    Point v1 = vit1->point();
-    for (auto vit2 = arr.vertices_begin(); vit2 != arr.vertices_end(); ++vit2) {
-      Point v2 = vit2->point();
-      if (v1 == v2)
-        continue;
-
-      Kernel::FT angle;
-      if (v2.hx() != v1.hx())
-        angle = (v2.hy() - v1.hy()) / (v2.hx() - v1.hx());
-      else
-        angle = v1.hy() > v2.hy() ? 10000 : -10000; // TODO define
-
-      Event event(vit1, vit2, angle);
-      events.push_back(event);
-    }
-  }
+  for (auto v1 = arr.vertices_begin(); v1 != arr.vertices_end(); ++v1)
+    for (auto v2 = arr.vertices_begin(); v2 != arr.vertices_end(); ++v2)
+      if (v1 != v2)
+        events.push_back(Event(v1, v2));
 
   // Sort events by their angle
-  sort(events.begin(), events.end(),
-       [](const Event &e1, const Event &e2) { return e1.angle < e2.angle; });
+  sort(events.begin(), events.end(), [](const Event &e1, const Event &e2) {
+    return calc_angle(e1.v2->point(), e1.v1->point()) <
+           calc_angle(e2.v2->point(), e2.v1->point());
+  });
 
-  for (auto it = events.begin(); it != events.end(); ++it)
-    std::cout << "(" << it->v1->point() << ")"
-              << "(" << it->v2->point() << ") " << it->angle << std::endl;
-
-  struct VertexData {
-    Trapezoid *top_left_trapezoid;
-    Trapezoid *top_right_trapezoid;
-    Trapezoid *bottom_left_trapezoid;
-    Trapezoid *bottom_right_trapezoid;
-    std::set<Arrangement::Halfedge_const_handle, Closer_edge> ray_edges;
-    VertexData() {}
-    VertexData(Point &v, const Arrangement::Geometry_traits_2 *geom_traits) {
-      top_left_trapezoid = top_right_trapezoid = NULL;
-      bottom_left_trapezoid = bottom_right_trapezoid = NULL;
-      ray_edges = std::set<Arrangement::Halfedge_const_handle, Closer_edge>(
-          Closer_edge(geom_traits, v));
-    }
-  };
-
-  // auto point_hash = [](const Point &p) {
-  //   auto x = p.hx().exact(), y = p.hy().exact();
-  //   std::hash<decltype(x)> h;
-  //   return h(x) ^ h(y);
-  // };
-  // std::unordered_map<Point, VertexData, decltype(point_hash)> vtrapezoids(
-  //     arr.number_of_vertices(), point_hash);
-
-  std::vector<Trapezoid> trapezoids;
-  std::unordered_map<Arrangement::Vertex_const_handle, VertexData> vtrapezoids(
+  std::map<unsigned int, Trapezoid> trapezoids;
+  std::unordered_map<Vertex_const_handle, VertexData> vtrapezoids(
       arr.number_of_vertices());
-  for (auto vit = arr.vertices_begin(); vit != arr.vertices_end(); ++vit) {
-    if (vtrapezoids.find(vit) != vtrapezoids.end())
-      std::cout << "more than one vertex with same location" << std::endl;
+  for (auto vit = arr.vertices_begin(); vit != arr.vertices_end(); ++vit)
     vtrapezoids[vit] = VertexData(vit->point(), arr.geometry_traits());
+
+  // Init trapezoids with regular vertical decomposition
+  std::vector<Vertex_const_handle> vertices;
+  std::map<Vertex_const_handle, DecompVertexData> decomp;
+  vertical_decomposition(arr, vertices, decomp);
+  std::cout << "vertical_decomposition vertices:";
+  for (auto &v : vertices)
+    std::cout << " (" << v->point() << ")";
+  std::cout << std::endl;
+
+  std::map<Halfedge_const_handle, Vertex_const_handle, Less_edge>
+      most_right_vertex(Less_edge(arr.geometry_traits()));
+  for (const auto &v : vertices) {
+    const DecompVertexData &v_decomp_data = decomp[v];
+    Halfedge_const_handle top_edge, bottom_edge;
+
+    if ((v_decomp_data.is_edge_above &&
+         is_free(v_decomp_data.edge_above->face())) &&
+        (v_decomp_data.is_edge_below &&
+         is_free(v_decomp_data.edge_below->face())) &&
+        !find_vertex_left_edge_with_min_angle(v, top_edge)) {
+
+      // Reflex (more than 180 degrees) vertex
+      Vertex_const_handle left_v = most_right_vertex[v_decomp_data.edge_above];
+      Trapezoid trapezoid(v_decomp_data.edge_above, v_decomp_data.edge_below,
+                          left_v, v);
+      std::cout << "created new trapezoid of reflex vertex " << v->point()
+                << std::endl; // TODO remove
+      auto t_id = trapezoid.get_id();
+      trapezoids[t_id] = trapezoid;
+
+      vtrapezoids[v].top_left_trapezoid = t_id;
+      vtrapezoids[v].bottom_left_trapezoid = t_id;
+      bool left_on_top =
+          trapezoid.top_edge->curve().line().has_on(left_v->point());
+      bool left_on_bottom =
+          trapezoid.bottom_edge->curve().line().has_on(left_v->point());
+      if (!left_on_top || left_on_bottom)
+        vtrapezoids[left_v].top_right_trapezoid = t_id;
+      if (!left_on_bottom || left_on_top)
+        vtrapezoids[left_v].bottom_right_trapezoid = t_id;
+
+      most_right_vertex[trapezoid.top_edge] = v;
+
+    } else if ((!v_decomp_data.is_edge_above ||
+                !is_free(v_decomp_data.edge_above->face())) &&
+               (!v_decomp_data.is_edge_below ||
+                !is_free(v_decomp_data.edge_below->face())) &&
+               find_vertex_left_edge_with_min_angle(v, top_edge) &&
+               find_vertex_left_edge_with_max_angle(v, bottom_edge)) {
+
+      // Tringle cell terminates at v
+      Vertex_const_handle left_v = most_right_vertex[top_edge];
+      Trapezoid trapezoid(top_edge, bottom_edge, left_v, v);
+      std::cout << "created new trapezoid of tringle " << v->point()
+                << std::endl; // TODO remove
+      auto t_id = trapezoid.get_id();
+      trapezoids[t_id] = trapezoid;
+
+      vtrapezoids[v].top_left_trapezoid = t_id;
+      vtrapezoids[v].bottom_left_trapezoid = t_id;
+      bool left_on_top =
+          trapezoid.top_edge->curve().line().has_on(left_v->point());
+      bool left_on_bottom =
+          trapezoid.bottom_edge->curve().line().has_on(left_v->point());
+      if (!left_on_top || left_on_bottom)
+        vtrapezoids[left_v].top_right_trapezoid = t_id;
+      if (!left_on_bottom || left_on_top)
+        vtrapezoids[left_v].bottom_right_trapezoid = t_id;
+
+    } else {
+      if (v_decomp_data.is_edge_above &&
+          is_free(v_decomp_data.edge_above->face())) {
+
+        // Edge above the vertex
+        if (!find_vertex_left_edge_with_min_angle(v, bottom_edge)) {
+          std::cout << v->point() << std::endl;
+          std::cout << v_decomp_data.is_edge_above
+                    << v_decomp_data.is_edge_below << std::endl;
+          std::cout << v_decomp_data.edge_above->curve() << std::endl;
+          std::cout << v_decomp_data.edge_below->curve() << std::endl;
+          std::cout << is_free(v_decomp_data.edge_above->face())
+                    << is_free(v_decomp_data.edge_below->face()) << std::endl;
+          throw std::logic_error("find_vertex_left_edge_with_min_angle fail");
+        }
+
+        Vertex_const_handle left_v =
+            most_right_vertex[v_decomp_data.edge_above];
+        Trapezoid trapezoid(v_decomp_data.edge_above, bottom_edge, left_v, v);
+        std::cout << "created new trapezoid of reg1 " << v->point()
+                  << std::endl; // TODO remove
+        auto t_id = trapezoid.get_id();
+        trapezoids[t_id] = trapezoid;
+
+        vtrapezoids[v].top_left_trapezoid = t_id;
+        bool left_on_top =
+            trapezoid.top_edge->curve().line().has_on(left_v->point());
+        bool left_on_bottom =
+            trapezoid.bottom_edge->curve().line().has_on(left_v->point());
+        if (!left_on_top || left_on_bottom)
+          vtrapezoids[left_v].top_right_trapezoid = t_id;
+        if (!left_on_bottom || left_on_top)
+          vtrapezoids[left_v].bottom_right_trapezoid = t_id;
+
+        most_right_vertex[trapezoid.top_edge] = v;
+      }
+
+      if (v_decomp_data.is_edge_below &&
+          is_free(v_decomp_data.edge_below->face())) {
+
+        // Edge below the vertex
+        if (!find_vertex_left_edge_with_max_angle(v, top_edge)) {
+          std::cout << v_decomp_data.is_edge_above
+                    << v_decomp_data.is_edge_below << std::endl;
+          std::cout << v_decomp_data.edge_above->curve() << std::endl;
+          std::cout << v_decomp_data.edge_below->curve() << std::endl;
+          std::cout << is_free(v_decomp_data.edge_above->face())
+                    << is_free(v_decomp_data.edge_below->face()) << std::endl;
+          throw std::logic_error("find_vertex_left_edge_with_max_angle fail");
+        }
+
+        Vertex_const_handle left_v = most_right_vertex[top_edge];
+        Trapezoid trapezoid(top_edge, v_decomp_data.edge_below, left_v, v);
+        std::cout << "created new trapezoid of reg2 " << v->point()
+                  << std::endl; // TODO remove
+        auto t_id = trapezoid.get_id();
+        trapezoids[t_id] = trapezoid;
+
+        vtrapezoids[v].top_left_trapezoid = t_id;
+        bool left_on_top =
+            trapezoid.top_edge->curve().line().has_on(left_v->point());
+        bool left_on_bottom =
+            trapezoid.bottom_edge->curve().line().has_on(left_v->point());
+        if (!left_on_top || left_on_bottom)
+          vtrapezoids[left_v].top_right_trapezoid = t_id;
+        if (!left_on_bottom || left_on_top)
+          vtrapezoids[left_v].bottom_right_trapezoid = t_id;
+      }
+    }
+
+    foreach_vertex_edge(v, [&v, &most_right_vertex](auto &edge) {
+      most_right_vertex[edge] = v;
+    });
+    // std::cout << "most_right_vertex elements ";
+    // DEBUG_PRINT();
+    // for (auto &e : most_right_vertex)
+    //   std::cout << "\t(" << e.first->curve() << "): " << e.second->point()
+    //             << std::endl;
   }
 
-  // TODO perform first vertical decomposition and init vtrapezoids
+  // TODO remove
+  std::cout << "After regular vertical decomposition, trapezoids:" << std::endl;
+  for (const auto &t : trapezoids) {
+    const auto &trapezoid = t.second;
+    std::cout << "\tT" << trapezoid.get_id() << " Top("
+              << trapezoid.top_edge->curve() << ") Bottom("
+              << trapezoid.bottom_edge->curve() << ") Left("
+              << trapezoid.left_vertex->point() << ") Right("
+              << trapezoid.right_vertex->point() << ")" << std::endl;
+  }
+  std::cout << "After regular vertical decomposition, vtrapezoids:"
+            << std::endl;
+  for (const auto &v_pair : vtrapezoids) {
+    const auto &v = v_pair.first;
+    const auto &v_data = v_pair.second;
+    std::cout << "\t(" << v->point() << "):"
+              << " TopLeftT " << (int)v_data.top_left_trapezoid << " TopRightT "
+              << (int)v_data.top_right_trapezoid << " BottomLeftT "
+              << (int)v_data.bottom_left_trapezoid << " BottomRightT "
+              << (int)v_data.bottom_right_trapezoid << std::endl;
+  }
 
-  for (auto event = events.begin(); event != events.end(); ++event) {
-    auto ray_edges = &vtrapezoids.find(event->v1)->second.ray_edges;
+  throw std::logic_error("enough for now");
+
+  DEBUG_PRINT();
+  for (auto &event : events) {
+    auto ray_edges = &vtrapezoids.find(event.v1)->second.ray_edges;
     auto closest_edge_orig = *ray_edges->begin();
 
     // Maintaine ray_edges
-    auto v_edge = event->v1->incident_halfedges();
-    auto v_edges_end = v_edge;
-    do {
-      if (ray_edges->find(v_edge) == ray_edges->end())
-        ray_edges->insert(v_edge);
+    foreach_vertex_edge(event.v1, [&ray_edges](auto &edge) {
+      if (ray_edges->find(edge) == ray_edges->end())
+        ray_edges->insert(edge);
       else
-        ray_edges->erase(v_edge);
-    } while (++v_edge != v_edges_end);
+        ray_edges->erase(edge);
+    });
 
+    DEBUG_PRINT();
     auto closest_edge = *ray_edges->begin();
     if (closest_edge_orig == closest_edge)
       continue; // Closest edge didn't changed
 
-    auto current_angle = event->angle;
-    auto bottom_event_vertex_data = &vtrapezoids.find(event->v1)->second;
-    auto top_event_vertex_data = &vtrapezoids.find(event->v2)->second;
-    Trapezoid *left = top_event_vertex_data->bottom_left_trapezoid;
-    Trapezoid *mid = bottom_event_vertex_data->top_left_trapezoid;
-    Trapezoid *right = bottom_event_vertex_data->top_right_trapezoid;
+    // auto current_angle = event.angle;
+    auto bottom_event_vertex_data = &vtrapezoids.find(event.v1)->second;
+    auto top_event_vertex_data = &vtrapezoids.find(event.v2)->second;
+    auto left_trapezoid_id = top_event_vertex_data->bottom_left_trapezoid;
+    auto mid_trapezoid_id = bottom_event_vertex_data->top_left_trapezoid;
+    auto right_trapezoid_id = bottom_event_vertex_data->top_right_trapezoid;
 
-    if (mid) {
-      mid->angle_end = current_angle;
-      Trapezoid nt;
-      nt.top_edge = closest_edge;
-      nt.bottom_edge = right->bottom_edge;
-      nt.left_vertex = event->v1;
-      nt.right_vertex = event->v2;
+    DEBUG_PRINT();
+    if (mid_trapezoid_id != INVALID_TRAPEZOID_ID) {
+      Trapezoid &mid = trapezoids[mid_trapezoid_id];
+      // mid->angle_end = current_angle;
+      // Trapezoid trapezoid(closest_edge, right.bottom_edge, event.v1,
+      // event.v2); trapezoid.angle_begin = current_angle;
       // TODO
     }
-    if (left) {
-      left->angle_end = current_angle;
-      Trapezoid nt;
-      nt.top_edge = left->top_edge;
-      nt.bottom_edge = left->bottom_edge;
-      nt.left_vertex = left->left_vertex;
-      nt.right_vertex = event->v1;
+    if (left_trapezoid_id != INVALID_TRAPEZOID_ID) {
+      Trapezoid &left = trapezoids[left_trapezoid_id];
+      // left->angle_end = current_angle;
+      Trapezoid trapezoid(left.top_edge, left.bottom_edge, left.left_vertex,
+                          event.v1);
+      // trapezoid.angle_begin = current_angle;
       // TODO
     }
-    if (right) {
-      right->angle_end = current_angle;
-      Trapezoid nt;
-      nt.angle_begin = current_angle;
-      nt.top_edge = right->top_edge;
-      nt.bottom_edge = right->bottom_edge;
-      nt.left_vertex = event->v2;
-      nt.right_vertex = right->right_vertex;
-      trapezoids.push_back(nt);
+    if (right_trapezoid_id != INVALID_TRAPEZOID_ID) {
+      Trapezoid &right = trapezoids[right_trapezoid_id];
+      // right->angle_end = current_angle;
+      Trapezoid trapezoid(right.top_edge, right.bottom_edge, event.v2,
+                          right.right_vertex);
+      // trapezoid.angle_begin = current_angle;
+      trapezoids[trapezoid.get_id()] = trapezoid;
       // TODO get a pointer to the inserted element
       // v2_data->bottom_right_trapezoid = &trapezoids[last_elm];
       // TODO check if left vertex is top or bottom
@@ -386,48 +684,24 @@ static int calc_trapezoids(std::vector<Segment> segments) {
     }
   }
 
-  Vert_decomp_list vd_list;
-  CGAL::decompose(arr, std::back_inserter(vd_list));
-
-  std::cout << "Hello World! size = " << vd_list.size() << std::endl;
-
-  //   Print the results.
-  for (auto it = vd_list.begin(); it != vd_list.end(); ++it) {
-    std::cout << "Vertex (" << it->first->point() << ") : ";
-    // Vertex_const_handle vh;
-    // Halfedge_const_handle hh;
-    // Face_const_handle fh;
-    // std::cout << " feature below: ";
-    // if (hh.assign(it->first))
-    // if (CGAL::assign(hh, it->first))
-    // std::cout << '[' << hh->curve() << ']';
-    // else if (CGAL::assign(vh, it->first))
-    // 	std::cout << '(' << vh->point() << ')';
-    // else if (CGAL::assign(fh, it->first))
-    // 	std::cout << "NONE";
-    // else
-    // 	std::cout << "EMPTY";
-    // std::cout << "   feature above: ";
-    // if (CGAL::assign(hh, it->second))
-    // 	std::cout << '[' << hh->curve() << "]\n";
-    // else if (CGAL::assign(vh, it->second))
-    // 	std::cout << '(' << vh->point() << ")\n";
-    // else if (CGAL::assign(fh, it->second))
-    // 	std::cout << "NONE\n";
-    // else
-    // 	std::cout << "EMPTY\n";
-  }
-
   return 0;
 }
 
-int main() {
-  std::cout << "Hello World!" << std::endl;
+static void create_segments_from_points(const std::vector<Point> &points,
+                                        std::vector<Segment> &segments) {
+  for (unsigned int i = 0; i < points.size(); i++) {
+    unsigned int j = i != points.size() - 1 ? i + 1 : 0;
+    Segment s(points[i], points[j]);
+    segments.push_back(s);
+  }
+}
 
-  std::vector<Segment> segments = {
-      Segment(Point(0, 0), Point(3, 3)), Segment(Point(3, 3), Point(6, 0)),
-      Segment(Point(2, 0), Point(5, 3)), Segment(Point(5, 3), Point(8, 0)),
-      Segment(Point(8, 0), Point(0, 0))};
+int main() {
+  std::vector<Point> points = {
+      Point(0, 0), Point(2, 3), Point(5, 4), Point(4, 2), Point(5, 0),
+  };
+  std::vector<Segment> segments;
+  create_segments_from_points(points, segments);
 
   calc_trapezoids(segments);
 
