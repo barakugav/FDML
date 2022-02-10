@@ -251,8 +251,9 @@ private:
   unsigned int id;
 
 public:
-  Kernel::FT angle_begin; // TODO remove
-  Kernel::FT angle_end;   // TODO remove
+  // Instead of calculating an actual angle, we represent the angle as a vector
+  Point angle_begin;
+  Point angle_end;
   Halfedge_const_handle top_edge;
   Halfedge_const_handle bottom_edge;
   Vertex_const_handle left_vertex;
@@ -342,85 +343,119 @@ static void create_arrangement(Arrangement &arr,
 
   std::set<Face_const_handle> faces;
   for (auto v = arr.vertices_begin(); v != arr.vertices_end(); ++v)
-    foreach_vertex_edge(v, [&faces](auto &e) { faces.insert(e->face()); });
+    foreach_vertex_edge(v,
+                        [&faces](const auto &e) { faces.insert(e->face()); });
   if (faces.size() != 2)
     throw std::invalid_argument("Invalid faces number, expected 2.");
-  // Expecting one bounded and one unbounded faces. The bounded is the interiour
-  // of the room. std::cout << "\t" << face->is_unbounded() << std::endl;
+  // Expecting one bounded and one unbounded faces. The bounded face is the
+  // interiour of the room.
 }
 
 static bool is_free(Face_const_handle face) { return !face->is_unbounded(); }
 
-static Kernel::FT calc_angle(Point source, Point target) {
-  if (source.hx() != target.hx())
-    return (target.hy() - source.hy()) / (target.hx() - source.hx());
-  else
-    return source.hy() > target.hy() ? -10000 : 10000;
-  // TODO #define  numeric_limits<T>::min()
+enum HalfPlaneSide {
+  None, // exactly on plane
+  Left,
+  Right,
+};
+
+enum MinMax {
+  Min,
+  Max,
+};
+
+static int sign(Kernel::FT val) {
+  return (Kernel::FT(0) < val) - (val < Kernel::FT(0));
 }
 
-static void direct_line(Point &p1, Point &p2) {
-  if (p1.hx() != p2.hx()) {
-    if (p1.hx() > p2.hx())
-      std::swap(p1, p2);
-  } else if (p1.hy() > p2.hy())
-    std::swap(p1, p2);
+static enum HalfPlaneSide calc_half_plane_side(const Point &angle,
+                                               const Point &p) {
+  // determinant of vectors
+  int s = sign(angle.hx() * p.hy() - angle.hy() * p.hx());
+  return s == -1 ? HalfPlaneSide::Right
+                 : s == 1 ? HalfPlaneSide::Left : HalfPlaneSide::None;
 }
 
-static void get_source_target(Halfedge_const_handle e, Point &p1, Point &p2) {
-  p1 = e->source()->point();
-  p2 = e->target()->point();
-  direct_line(p1, p2);
-}
+static bool find_edge_relative_to_angle(Vertex_const_handle v,
+                                        const Point &angle,
+                                        enum HalfPlaneSide side,
+                                        enum MinMax min_max,
+                                        Halfedge_const_handle &res) {
+  bool found = false;
+  Halfedge_const_handle best;
+  // DEBUG_PRINT();
+  // std::cout << "Begin V(" << v->point() << ") A(" << angle << ")"
+  //           << (side == HalfPlaneSide::Left ? " Left" : " Right")
+  //           << (min_max == MinMax::Max ? " Max" : " Min") << std::endl;
+  foreach_vertex_edge(
+      v, [&v, &angle, side, min_max, &found, &best](const auto &edge) {
+        // std::cout << "Edge: (" << edge->curve() << ")";
+        // DEBUG_PRINT();
+        auto calc_edge_angle = [&v](const auto &e) {
+          auto target = (e->source() == v ? e->target() : e->source())->point();
+          auto vp = v->point();
+          return Point(target.hx() - vp.hx(), target.hy() - vp.hy());
+        };
+        // DEBUG_PRINT();
+        auto e_angle = calc_edge_angle(edge);
+        // auto s = calc_half_plane_side(angle, e_angle);
+        // std::cout << " angle= (" << e_angle << ") side= "
+        //           << (s == HalfPlaneSide::Left
+        //                   ? "Left"
+        //                   : s == HalfPlaneSide::Right ? "Right" : "None");
 
-static Kernel::FT calc_edge_angle(Halfedge_const_handle e) {
-  auto source = e->source()->point(), target = e->target()->point();
-  direct_line(source, target);
-  return calc_angle(source, target);
+        // DEBUG_PRINT();
+        if (side == calc_half_plane_side(angle, e_angle)) {
+          // DEBUG_PRINT();
+          auto min_max_side = min_max == MinMax::Max ? HalfPlaneSide::Left
+                                                     : HalfPlaneSide::Right;
+          // if (found) {
+          //   s = calc_half_plane_side(calc_edge_angle(best), e_angle);
+          //   std::cout << " angle_side_relative_to_best= "
+          //             << (s == HalfPlaneSide::Left
+          //                     ? "Left"
+          //                     : s == HalfPlaneSide::Right ? "Right" :
+          //                     "None");
+          // } else
+          //   std::cout << " first";
+          if (!found || calc_half_plane_side(calc_edge_angle(best), e_angle) ==
+                            min_max_side) {
+            // DEBUG_PRINT();
+            best = edge;
+            found = true;
+          }
+        }
+        // std::cout << std::endl;h
+        // DEBUG_PRINT();
+      });
+  // DEBUG_PRINT();
+  if (found) {
+    // std::cout << "Best: (" << best->curve() << ")" << std::endl;
+    // DEBUG_PRINT();
+    res = best;
+  }
+  return found;
 }
 
 static bool find_vertex_left_edge_with_min_angle(Vertex_const_handle v,
                                                  Halfedge_const_handle &res) {
-  bool found = false;
-  Halfedge_const_handle best;
-  foreach_vertex_edge(v, [&v, &found, &best](auto &edge) {
-    auto source = edge->source()->point(), target = edge->target()->point();
-    direct_line(source, target);
-    if (source.hx() < v->point().hx()) { // TODO maybe <=
-      if (!found || calc_angle(source, target) < calc_edge_angle(best)) {
-        best = edge;
-        found = true;
-      }
-    }
-  });
-  if (found)
-    res = best;
-  return found;
+  return find_edge_relative_to_angle(v, Point(0, 1), HalfPlaneSide::Left,
+                                     MinMax::Min, res);
 }
 
 static bool find_vertex_left_edge_with_max_angle(Vertex_const_handle v,
                                                  Halfedge_const_handle &res) {
-  bool found = false;
-  Halfedge_const_handle best;
-  foreach_vertex_edge(v, [&v, &found, &best](auto &edge) {
-    auto source = edge->source()->point(), target = edge->target()->point();
-    direct_line(source, target);
-    if (source.hx() < v->point().hx()) { // TODO maybe <=
-      Kernel::FT angle;
-      if (!found ||
-          (angle = calc_angle(source, target)) > calc_edge_angle(best)) {
-        best = edge;
-        found = true;
-      }
-    }
-  });
-  if (found)
-    res = best;
-  return found;
+
+  return find_edge_relative_to_angle(v, Point(0, 1), HalfPlaneSide::Left,
+                                     MinMax::Max, res);
 }
 
-static void update_left_vertex_trapezoid_data(const Trapezoid &trapezoid,
-                                              VertexData &left_v_data) {
+static void update_trapezoid_limiting_vertices_data(
+    const Trapezoid &trapezoid,
+    std::unordered_map<Vertex_const_handle, VertexData> &vtrapezoids) {
+  auto &left_v_data = vtrapezoids[trapezoid.left_vertex];
+  auto &right_v_data = vtrapezoids[trapezoid.right_vertex];
+
   bool left_on_top =
       trapezoid.top_edge->curve().line().has_on(trapezoid.left_vertex->point());
   bool left_on_bottom = trapezoid.bottom_edge->curve().line().has_on(
@@ -429,6 +464,15 @@ static void update_left_vertex_trapezoid_data(const Trapezoid &trapezoid,
     left_v_data.top_right_trapezoid = trapezoid.get_id();
   if (!left_on_bottom || left_on_top)
     left_v_data.bottom_right_trapezoid = trapezoid.get_id();
+
+  bool right_on_top = trapezoid.top_edge->curve().line().has_on(
+      trapezoid.right_vertex->point());
+  bool right_on_bottom = trapezoid.bottom_edge->curve().line().has_on(
+      trapezoid.right_vertex->point());
+  if (!right_on_top || right_on_bottom)
+    right_v_data.top_left_trapezoid = trapezoid.get_id();
+  if (!right_on_bottom || right_on_top)
+    right_v_data.bottom_left_trapezoid = trapezoid.get_id();
 }
 
 static void init_trapezoids_with_regular_vertical_decomposition(
@@ -457,10 +501,7 @@ static void init_trapezoids_with_regular_vertical_decomposition(
                           left_v, v);
       auto t_id = trapezoid.get_id();
       trapezoids[t_id] = trapezoid;
-
-      vtrapezoids[v].top_left_trapezoid = t_id;
-      vtrapezoids[v].bottom_left_trapezoid = t_id;
-      update_left_vertex_trapezoid_data(trapezoid, vtrapezoids[left_v]);
+      update_trapezoid_limiting_vertices_data(trapezoid, vtrapezoids);
 
       most_right_vertex[trapezoid.top_edge] = v;
 
@@ -477,10 +518,7 @@ static void init_trapezoids_with_regular_vertical_decomposition(
       Trapezoid trapezoid(top_edge, bottom_edge, left_v, v);
       auto t_id = trapezoid.get_id();
       trapezoids[t_id] = trapezoid;
-
-      vtrapezoids[v].top_left_trapezoid = t_id;
-      vtrapezoids[v].bottom_left_trapezoid = t_id;
-      update_left_vertex_trapezoid_data(trapezoid, vtrapezoids[left_v]);
+      update_trapezoid_limiting_vertices_data(trapezoid, vtrapezoids);
 
     } else {
       if (v_decomp_data.is_edge_above &&
@@ -496,10 +534,7 @@ static void init_trapezoids_with_regular_vertical_decomposition(
         Trapezoid trapezoid(v_decomp_data.edge_above, bottom_edge, left_v, v);
         auto t_id = trapezoid.get_id();
         trapezoids[t_id] = trapezoid;
-
-        vtrapezoids[v].top_left_trapezoid = t_id;
-        update_left_vertex_trapezoid_data(trapezoid, vtrapezoids[left_v]);
-
+        update_trapezoid_limiting_vertices_data(trapezoid, vtrapezoids);
         most_right_vertex[trapezoid.top_edge] = v;
       }
 
@@ -515,13 +550,11 @@ static void init_trapezoids_with_regular_vertical_decomposition(
         Trapezoid trapezoid(top_edge, v_decomp_data.edge_below, left_v, v);
         auto t_id = trapezoid.get_id();
         trapezoids[t_id] = trapezoid;
-
-        vtrapezoids[v].top_left_trapezoid = t_id;
-        update_left_vertex_trapezoid_data(trapezoid, vtrapezoids[left_v]);
+        update_trapezoid_limiting_vertices_data(trapezoid, vtrapezoids);
       }
     }
 
-    foreach_vertex_edge(v, [&v, &most_right_vertex](auto &edge) {
+    foreach_vertex_edge(v, [&v, &most_right_vertex](const auto &edge) {
       most_right_vertex[edge] = v;
     });
   }
@@ -555,7 +588,32 @@ public:
   Vertex_const_handle v2;
 
   Event(Vertex_const_handle v1, Vertex_const_handle v2) : v1(v1), v2(v2) {}
+
+  Point get_angle_vector() const {
+    const auto &p1 = v1->point(), &p2 = v2->point();
+    return Point(p2.hx() - p1.hx(), p2.hy() - p1.hy());
+  }
 };
+
+static bool get_edge(Vertex_const_handle source, Vertex_const_handle target,
+                     Halfedge_const_handle &res) {
+  bool found;
+  foreach_vertex_edge(source, [&target, &res, &found](const auto &edge) {
+    if (edge->target() == target) {
+      res = edge;
+      found = true;
+    }
+  });
+  return found;
+}
+
+static Kernel::FT calc_angle(Point source, Point target) {
+  if (source.hx() != target.hx())
+    return (target.hy() - source.hy()) / (target.hx() - source.hx());
+  else
+    return source.hy() > target.hy() ? -10000 : 10000;
+  // TODO #define  numeric_limits<T>::min()
+}
 
 static int calc_trapezoids(const std::vector<Segment> &segments) {
   // Create arrangement
@@ -584,8 +642,24 @@ static int calc_trapezoids(const std::vector<Segment> &segments) {
 
   // Sort events by their angle
   sort(events.begin(), events.end(), [](const Event &e1, const Event &e2) {
-    return calc_angle(e1.v2->point(), e1.v1->point()) <
-           calc_angle(e2.v2->point(), e2.v1->point());
+    auto a1 = e1.get_angle_vector(), a2 = e2.get_angle_vector();
+    if (a1 == a2)
+      return false;
+    Point y_axis(0, 1);
+    HalfPlaneSide a1_side = calc_half_plane_side(y_axis, a1);
+    HalfPlaneSide a2_side = calc_half_plane_side(y_axis, a2);
+
+    if (a1_side == HalfPlaneSide::None)
+      return a2_side == HalfPlaneSide::Right ||
+             (a1.hy() >= 0 && a2_side == HalfPlaneSide::None);
+    if (a2_side == HalfPlaneSide::None)
+      return a1_side == HalfPlaneSide::Left && a2.hy() < 0;
+    if (a1_side == HalfPlaneSide::Left)
+      return a2_side == HalfPlaneSide::Right ||
+             calc_half_plane_side(a2, a1) == HalfPlaneSide::Right;
+    // a1_side == HalfPlaneSide::Right
+    return a2_side == HalfPlaneSide::Right &&
+           calc_half_plane_side(a2, a1) == HalfPlaneSide::Right;
   });
 
   DEBUG_PRINT();
@@ -594,7 +668,7 @@ static int calc_trapezoids(const std::vector<Segment> &segments) {
     auto closest_edge_orig = *ray_edges->begin();
 
     // Maintaine ray_edges
-    foreach_vertex_edge(event.v1, [&ray_edges](auto &edge) {
+    foreach_vertex_edge(event.v1, [&ray_edges](const auto &edge) {
       if (ray_edges->find(edge) == ray_edges->end())
         ray_edges->insert(edge);
       else
@@ -605,43 +679,61 @@ static int calc_trapezoids(const std::vector<Segment> &segments) {
     auto closest_edge = *ray_edges->begin();
     if (closest_edge_orig == closest_edge)
       continue; // Closest edge didn't changed
+    if (is_free(closest_edge->face()))
+      continue; // The ray is in non free area of the room
 
-    // auto current_angle = event.angle;
-    auto bottom_event_vertex_data = &vtrapezoids.find(event.v1)->second;
-    auto top_event_vertex_data = &vtrapezoids.find(event.v2)->second;
-    auto left_trapezoid_id = top_event_vertex_data->bottom_left_trapezoid;
-    auto mid_trapezoid_id = bottom_event_vertex_data->top_left_trapezoid;
-    auto right_trapezoid_id = bottom_event_vertex_data->top_right_trapezoid;
+    auto current_angle = event.get_angle_vector();
+    VertexData &v1_data = vtrapezoids.find(event.v1)->second;
+    VertexData &v2_data = vtrapezoids.find(event.v2)->second;
+    auto left_trapezoid_id = v2_data.bottom_left_trapezoid;
+    auto mid_trapezoid_id = v1_data.top_left_trapezoid;
+    auto right_trapezoid_id = v1_data.top_right_trapezoid;
 
-    DEBUG_PRINT();
-    if (mid_trapezoid_id != INVALID_TRAPEZOID_ID) {
-      Trapezoid &mid = trapezoids[mid_trapezoid_id];
-      // mid->angle_end = current_angle;
-      // Trapezoid trapezoid(closest_edge, right.bottom_edge, event.v1,
-      // event.v2); trapezoid.angle_begin = current_angle;
-      // TODO
-    }
-    if (left_trapezoid_id != INVALID_TRAPEZOID_ID) {
+    Halfedge_const_handle v1v2_edge;
+    if (get_edge(event.v1, event.v2, v1v2_edge)) {
+      // type 1
+
+    } else {
+      // type 2
+      assert(left_trapezoid_id != INVALID_TRAPEZOID_ID);
+      assert(mid_trapezoid_id != INVALID_TRAPEZOID_ID);
+      assert(right_trapezoid_id != INVALID_TRAPEZOID_ID);
       Trapezoid &left = trapezoids[left_trapezoid_id];
-      // left->angle_end = current_angle;
-      Trapezoid trapezoid(left.top_edge, left.bottom_edge, left.left_vertex,
-                          event.v1);
-      // trapezoid.angle_begin = current_angle;
-      // TODO
-    }
-    if (right_trapezoid_id != INVALID_TRAPEZOID_ID) {
+      Trapezoid &mid = trapezoids[mid_trapezoid_id];
       Trapezoid &right = trapezoids[right_trapezoid_id];
-      // right->angle_end = current_angle;
-      Trapezoid trapezoid(right.top_edge, right.bottom_edge, event.v2,
+
+      assert(left.right_vertex == event.v2);
+      assert(mid.left_vertex == event.v2);
+      assert(mid.right_vertex == event.v1);
+      assert(right.left_vertex == event.v1);
+
+      DEBUG_PRINT();
+      left.angle_end = current_angle;
+      Trapezoid left_new(left.top_edge, left.bottom_edge, left.left_vertex,
+                         event.v1);
+      left_new.angle_begin = current_angle;
+      trapezoids[left_new.get_id()] = left_new;
+      update_trapezoid_limiting_vertices_data(left_new, vtrapezoids);
+
+      DEBUG_PRINT();
+      mid.angle_end = current_angle;
+      Halfedge_const_handle bottom_edge;
+      if (!find_edge_relative_to_angle(event.v1, current_angle,
+                                       HalfPlaneSide::Right, MinMax::Max,
+                                       bottom_edge))
+        bottom_edge = trapezoids[right_trapezoid_id].bottom_edge;
+      Trapezoid mid_new(closest_edge, bottom_edge, event.v1, event.v2);
+      mid_new.angle_begin = current_angle;
+      trapezoids[mid_new.get_id()] = mid_new;
+      update_trapezoid_limiting_vertices_data(mid_new, vtrapezoids);
+
+      DEBUG_PRINT();
+      right.angle_end = current_angle;
+      Trapezoid right_new(right.top_edge, right.bottom_edge, event.v2,
                           right.right_vertex);
-      // trapezoid.angle_begin = current_angle;
-      trapezoids[trapezoid.get_id()] = trapezoid;
-      // TODO get a pointer to the inserted element
-      // v2_data->bottom_right_trapezoid = &trapezoids[last_elm];
-      // TODO check if left vertex is top or bottom
-      // vtrapezoids.find(nt.right_vertex)->second.top_left_trapezoid =
-      // &trapezoids[last_elm];
-      // TODO check if right vertex is top or bottom
+      right_new.angle_begin = current_angle;
+      trapezoids[right_new.get_id()] = right_new;
+      update_trapezoid_limiting_vertices_data(right_new, vtrapezoids);
     }
   }
 
