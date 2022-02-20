@@ -1,26 +1,24 @@
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Arr_vertical_decomposition_2.h>
 #include <CGAL/Arrangement_2.h>
-#include <CGAL/Object.h>
-#include <CGAL/Polygon_vertical_decomposition_2.h>
-#include <CGAL/Rotational_sweep_visibility_2.h>
+#include <CGAL/General_polygon_2.h>
 #include <CGAL/Visibility_2/visibility_utils.h>
-#include <CGAL/basic.h>
 #include <boost/geometry.hpp>
 #include <iostream>
+#include <memory>
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
 typedef CGAL::Segment_2<Kernel> Segment;
 typedef Kernel::Point_2 Point;
-typedef Kernel::Direction_2 Direction_2;
+typedef Kernel::Line_2 Line;
+typedef Kernel::Direction_2 Direction;
 typedef CGAL::Arr_segment_traits_2<Kernel> Traits;
 typedef CGAL::Arrangement_2<Traits> Arrangement;
+typedef CGAL::General_polygon_2<Traits> Polygon;
 
 typedef Arrangement::Vertex_const_handle Vertex_const_handle;
 typedef Arrangement::Halfedge_const_handle Halfedge_const_handle;
 typedef Arrangement::Face_const_handle Face_const_handle;
-
-typedef CGAL::Rotational_sweep_visibility_2<Arrangement> Rotational_sweep;
 
 #define DEBUG_PRINT_EN 1
 #define DEBUG_PRINT(args)                                                                                              \
@@ -227,7 +225,7 @@ class Closer_edge : public CGAL::cpp98::binary_function<Halfedge_const_handle, H
 	}
 };
 
-static const Direction_2 ANGLE_NONE(0, 0);
+static const Direction ANGLE_NONE(0, 0);
 
 typedef unsigned int TrapezoidID;
 
@@ -236,8 +234,8 @@ class Trapezoid {
 	TrapezoidID id;
 
   public:
-	Direction_2 angle_begin;
-	Direction_2 angle_end;
+	Direction angle_begin;
+	Direction angle_end;
 	Halfedge_const_handle top_edge;
 	Halfedge_const_handle bottom_edge;
 	Vertex_const_handle left_vertex;
@@ -299,9 +297,19 @@ template <typename OP> static void foreach_vertex_edge(Vertex_const_handle v, OP
 	}
 }
 
-static void create_arrangement(Arrangement &arr, const std::vector<Segment> &segments) {
-	if (segments.size() == 0)
-		throw std::invalid_argument("no segments provided");
+static bool is_free(Face_const_handle face) { return !face->is_unbounded(); }
+
+static void create_arrangement(Arrangement &arr, const std::vector<Point> &points) {
+	if (points.size() == 0)
+		throw std::invalid_argument("no points provided");
+
+	std::vector<Segment> segments;
+	for (unsigned int i = 0; i < points.size(); i++) {
+		unsigned int j = i != points.size() - 1 ? i + 1 : 0;
+		Segment s(points[i], points[j]);
+		segments.push_back(s);
+	}
+
 	Point prev = segments[0].start();
 	for (unsigned int i = 0; i < segments.size(); i++) {
 		auto &segment = segments[i];
@@ -327,27 +335,26 @@ static void create_arrangement(Arrangement &arr, const std::vector<Segment> &seg
 
 	insert(arr, segments.begin(), segments.end());
 
+	// Validate all vertices have a degree of 2
+	for (auto v = arr.vertices_begin(); v != arr.vertices_end(); ++v)
+		if (v->degree() != 2)
+			throw std::invalid_argument("Invalid vertex degree, expected 2.");
+
+	// Expecting one bounded and one unbounded faces. The bounded face is the
+	// interiour of the room.
 	std::set<Face_const_handle> faces;
 	for (auto v = arr.vertices_begin(); v != arr.vertices_end(); ++v)
 		foreach_vertex_edge(v, [&faces](const auto &e) { faces.insert(e->face()); });
 	if (faces.size() != 2)
 		throw std::invalid_argument("Invalid faces number, expected 2.");
-	// Expecting one bounded and one unbounded faces. The bounded face is the
-	// interiour of the room.
 
-	// for (auto v = arr.vertices_begin(); v != arr.vertices_end(); ++v) {
-	// 	foreach_vertex_edge(v, [](const auto &e) {
-	// 		std::cout << e->source()->point() << " " << e->target()->point() << " "
-	// 				  << (!e->face()->is_unbounded() ? "in" : "out") << std::endl;
-	// 		auto e2 = e->twin();
-	// 		std::cout << e2->source()->point() << " " << e2->target()->point() << " "
-	// 				  << (!e2->face()->is_unbounded() ? "in" : "out") << std::endl;
-	// 	});
-	// }
-	// edge->face() is the face that is LEFT relative to the edge direction.
+	// Validate no zero width edges exists
+	for (auto v = arr.vertices_begin(); v != arr.vertices_end(); ++v)
+		foreach_vertex_edge(v, [](const auto &e) {
+			if (is_free(e->face()) ^ is_free(e->face()))
+				throw std::invalid_argument("zero width edges are not supported");
+		});
 }
-
-static bool is_free(Face_const_handle face) { return !face->is_unbounded(); }
 
 enum HalfPlaneSide {
 	None, // exactly on plane
@@ -362,13 +369,13 @@ enum MinMax {
 
 static int sign(Kernel::FT val) { return (Kernel::FT(0) < val) - (val < Kernel::FT(0)); }
 
-static enum HalfPlaneSide calc_half_plane_side(const Direction_2 &angle, const Direction_2 &p) {
+static enum HalfPlaneSide calc_half_plane_side(const Direction &angle, const Direction &p) {
 	// determinant of vectors
 	int s = sign(angle.dx() * p.dy() - angle.dy() * p.dx());
 	return s == -1 ? HalfPlaneSide::Right : s == 1 ? HalfPlaneSide::Left : HalfPlaneSide::None;
 }
 
-static bool find_edge_relative_to_angle(Vertex_const_handle v, const Direction_2 &angle, enum HalfPlaneSide side,
+static bool find_edge_relative_to_angle(Vertex_const_handle v, const Direction &angle, enum HalfPlaneSide side,
 										enum MinMax min_max, Halfedge_const_handle &res) {
 	bool found = false;
 	Halfedge_const_handle best;
@@ -376,7 +383,7 @@ static bool find_edge_relative_to_angle(Vertex_const_handle v, const Direction_2
 		auto calc_edge_angle = [&v](const auto &e) {
 			auto target = (e->source() == v ? e->target() : e->source())->point();
 			auto vp = v->point();
-			return Direction_2(target.hx() - vp.hx(), target.hy() - vp.hy());
+			return Direction(target.hx() - vp.hx(), target.hy() - vp.hy());
 		};
 		auto e_angle = calc_edge_angle(edge);
 
@@ -394,11 +401,15 @@ static bool find_edge_relative_to_angle(Vertex_const_handle v, const Direction_2
 }
 
 static bool find_vertex_left_edge_with_min_angle(Vertex_const_handle v, Halfedge_const_handle &res) {
-	return find_edge_relative_to_angle(v, Direction_2(0, 1), HalfPlaneSide::Left, MinMax::Min, res);
+	return find_edge_relative_to_angle(v, Direction(0, 1), HalfPlaneSide::Left, MinMax::Min, res);
 }
 
 static bool find_vertex_left_edge_with_max_angle(Vertex_const_handle v, Halfedge_const_handle &res) {
-	return find_edge_relative_to_angle(v, Direction_2(0, 1), HalfPlaneSide::Left, MinMax::Max, res);
+	return find_edge_relative_to_angle(v, Direction(0, 1), HalfPlaneSide::Left, MinMax::Max, res);
+}
+
+static bool is_same_direction(Direction d1, Direction d2) {
+	return calc_half_plane_side(d1, d2) == HalfPlaneSide::None && d1.vector() * d2.vector() > 0;
 }
 
 class Event {
@@ -408,9 +419,9 @@ class Event {
 
 	Event(Vertex_const_handle v1, Vertex_const_handle v2) : v1(v1), v2(v2) {}
 
-	Direction_2 get_angle_vector() const {
+	Direction get_angle_vector() const {
 		const auto &p1 = v1->point(), &p2 = v2->point();
-		return Direction_2(p2.hx() - p1.hx(), p2.hy() - p1.hy());
+		return Direction(p2.hx() - p1.hx(), p2.hy() - p1.hy());
 	}
 };
 
@@ -423,14 +434,18 @@ class Trapezoider {
 	TrapezoidID trapezoids_id_counter;
 
   public:
-	Trapezoider(const std::vector<Segment> &segments) : trapezoids_id_counter(0) { create_arrangement(arr, segments); }
+	Trapezoider() {}
 
   private:
+	static Halfedge_const_handle direct_edge_free_face(const Halfedge_const_handle &edge) {
+		return is_free(edge->face()) ? edge : edge->twin();
+	}
+
 	TrapezoidID create_trapezoid(const Halfedge_const_handle &top_edge, const Halfedge_const_handle &bottom_edge,
 								 const Vertex_const_handle &left_vertex, const Vertex_const_handle &right_vertex) {
-
 		TrapezoidID t_id = ++trapezoids_id_counter;
-		Trapezoid trapezoid(t_id, top_edge, bottom_edge, left_vertex, right_vertex);
+		auto top_edge_d = direct_edge_free_face(top_edge), bottom_edge_d = direct_edge_free_face(bottom_edge);
+		Trapezoid trapezoid(t_id, top_edge_d, bottom_edge, left_vertex, right_vertex);
 		trapezoids[t_id] = trapezoid;
 
 		auto &left_v_data = vertices_data[trapezoid.left_vertex];
@@ -554,6 +569,7 @@ class Trapezoider {
 	}
 
 	static bool get_edge(Vertex_const_handle source, Vertex_const_handle target, Halfedge_const_handle &res) {
+		// TODO better to implement this as hashmap
 		bool found = false;
 		foreach_vertex_edge(source, [&target, &res, &found](const auto &edge) {
 			if (edge->target() == target) {
@@ -564,7 +580,7 @@ class Trapezoider {
 		return found;
 	}
 
-	static int get_event_angle(const Event &event) {
+	static int _debug_get_event_angle(const Event &event) {
 		double v1x = event.v1->point().hx().exact().convert_to<double>();
 		double v1y = event.v1->point().hy().exact().convert_to<double>();
 		double v2x = event.v2->point().hx().exact().convert_to<double>();
@@ -572,7 +588,7 @@ class Trapezoider {
 		return (int)(atan2(v2y - v1y, v2x - v1x) * 180 / M_PI);
 	}
 
-	static const char *plane_side_tostr(HalfPlaneSide s) {
+	static const char *_debug_plane_side_tostr(HalfPlaneSide s) {
 		switch (s) {
 		case HalfPlaneSide::Left:
 			return "left";
@@ -585,7 +601,7 @@ class Trapezoider {
 		}
 	}
 
-	static const char *print_trapezoid(const Trapezoid &trapezoid) {
+	static const char *_debug_print_trapezoid(const Trapezoid &trapezoid) {
 		DEBUG_PRINT("Top(" << trapezoid.top_edge->curve() << ") Bottom(" << trapezoid.bottom_edge->curve() << ") Left("
 						   << trapezoid.left_vertex->point() << ") Right(" << trapezoid.right_vertex->point() << ")");
 		return "";
@@ -605,7 +621,13 @@ class Trapezoider {
 			auto a1 = e1.get_angle_vector(), a2 = e2.get_angle_vector();
 			if (a1 == a2)
 				return false;
-			Direction_2 y_axis(0, 1);
+
+			if (is_same_direction(a1, a2)) {
+				// Both are exactly on the same angle, consider further vertices first
+				return a1.dx() * a1.dx() + a1.dy() * a1.dy() > a2.dx() * a2.dx() + a2.dy() * a2.dy();
+			}
+
+			Direction y_axis(0, 1);
 			HalfPlaneSide a1_side = calc_half_plane_side(y_axis, a1);
 			HalfPlaneSide a2_side = calc_half_plane_side(y_axis, a2);
 
@@ -623,7 +645,7 @@ class Trapezoider {
 		DEBUG_PRINT("Events:" << std::endl);
 		for (const auto &event : events)
 			DEBUG_PRINT("\t(" << event.v1->point() << ") (" << event.v2->point()
-							  << ") angle= " << get_event_angle(event) << std::endl);
+							  << ") angle= " << _debug_get_event_angle(event) << std::endl);
 
 		for (auto &event : events) {
 			assert(vertices_data.find(event.v1) != vertices_data.end());
@@ -639,7 +661,7 @@ class Trapezoider {
 			std::vector<Halfedge_const_handle> edges_to_remove;
 			foreach_vertex_edge(event.v2, [ray, &edges_to_insert, &edges_to_remove](const auto &edge) {
 				auto s = edge->source()->point(), t = edge->target()->point();
-				Direction_2 edge_direction(t.hx() - s.hx(), t.hy() - s.hy());
+				Direction edge_direction(t.hx() - s.hx(), t.hy() - s.hy());
 
 				if (calc_half_plane_side(ray, edge_direction) == HalfPlaneSide::Left)
 					edges_to_insert.push_back(edge);
@@ -676,16 +698,16 @@ class Trapezoider {
 					mid.angle_end = current_angle;
 					finalize_trapezoid(mid);
 
-					DEBUG_PRINT("old left: " << print_trapezoid(left) << std::endl);
+					DEBUG_PRINT("old left: " << _debug_print_trapezoid(left) << std::endl);
 					auto &left_new =
 						trapezoids[create_trapezoid(left.top_edge, left.bottom_edge, left.left_vertex, event.v1)];
 					left_new.angle_begin = current_angle;
-					DEBUG_PRINT("new left: " << print_trapezoid(left_new) << std::endl);
+					DEBUG_PRINT("new left: " << _debug_print_trapezoid(left_new) << std::endl);
 
-					DEBUG_PRINT("old mid: " << print_trapezoid(mid) << std::endl);
+					DEBUG_PRINT("old mid: " << _debug_print_trapezoid(mid) << std::endl);
 					auto &mid_new = trapezoids[create_trapezoid(left.top_edge, v1v2_edge, event.v1, event.v2)];
 					mid_new.angle_begin = current_angle;
-					DEBUG_PRINT("new mid: " << print_trapezoid(mid_new) << std::endl);
+					DEBUG_PRINT("new mid: " << _debug_print_trapezoid(mid_new) << std::endl);
 
 				} else {
 					assert(v1_data.top_left_trapezoid != INVALID_TRAPEZOID_ID);
@@ -702,16 +724,16 @@ class Trapezoider {
 					right.angle_end = current_angle;
 					finalize_trapezoid(right);
 
-					DEBUG_PRINT("old mid: " << print_trapezoid(mid) << std::endl);
+					DEBUG_PRINT("old mid: " << _debug_print_trapezoid(mid) << std::endl);
 					auto &mid_new = trapezoids[create_trapezoid(v1v2_edge, right.bottom_edge, event.v1, event.v2)];
 					mid_new.angle_begin = current_angle;
-					DEBUG_PRINT("new mid: " << print_trapezoid(mid_new) << std::endl);
+					DEBUG_PRINT("new mid: " << _debug_print_trapezoid(mid_new) << std::endl);
 
-					DEBUG_PRINT("old right: " << print_trapezoid(right) << std::endl);
+					DEBUG_PRINT("old right: " << _debug_print_trapezoid(right) << std::endl);
 					auto &right_new =
 						trapezoids[create_trapezoid(right.top_edge, right.bottom_edge, event.v2, right.right_vertex)];
 					right_new.angle_begin = current_angle;
-					DEBUG_PRINT("new right: " << print_trapezoid(right_new) << std::endl);
+					DEBUG_PRINT("new right: " << _debug_print_trapezoid(right_new) << std::endl);
 				}
 			} else {
 				if (ray_edges.size() == 0)
@@ -747,26 +769,26 @@ class Trapezoider {
 				right.angle_end = current_angle;
 				finalize_trapezoid(right);
 
-				DEBUG_PRINT("old left: " << print_trapezoid(left) << std::endl);
+				DEBUG_PRINT("old left: " << _debug_print_trapezoid(left) << std::endl);
 				auto &left_new =
 					trapezoids[create_trapezoid(left.top_edge, left.bottom_edge, left.left_vertex, event.v1)];
 				left_new.angle_begin = current_angle;
-				DEBUG_PRINT("new left: " << print_trapezoid(left_new) << std::endl);
+				DEBUG_PRINT("new left: " << _debug_print_trapezoid(left_new) << std::endl);
 
-				DEBUG_PRINT("old mid: " << print_trapezoid(mid) << std::endl);
+				DEBUG_PRINT("old mid: " << _debug_print_trapezoid(mid) << std::endl);
 				Halfedge_const_handle bottom_edge;
 				if (!find_edge_relative_to_angle(event.v1, current_angle, HalfPlaneSide::Right, MinMax::Max,
 												 bottom_edge))
 					bottom_edge = right.bottom_edge;
 				auto &mid_new = trapezoids[create_trapezoid(left.top_edge, bottom_edge, event.v1, event.v2)];
 				mid_new.angle_begin = current_angle;
-				DEBUG_PRINT("new mid: " << print_trapezoid(mid_new) << std::endl);
+				DEBUG_PRINT("new mid: " << _debug_print_trapezoid(mid_new) << std::endl);
 
-				DEBUG_PRINT("old right: " << print_trapezoid(right) << std::endl);
+				DEBUG_PRINT("old right: " << _debug_print_trapezoid(right) << std::endl);
 				auto &right_new =
 					trapezoids[create_trapezoid(right.top_edge, right.bottom_edge, event.v2, right.right_vertex)];
 				right_new.angle_begin = current_angle;
-				DEBUG_PRINT("new right: " << print_trapezoid(right_new) << std::endl);
+				DEBUG_PRINT("new right: " << _debug_print_trapezoid(right_new) << std::endl);
 			}
 		}
 
@@ -790,8 +812,8 @@ class Trapezoider {
 			auto &trapezoid = trapezoids[p.second];
 			assert(no_end_ts.find(v) != no_end_ts.end());
 			auto &other = trapezoids[no_end_ts[v]];
-			DEBUG_PRINT("\tT" << trapezoid.get_id() << " with T" << other.get_id() << ": " << print_trapezoid(trapezoid)
-							  << std::endl);
+			DEBUG_PRINT("\tT" << trapezoid.get_id() << " with T" << other.get_id() << ": "
+							  << _debug_print_trapezoid(trapezoid) << std::endl);
 			assert(undirected_eq(trapezoid.top_edge, other.top_edge));
 			assert(undirected_eq(trapezoid.bottom_edge, other.bottom_edge));
 			assert(trapezoid.left_vertex == other.left_vertex);
@@ -799,12 +821,27 @@ class Trapezoider {
 			trapezoid.angle_begin = other.angle_begin;
 			trapezoids.erase(other.get_id());
 		}
+
+		// Remove trapezoids that start and finish at the same angle
+		std::vector<TrapezoidID> empty_trapezoids;
+		for (const auto &p : trapezoids) {
+			const auto &trapezoid = p.second;
+			if (is_same_direction(trapezoid.angle_begin, trapezoid.angle_end))
+				empty_trapezoids.push_back(p.first);
+		}
+		for (auto empty_trapezoid : empty_trapezoids)
+			trapezoids.erase(empty_trapezoid);
 	}
 
   public:
-	void calc_trapezoids(std::vector<Trapezoid> &res) {
+	template <typename Consumer> void calc_trapezoids(const std::vector<Point> &points, Consumer result_consumer) {
 		trapezoids.clear();
 		vertices_data.clear();
+		trapezoids_id_counter = 0;
+
+		arr.clear();
+		create_arrangement(arr, points);
+
 		for (auto v = arr.vertices_begin(); v != arr.vertices_end(); ++v)
 			vertices_data[v] = VertexData(v->point(), arr.geometry_traits());
 
@@ -823,47 +860,58 @@ class Trapezoider {
 			int angle_begin = (int)(atan2(begin_y, begin_x) * 180 / M_PI);
 			int angle_end = (int)(atan2(end_y, end_x) * 180 / M_PI);
 			DEBUG_PRINT("(" << angle_begin << ", " << angle_end << ")");
-			DEBUG_PRINT(" " << print_trapezoid(trapezoid) << std::endl);
+			DEBUG_PRINT(" " << _debug_print_trapezoid(trapezoid) << std::endl);
 		}
 
 		for (const auto &p : trapezoids)
-			res.push_back(p.second);
+			result_consumer(p.second);
 	}
 };
 
-typedef boost::geometry::model::point<Kernel::FT, 1, boost::geometry::cs::cartesian> TrapezoidRTreePoint;
-typedef boost::geometry::model::box<TrapezoidRTreePoint> TrapezoidRTreeSegment;
-typedef boost::geometry::index::linear<3> TrapezoidRTreeParams;
-typedef std::pair<TrapezoidRTreeSegment, TrapezoidID> TrapezoidRTreeValue;
-typedef boost::geometry::index::rtree<TrapezoidRTreeValue, TrapezoidRTreeParams> TrapezoidRTree;
-
-static TrapezoidRTreeSegment calc_trapezoid_rtree_segment(const Trapezoid &trapezoid) {
-	TrapezoidRTreePoint min(trapezoid.opening_min.exact().convert_to<double>());
-	TrapezoidRTreePoint max(trapezoid.opening_max.exact().convert_to<double>());
-	return TrapezoidRTreeSegment(min, max);
+static Kernel::FT sqrt(Kernel::FT x) {
+	// TODO this function losses precision, maybe can use CGAL::Algebraic_structure_traits<Kernel::FT>::Sqrt
+	return std::sqrt(x.exact().convert_to<double>());
 }
+
+template <typename _Vector> static _Vector normalize(_Vector v) {
+	Kernel::FT norm = sqrt(v.squared_length());
+	return norm > 1e-30 ? v / norm : v;
+}
+
+#define ARC_APPX_POINTS_NUM 100
+#define CONCHOID_APPX_POINTS_NUM 100
 
 class Localizator {
   private:
+	typedef boost::geometry::model::point<Kernel::FT, 1, boost::geometry::cs::cartesian> TrapezoidRTreePoint;
+	typedef boost::geometry::model::box<TrapezoidRTreePoint> TrapezoidRTreeSegment;
+	typedef boost::geometry::index::linear<3> TrapezoidRTreeParams;
+	typedef std::pair<TrapezoidRTreeSegment, TrapezoidID> TrapezoidRTreeValue;
+	typedef boost::geometry::index::rtree<TrapezoidRTreeValue, TrapezoidRTreeParams> TrapezoidRTree;
+
+	Trapezoider trapezoider;
 	std::map<TrapezoidID, Trapezoid> trapezoids;
 	std::vector<TrapezoidID> sorted_by_max;
 	TrapezoidRTree rtree;
 
   public:
-	Localizator(const std::vector<Trapezoid> &ts) {
+	Localizator() {}
+
+	void init(const std::vector<Point> &points) {
+		trapezoids.clear();
+		sorted_by_max.clear();
+		rtree.clear();
+
+		trapezoider.calc_trapezoids(points, [this](const auto &t) { auto &trapezoid = trapezoids[t.get_id()] = t; });
+
 		DEBUG_PRINT("Trapezoids openings:" << std::endl);
-		for (const Trapezoid &t : ts) {
-			auto &trapezoid = trapezoids[t.get_id()] = t;
-			trapezoid.opening_min = calc_min_opening(t);
-			trapezoid.opening_max = calc_max_opening(t);
+		for (auto &t : trapezoids) {
+			auto &trapezoid = t.second;
+			trapezoid.opening_min = calc_min_opening(trapezoid);
+			trapezoid.opening_max = calc_max_opening(trapezoid);
 			DEBUG_PRINT("\tT" << trapezoid.get_id() << " [" << trapezoid.opening_min << ", " << trapezoid.opening_max
 							  << "]" << std::endl);
 		}
-	}
-
-	void init() {
-		sorted_by_max.clear();
-		rtree.clear();
 
 		for (const auto &trapezoid : trapezoids)
 			sorted_by_max.push_back(trapezoid.first);
@@ -881,7 +929,13 @@ class Localizator {
 			rtree.insert(TrapezoidRTreeValue(calc_trapezoid_rtree_segment(trapezoid.second), trapezoid.first));
 	}
 
-	void query(const Kernel::FT &d) {
+	static Point intersection(Line l1, Line l2) {
+		auto res = CGAL::intersection(l1, l2);
+		assert(!res->empty());
+		return boost::get<Point>(res.get());
+	}
+
+	void query(const Kernel::FT &d, std::vector<std::pair<Segment, Polygon>> &res) {
 		auto it = std::lower_bound(
 			sorted_by_max.begin(), sorted_by_max.end(), d,
 			[this](const auto &trapezoid, const auto &d) { return trapezoids[trapezoid].opening_max < d; });
@@ -892,10 +946,102 @@ class Localizator {
 			const auto &trapezoid = trapezoids[*it];
 			DEBUG_PRINT("\tT" << trapezoid.get_id() << " [" << trapezoid.opening_min << ", " << trapezoid.opening_max
 							  << "]" << std::endl);
+
+			// oriante angles relative to the top edge
+			Direction angle_begin = -trapezoid.angle_begin, angle_end = -trapezoid.angle_end;
+			assert(calc_half_plane_side(angle_begin, angle_end) == HalfPlaneSide::Left);
+			auto s = trapezoid.top_edge->source()->point(), t = trapezoid.top_edge->target()->point();
+			Direction top_edge_direction(t.hx() - s.hx(), t.hy() - s.hy());
+			assert(is_free(trapezoid.top_edge->face()));
+			Direction mid_angle = top_edge_direction.perpendicular(CGAL::LEFT_TURN);
+
+			bool begin_before_mid = calc_half_plane_side(mid_angle, angle_begin) == HalfPlaneSide::Right;
+			bool end_after_mid = calc_half_plane_side(mid_angle, angle_end) == HalfPlaneSide::Left;
+			Direction angle_intervals[][2] = {
+				{begin_before_mid ? angle_begin : mid_angle, end_after_mid ? mid_angle : angle_end},
+				{begin_before_mid ? mid_angle : angle_begin, end_after_mid ? angle_end : mid_angle}};
+
+			DEBUG_PRINT("\t\t top edge " << trapezoid.top_edge->curve() << std::endl);
+			DEBUG_PRINT("\t\t mid_angle " << mid_angle << " angle_begin " << angle_begin << " angle_end " << angle_end
+										  << std::endl);
+			DEBUG_PRINT("\t\t begin_before_mid " << begin_before_mid << " end_after_mid " << end_after_mid
+												 << std::endl);
+			DEBUG_PRINT("\t\t angle_intervals [" << angle_intervals[0][0] << ", " << angle_intervals[0][1] << "] ["
+												 << angle_intervals[1][0] << ", " << angle_intervals[1][1] << "]"
+												 << std::endl);
+
+			for (auto &angle_interval : angle_intervals) {
+				auto a_begin = angle_interval[0], a_end = angle_interval[1];
+				if (a_begin == a_end)
+					continue;
+				auto v_begin = normalize(a_begin.vector()), v_end = normalize(a_end.vector());
+				std::vector<Point> left_points, right_points;
+				DEBUG_PRINT("\t\t v_begin(" << v_begin << ") v_end(" << v_end << ")" << std::endl);
+
+				const auto LEFT = 0, RIGHT = 1;
+				for (auto side : {LEFT, RIGHT}) {
+					auto vertex = (side == LEFT ? trapezoid.left_vertex : trapezoid.right_vertex)->point();
+					auto &points = side == LEFT ? left_points : right_points;
+					auto top_edge_line = trapezoid.top_edge->curve().line();
+
+					if (top_edge_line.has_on(vertex)) {
+						DEBUG_PRINT("\t\t" << (side == LEFT ? "left" : "right") << " is arc" << std::endl);
+						Point begin = vertex + v_begin * d;
+						Point end = vertex + v_end * d;
+						double angle_between = std::acos((v_begin * v_end).exact().convert_to<double>());
+
+						points.push_back(begin);
+						for (unsigned int i = 1; i < ARC_APPX_POINTS_NUM; i++) {
+							double a = i * angle_between / ARC_APPX_POINTS_NUM;
+							Direction dir = a_begin.transform(
+								Kernel::Aff_transformation_2(CGAL::Rotation(), std::sin(a), std::cos(a)));
+							points.push_back(Point(vertex + normalize(dir.vector()) * d));
+						}
+						points.push_back(end);
+						DEBUG_PRINT("\t\t\t C(" << vertex << ") B(" << begin << ") E(" << end << ")" << std::endl);
+
+					} else {
+						DEBUG_PRINT("\t\t" << (side == LEFT ? "left" : "right") << " is conchoid" << std::endl);
+						Point begin = intersection(top_edge_line, Line(vertex, a_begin)) + v_begin * d;
+						Point end = intersection(top_edge_line, Line(vertex, a_end)) + v_end * d;
+						double angle_between = std::acos((v_begin * v_end).exact().convert_to<double>());
+
+						points.push_back(begin);
+						for (unsigned int i = 1; i < CONCHOID_APPX_POINTS_NUM; i++) {
+							double a = i * angle_between / CONCHOID_APPX_POINTS_NUM;
+							Direction dir = a_begin.transform(
+								Kernel::Aff_transformation_2(CGAL::Rotation(), std::sin(a), std::cos(a)));
+							points.push_back(intersection(top_edge_line, Line(vertex, dir)) +
+											 normalize(dir.vector()) * d);
+						}
+						points.push_back(end);
+
+						// DEBUG_PRINT("\t\t\t C(" << vertex << ") a= " << a << " b= " << d << " m= " << m << " pm= " <<
+						// pm
+						// 						<< " B(" << begin << ") E(" << end << ")" << std::endl);
+					}
+				}
+
+				Polygon cell;
+				Point prev = left_points.front();
+				for (unsigned int i = 1; i < left_points.size(); i++) {
+					cell.push_back(Segment(prev, left_points[i]));
+					prev = left_points[i];
+				}
+				for (int i = right_points.size() - 1; i >= 0; i--) {
+					cell.push_back(Segment(prev, right_points[i]));
+					prev = right_points[i];
+				}
+				cell.push_back(Segment(prev, left_points.front()));
+
+				Segment top_edge =
+					Segment(trapezoid.top_edge->source()->point(), trapezoid.top_edge->target()->point());
+				res.push_back(std::make_pair(top_edge, cell));
+			}
 		}
 	}
 
-	void query(const Kernel::FT &d1, const Kernel::FT &d2) {
+	void query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement &res) {
 		const Kernel::FT d = d1 + d2;
 		TrapezoidRTreePoint a(d), b(d);
 		TrapezoidRTreeSegment s(a, b);
@@ -911,6 +1057,13 @@ class Localizator {
 		}
 	}
 
+  private:
+	static TrapezoidRTreeSegment calc_trapezoid_rtree_segment(const Trapezoid &trapezoid) {
+		TrapezoidRTreePoint min(trapezoid.opening_min.exact().convert_to<double>());
+		TrapezoidRTreePoint max(trapezoid.opening_max.exact().convert_to<double>());
+		return TrapezoidRTreeSegment(min, max);
+	}
+
 	static Kernel::FT calc_min_opening(const Trapezoid &trapezoid) {
 		return trapezoid.get_id() * 2; // TODO
 	}
@@ -920,30 +1073,18 @@ class Localizator {
 	}
 };
 
-static void create_segments_from_points(const std::vector<Point> &points, std::vector<Segment> &segments) {
-	for (unsigned int i = 0; i < points.size(); i++) {
-		unsigned int j = i != points.size() - 1 ? i + 1 : 0;
-		Segment s(points[i], points[j]);
-		segments.push_back(s);
-	}
-}
-
 int main() {
 	std::vector<Point> points = {
 		Point(1, 1), Point(3, 4), Point(6, 5), Point(5, 3), Point(6, 1),
 	};
-	std::vector<Segment> segments;
-	create_segments_from_points(points, segments);
 
-	Trapezoider trapezoider(segments);
-	std::vector<Trapezoid> trapezoids;
-	trapezoider.calc_trapezoids(trapezoids);
+	Localizator localizator;
+	localizator.init(points);
 
-	Localizator localizator(trapezoids);
-	localizator.init();
-
-	localizator.query(40);
-	localizator.query(30, 31);
+	std::vector<std::pair<Segment, Polygon>> res_q1;
+	localizator.query(40, res_q1);
+	Arrangement res_q2;
+	localizator.query(30, 31, res_q2);
 
 	DEBUG_PRINT("exit code: 0" << std::endl);
 	return 0;
