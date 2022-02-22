@@ -1,7 +1,7 @@
 #include "localizator.h"
 
 
-int main() {
+int test() {
 	std::vector<Point> points = {
 		Point(1, 1), Point(3, 4), Point(6, 5), Point(5, 3), Point(6, 1),
 	};

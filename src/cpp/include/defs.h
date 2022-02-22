@@ -14,11 +14,3 @@ typedef CGAL::General_polygon_2<Traits> Polygon;
 typedef Arrangement::Vertex_const_handle Vertex_const_handle;
 typedef Arrangement::Halfedge_const_handle Halfedge_const_handle;
 typedef Arrangement::Face_const_handle Face_const_handle;
-
-#define DEBUG_PRINT_EN 1
-#define DEBUG_PRINT(args)                                                                                              \
-	do {                                                                                                               \
-		if (DEBUG_PRINT_EN)                                                                                            \
-			std::cout << args;                                                                                         \
-	} while (false)
-#define DEBUG_PRINT_LINE() DEBUG_PRINT("L" << __LINE__ << std::endl)
