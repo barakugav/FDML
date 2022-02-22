@@ -29,14 +29,17 @@ if ( NOT Boost_FOUND )
 endif()
 
 # include for local directory
+include_directories( BEFORE include )
 
 # include for local package
 
+include_directories ( robo_local PUBLIC include/ )
+include_directories ( robo_local PRIVATE src/ )
 
 # Creating entries for target: robo_local
 # ############################
 
-add_executable( robo_local  main.cpp )
+add_executable( robo_local src/trapezoider.cpp src/localizator.cpp src/main.cpp )
 
 add_to_cached_list( CGAL_EXECUTABLE_TARGETS robo_local )
 
