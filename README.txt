@@ -8,3 +8,7 @@ make -C build/release
 
 == CPP execution:
 build/release/robo_local
+
+
+#Python setup:
+install pip install PyQt5
