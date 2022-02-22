@@ -94,6 +94,8 @@ def calc_intersection(s1, s2):
     s1_vertical = s1[0][0] == s1[1][0]
     s2_vertical = s2[0][0] == s2[1][0]
     if s1_vertical and s2_vertical:
+        if s1[0][0] != s2[0][0]:
+            return None
         inter_y = calc_1d_intersection([s1[0][1], s1[1][1]], [s2[0][1], s2[1][1]])
         return None if inter_y is None else [s1[0][0], inter_y]
 
