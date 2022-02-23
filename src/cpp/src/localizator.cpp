@@ -198,5 +198,6 @@ void Localizator::query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement 
 		const auto &trapezoid = trapezoids[rtree_val.second];
 		DEBUG_PRINT("\tT" << trapezoid.get_id() << " [" << trapezoid.opening_min << ", " << trapezoid.opening_max << "]"
 						  << std::endl);
+		// TODO
 	}
 }

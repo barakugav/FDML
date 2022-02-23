@@ -1,12 +1,165 @@
+#!/usr/bin/env python3
+
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../gui/"))
-
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QFileDialog
-from gui_scene_designer import GUI_scene_designer
-from gui import RPolygon, RSegment, RDisc
 import json
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QFileDialog
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gui/"))
+from gui import GUI, MainWindowPlus, RPolygon, RSegment, RDisc
+
+
+class MainWindowSceneDesigner(MainWindowPlus):
+    signal_ctrl_z = pyqtSignal()
+    signal_delete = pyqtSignal()
+    signal_esc = pyqtSignal()
+    signal_drop = pyqtSignal(str)
+
+    def __init__(self, gui):
+        super().__init__(gui)
+
+    # Adjust zoom level/scale on +/- key press
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Plus:
+            self.gui.zoom /= 0.9
+        if event.key() == QtCore.Qt.Key_Minus:
+            self.gui.zoom *= 0.9
+        if event.modifiers() & QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Z:
+            self.signal_ctrl_z.emit()
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.signal_esc.emit()
+        if event.key() == QtCore.Qt.Key_Delete:
+            self.signal_delete.emit()
+        self.gui.redraw()
+
+
+class GUI_scene_designer(GUI):
+    textEdits = []
+
+    def __init__(self):
+        super().__init__()
+        self.zoom = 50.0
+        self.redraw()
+
+    def setupUi(self):
+        self.mainWindow = MainWindowSceneDesigner(self)
+        MainWindow = self.mainWindow
+
+        MainWindow.setStyleSheet("QMainWindow { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
+                                 "#centralwidget { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
+                                 "QLabel { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }")
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName("gridLayout")
+        self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
+        self.graphicsView.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.graphicsView.sizePolicy().hasHeightForWidth())
+        self.graphicsView.setSizePolicy(sizePolicy)
+        self.graphicsView.setObjectName("graphicsView")
+        self.gridLayout.addWidget(self.graphicsView, 3, 1, 1, 1)
+        self.gridLayout_0 = QtWidgets.QGridLayout()
+        self.gridLayout_0.setObjectName("gridLayout_0")
+        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.pushButton_3.setFont(font)
+        self.pushButton_3.setObjectName("pushButton_3")
+        spacerItem = QtWidgets.QSpacerItem(300, 20, QtWidgets.QSizePolicy.MinimumExpanding,
+                                           QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_0.addItem(spacerItem, 33, 0, 1, 1)
+        self.label_1 = QtWidgets.QLabel(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.label_1.setFont(font)
+        self.label_1.setObjectName("label_1")
+        self.gridLayout_0.addWidget(self.label_1, 4, 0, 1, 1)
+        self.lineEdit_0 = QtWidgets.QLineEdit(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.lineEdit_0.setFont(font)
+        self.lineEdit_0.setObjectName("lineEdit_0")
+        self.gridLayout_0.addWidget(self.lineEdit_0, 2, 0, 1, 1)
+        self.lineEdit_1 = QtWidgets.QLineEdit(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.lineEdit_1.setFont(font)
+        self.lineEdit_1.setObjectName("lineEdit_1")
+        self.gridLayout_0.addWidget(self.lineEdit_1, 5, 0, 1, 1)
+        self.label_0 = QtWidgets.QLabel(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.label_0.setFont(font)
+        self.label_0.setObjectName("label_0")
+        self.gridLayout_0.addWidget(self.label_0, 1, 0, 1, 1)
+        self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
+        self.textEdit.setObjectName("textEdit")
+        self.gridLayout_0.addWidget(self.textEdit, 9, 0, 1, 1)
+        self.pushButton_1 = QtWidgets.QPushButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.pushButton_1.setFont(font)
+        self.pushButton_1.setObjectName("pushButton_1")
+        self.gridLayout_0.addWidget(self.pushButton_1, 8, 0, 1, 1)
+        self.label_3 = QtWidgets.QLabel(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.label_3.setFont(font)
+        self.label_3.setObjectName("label_3")
+        self.gridLayout_0.addWidget(self.label_3, 13, 0, 1, 1)
+        self.lineEdit_3 = QtWidgets.QLineEdit(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.lineEdit_3.setFont(font)
+        self.lineEdit_3.setObjectName("lineEdit_3")
+        self.gridLayout_0.addWidget(self.lineEdit_3, 14, 0, 1, 1)
+        self.toolButton_0 = QtWidgets.QToolButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.toolButton_0.setFont(font)
+        self.toolButton_0.setObjectName("toolButton_0")
+        self.gridLayout_0.addWidget(self.toolButton_0, 2, 1, 1, 1)
+        self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.pushButton_7.setFont(font)
+        self.pushButton_7.setObjectName("pushButton_7")
+        self.gridLayout_0.addWidget(self.pushButton_7, 29, 0, 1, 1)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.gridLayout_0.addItem(spacerItem1, 30, 0, 1, 1)
+        self.pushButton_0 = QtWidgets.QPushButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.pushButton_0.setFont(font)
+        self.pushButton_0.setObjectName("pushButton_0")
+        self.gridLayout_0.addWidget(self.pushButton_0, 3, 0, 1, 1)
+        self.gridLayout.addLayout(self.gridLayout_0, 3, 0, 1, 1)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+        self.lineEdits['scene'] = self.lineEdit_0
+        self.lineEdits['saveLocation'] = self.lineEdit_1
+        self.lineEdits['resolution'] = self.lineEdit_3
+        self.pushButtons['load'] = self.pushButton_0
+        self.pushButtons['save'] = self.pushButton_1
+        self.pushButtons['resolution'] = self.pushButton_3
+        self.pushButtons['clear'] = self.pushButton_7
+        self.pushButtons['searchScene'] = self.toolButton_0
+        self.labels['scene'] = self.label_0
+        self.labels['saveLocation'] = self.label_1
+        self.labels['resolution'] = self.label_3
 
 
 colors = [QtCore.Qt.yellow, QtCore.Qt.green, QtCore.Qt.red, QtCore.Qt.magenta,
@@ -42,7 +195,8 @@ def submit_polygon_obstacle(polygon):
         print("invalid polygon!")
         return False
     polygon_obstacles.append(polygon)
-    gui_polygon_obstacles.append(gui.add_polygon(polygon, fill_color=QtCore.Qt.transparent, line_color=QtCore.Qt.blue))
+    gui_polygon_obstacles.append(gui.add_polygon(
+        polygon, fill_color=QtCore.Qt.transparent, line_color=QtCore.Qt.blue))
     return True
 
 
@@ -96,7 +250,8 @@ def calc_intersection(s1, s2):
     if s1_vertical and s2_vertical:
         if s1[0][0] != s2[0][0]:
             return None
-        inter_y = calc_1d_intersection([s1[0][1], s1[1][1]], [s2[0][1], s2[1][1]])
+        inter_y = calc_1d_intersection(
+            [s1[0][1], s1[1][1]], [s2[0][1], s2[1][1]])
         return None if inter_y is None else [s1[0][0], inter_y]
 
     if s2_vertical:
@@ -119,9 +274,10 @@ def calc_intersection(s1, s2):
     if m1 == m2:
         if b1 != b2:
             return None
-        inter_x = calc_1d_intersection([s1[0][0], s1[1][0]], [s2[0][0], s2[1][0]])
+        inter_x = calc_1d_intersection(
+            [s1[0][0], s1[1][0]], [s2[0][0], s2[1][0]])
         return None if inter_x is None else [inter_x, m1 * inter_x + b1]
-        
+
     s1x_low = min(s1[0][0], s1[1][0])
     s1x_high = max(s1[0][0], s1[1][0])
     inter_x = (b2 - b1) / (m1 - m2)
@@ -138,12 +294,14 @@ def is_simple_polygon(points):
         segments.append([points[i - 1], points[i]])
     segments.append([points[len(points) - 1], points[0]])
     for i in range(0, len(segments)):
-        ignore = [i - 1 if i != 0 else len(segments) - 1, i, i + 1 if i != len(segments) - 1 else 0]
+        ignore = [
+            i - 1 if i != 0 else len(segments) - 1, i, i + 1 if i != len(segments) - 1 else 0]
         for j in range(0, len(segments)):
             inter = calc_intersection(segments[i], segments[j])
             if inter != None and j not in ignore:
                 return False
     return True
+
 
 def right_click(x: float, y: float):
     if len(polygon_obstacles) > 0:
@@ -159,10 +317,12 @@ def right_click(x: float, y: float):
             clear_current_polyline()
         return
     polyline.append([x, y])
-    gui_current_polygon_vertices.append(gui.add_disc(POINT_RADIUS, x, y, fill_color=QtCore.Qt.red))
+    gui_current_polygon_vertices.append(gui.add_disc(
+        POINT_RADIUS, x, y, fill_color=QtCore.Qt.red))
     if len(polyline) > 1:
         gui_current_polygon_edges.append(
             gui.add_segment(*polyline[-2], *polyline[-1], line_color=QtCore.Qt.red))
+
 
 def redraw_grid(size):
     for segment in grid:
@@ -198,7 +358,8 @@ def export_scene():
             gui.textEdit.setPlainText("Scene saved to: " + filename)
     except Exception as e:
         print('Failed to write to file', filename + ':', e)
-        gui.textEdit.setPlainText('Failed to write to file ' + filename + ':' + str(e))
+        gui.textEdit.setPlainText(
+            'Failed to write to file ' + filename + ':' + str(e))
 
 
 def load_scene():
@@ -212,14 +373,16 @@ def load_scene():
 
             if 'obstacles' in d:
                 if len(d['obstacles']) > 1:
-                    raise ValueError("only scene with one obstacle are supported")
+                    raise ValueError(
+                        "only scene with one obstacle are supported")
                 for polygon in d['obstacles']:
                     if not submit_polygon_obstacle(polygon):
                         raise ValueError("polygon is not valid")
         gui.textEdit.setPlainText("Scene loaded from: " + filename)
     except Exception as e:
         print('Failed to load from file', filename + ':', e)
-        gui.textEdit.setPlainText('Failed to load file ' + filename + ': ' + str(e))
+        gui.textEdit.setPlainText(
+            'Failed to load file ' + filename + ': ' + str(e))
 
 
 def clear():

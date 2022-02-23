@@ -223,11 +223,6 @@ class Event {
 	}
 };
 
-// Arrangement arr;
-// std::map<TrapezoidID, Trapezoid> trapezoids;
-// std::unordered_map<Vertex_const_handle, VertexData> vertices_data;
-// TrapezoidID trapezoids_id_counter;
-
 static Halfedge_const_handle direct_edge_free_face(const Halfedge_const_handle &edge) {
 	return is_free(edge->face()) ? edge : edge->twin();
 }
