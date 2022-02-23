@@ -20,7 +20,6 @@ void test_localizator() {
 	localizator.query(40, res_q1);
 	Arrangement res_q2;
 	localizator.query(30, 31, res_q2);
-
 }
 
 int main() {

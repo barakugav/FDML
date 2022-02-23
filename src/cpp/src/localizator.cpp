@@ -47,7 +47,7 @@ void Localizator::init(const std::vector<Point> &points) {
 		 [this](const auto &t1, const auto &t2) { return trapezoids[t1].opening_max < trapezoids[t2].opening_max; });
 	DEBUG_PRINT("sorted_by_max:" << std::endl);
 	for (const auto &t_id : sorted_by_max) {
-		const auto &trapezoid = trapezoids[t_id];
+		const Trapezoid &trapezoid = trapezoids[t_id];
 		DEBUG_PRINT("\tT" << trapezoid.get_id() << " [" << trapezoid.opening_min << ", " << trapezoid.opening_max << "]"
 						  << std::endl);
 	}

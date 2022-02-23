@@ -14,8 +14,8 @@ typedef CGAL::Arr_segment_traits_2<Kernel> Traits;
 typedef CGAL::Arrangement_2<Traits> Arrangement;
 typedef CGAL::General_polygon_2<Traits> Polygon;
 
-typedef Arrangement::Vertex_const_handle Vertex_const_handle;
-typedef Arrangement::Halfedge_const_handle Halfedge_const_handle;
-typedef Arrangement::Face_const_handle Face_const_handle;
+typedef Arrangement::Vertex_const_handle Vertex;
+typedef Arrangement::Halfedge_const_handle Halfedge;
+typedef Arrangement::Face_const_handle Face;
 
 #endif

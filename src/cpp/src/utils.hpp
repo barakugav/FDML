@@ -1,6 +1,5 @@
 #include "defs.h"
 
-
 #ifndef __UTILS_HPP__
 #define __UTILS_HPP__
 
@@ -10,10 +9,8 @@
 		if (DEBUG_PRINT_EN)                                                                                            \
 			std::cout << args;                                                                                         \
 	} while (false)
-#define DEBUG_PRINTLN(args) \
-	DEBUG_PRINT(args << std::endl)
-#define DEBUG_PRINT_LINE() \
-	DEBUG_PRINT(__FILE__ << ":" << __LINE__ << std::endl)
+#define DEBUG_PRINTLN(args) DEBUG_PRINT(args << std::endl)
+#define DEBUG_PRINT_LINE() DEBUG_PRINT(__FILE__ << ":" << __LINE__ << std::endl)
 
 enum HalfPlaneSide {
 	None, // exactly on plane
@@ -29,6 +26,6 @@ static enum HalfPlaneSide calc_half_plane_side(const Direction &angle, const Dir
 	return s == -1 ? HalfPlaneSide::Right : s == 1 ? HalfPlaneSide::Left : HalfPlaneSide::None;
 }
 
-static bool is_free(Face_const_handle face) { return !face->is_unbounded(); }
+static bool is_free(Face face) { return !face->is_unbounded(); }
 
 #endif

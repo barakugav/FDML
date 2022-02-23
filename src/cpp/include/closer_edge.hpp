@@ -4,8 +4,8 @@
 #ifndef __CLOSER_EDGE_HPP__
 #define __CLOSER_EDGE_HPP__
 
-class Closer_edge : public CGAL::cpp98::binary_function<Halfedge_const_handle, Halfedge_const_handle, bool> {
-	typedef Halfedge_const_handle EH;
+class Closer_edge : public CGAL::cpp98::binary_function<Halfedge, Halfedge, bool> {
+	typedef Halfedge EH;
 	typedef Arrangement::Geometry_traits_2 Geometry_traits_2;
 	typedef typename Geometry_traits_2::Point_2 Point_2;
 

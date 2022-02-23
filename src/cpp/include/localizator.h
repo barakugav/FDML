@@ -21,7 +21,7 @@ class Localizator {
   public:
 	Localizator() {}
 	void init(const std::vector<Point> &points);
-	void query(const Kernel::FT &d, std::vector< Polygon> &res);
+	void query(const Kernel::FT &d, std::vector<Polygon> &res);
 	void query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement &res);
 };
 
