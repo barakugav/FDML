@@ -10,10 +10,8 @@ project( robo_local )
 find_package( CGAL QUIET COMPONENTS  )
 
 if ( NOT CGAL_FOUND )
-
   message(STATUS "This project requires the CGAL library, and will not be compiled.")
   return()
-
 endif()
 
 
@@ -21,24 +19,18 @@ endif()
 find_package( Boost REQUIRED )
 
 if ( NOT Boost_FOUND )
-
   message(STATUS "This project requires the Boost library, and will not be compiled.")
-
   return()
-
 endif()
 
-# include for local directory
-# include_directories( BEFORE include )
 
+set(CPP_SRC "src/cpp/src")
 
 # == robo_local_daemon ==
 
 include_directories ( robo_local_daemon PRIVATE lib/boost_1_78_0/ )
 include_directories ( robo_local_daemon PUBLIC src/cpp/include/ )
 include_directories ( robo_local_daemon PRIVATE src/cpp/src/ )
-
-set(CPP_SRC "src/cpp/src")
 
 add_executable( robo_local_daemon
   ${CPP_SRC}/trapezoider.cpp
@@ -54,3 +46,14 @@ target_link_libraries(robo_local_daemon PRIVATE boost_system )
 target_link_libraries(robo_local_daemon PRIVATE boost_json )
 target_link_libraries(robo_local_daemon PRIVATE boost_program_options )
 target_link_libraries(robo_local_daemon PRIVATE CGAL::CGAL )
+
+
+# == test ==
+# include_directories ( test PUBLIC src/cpp/include/ )
+# add_executable( test
+#   ${CPP_SRC}/trapezoider.cpp
+#   ${CPP_SRC}/localizator.cpp
+#   ${CPP_SRC}/test.cpp
+# )
+# add_to_cached_list( CGAL_EXECUTABLE_TARGETS test )
+# target_link_libraries(test PRIVATE CGAL::CGAL )

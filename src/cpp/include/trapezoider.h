@@ -1,6 +1,9 @@
 #include "closer_edge.hpp"
 #include "defs.h"
 
+#ifndef __TRAPEZOIDER_H__
+#define __TRAPEZOIDER_H__
+
 typedef unsigned int TrapezoidID;
 
 class Trapezoid {
@@ -53,3 +56,5 @@ class Trapezoider {
 	void init_trapezoids_with_regular_vertical_decomposition();
 	void calc_trapezoids_with_rotational_sweep();
 };
+
+#endif

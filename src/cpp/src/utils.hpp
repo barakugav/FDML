@@ -1,12 +1,19 @@
 #include "defs.h"
 
+
+#ifndef __UTILS_HPP__
+#define __UTILS_HPP__
+
 #define DEBUG_PRINT_EN 1
 #define DEBUG_PRINT(args)                                                                                              \
 	do {                                                                                                               \
 		if (DEBUG_PRINT_EN)                                                                                            \
 			std::cout << args;                                                                                         \
 	} while (false)
-#define DEBUG_PRINT_LINE() DEBUG_PRINT("L" << __LINE__ << std::endl)
+#define DEBUG_PRINTLN(args) \
+	DEBUG_PRINT(args << std::endl)
+#define DEBUG_PRINT_LINE() \
+	DEBUG_PRINT(__FILE__ << ":" << __LINE__ << std::endl)
 
 enum HalfPlaneSide {
 	None, // exactly on plane
@@ -23,3 +30,5 @@ static enum HalfPlaneSide calc_half_plane_side(const Direction &angle, const Dir
 }
 
 static bool is_free(Face_const_handle face) { return !face->is_unbounded(); }
+
+#endif

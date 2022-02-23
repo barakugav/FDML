@@ -2,6 +2,9 @@
 #include <boost/geometry.hpp>
 #include <trapezoider.h>
 
+#ifndef __LOCALIZATOR_H__
+#define __LOCALIZATOR_H__
+
 class Localizator {
   private:
 	typedef boost::geometry::model::point<Kernel::FT, 1, boost::geometry::cs::cartesian> TrapezoidRTreePoint;
@@ -18,6 +21,8 @@ class Localizator {
   public:
 	Localizator() {}
 	void init(const std::vector<Point> &points);
-	void query(const Kernel::FT &d, std::vector<std::pair<Segment, Polygon>> &res);
+	void query(const Kernel::FT &d, std::vector< Polygon> &res);
 	void query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement &res);
 };
+
+#endif

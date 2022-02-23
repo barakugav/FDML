@@ -1,5 +1,6 @@
 #include "json_utils.h"
 #include "localizator.h"
+#include "utils.hpp"
 #include <boost/program_options.hpp>
 #include <stdexcept>
 
@@ -35,49 +36,59 @@ static void parse_cmd_from_file(const std::string &filename, std::vector<std::st
 	split(cmd, ' ', argv);
 }
 
-class LocalizatorDemon {
+class LocalizatorDaemon {
   private:
 	std::string cmd_filename;
 	std::string ack_filename;
-	Localizator localizator;
-	bool is_init;
+	std::unique_ptr<Localizator> localizator;
 
   public:
-	LocalizatorDemon(const std::string &cmd_filename, const std::string &ack_filename)
-		: cmd_filename(cmd_filename), ack_filename(ack_filename), is_init(false) {}
+	LocalizatorDaemon(const std::string &cmd_filename, const std::string &ack_filename)
+		: cmd_filename(cmd_filename), ack_filename(ack_filename), localizator(nullptr) {}
 
 	void load_scene(const std::string &scene_filename) {
-		std::cerr << "# init: " << scene_filename << std::endl;
-		// try {
-		// 	std::vector<Point> points;
-		// 	parse_json_scene(scene_filename, points);
-		// 	localizator.init(points);
-		// 	is_init = true;
-		// } catch (const std::exception &e) {
-		// 	is_init = false;
-		// 	throw e;
-		// }
+		std::cout << "# init: " << scene_filename << std::endl;
+
+		try {
+			if (localizator)
+				localizator.reset();
+
+			std::vector<Point> points;
+			parse_scene_from_json(scene_filename, points);
+			localizator = std::make_unique<Localizator>();
+			localizator->init(points);
+
+		} catch (const std::exception &e) {
+			if (localizator)
+				localizator.reset();
+			std::cerr << e.what() << std::endl;
+			throw e;
+		}
+	}
+
+	void check_state() {
+		if (!localizator)
+			throw std::runtime_error("Localizator wan't initiated");
 	}
 
 	void query(double d, const std::string &outfile) {
-		std::cerr << "# query1: " << d << std::endl;
-		if (!is_init)
-			throw std::runtime_error("Localizator wan't initiated");
-		// std::vector<std::pair<Segment, Polygon>> polygons;
-		// localizator.query(d, polygons);
-		// TODO
+		std::cout << "# query1: " << d << std::endl;
+		check_state();
+
+		std::vector<Polygon> polygons;
+		localizator->query(d, polygons);
+		write_polygons_to_json(polygons, outfile);
 	}
 
 	void query(double d1, double d2, const std::string &outfile) {
-		std::cerr << "# query2: " << d1 << " " << d2 << std::endl;
-		if (!is_init)
-			throw std::runtime_error("Localizator wan't initiated");
-		// TODO
+		std::cout << "# query2: " << d1 << " " << d2 << std::endl;
+		check_state();
+		throw std::runtime_error("not supported"); // TODO
 	}
 
 	void run() {
 		while (true) {
-			if (file_exists(cmd_filename) && !file_exists(ack_filename)) {
+			if (!file_exists(ack_filename) && file_exists(cmd_filename)) {
 				std::vector<std::string> argv;
 				parse_cmd_from_file(cmd_filename, argv);
 				int err = exec_cmd(argv);
@@ -117,40 +128,45 @@ class LocalizatorDemon {
 			argv_arr[0] = "localizator_daemon";
 			for (unsigned int i = 0; i < argv.size(); i++)
 				argv_arr[1 + i] = argv[i].c_str();
-			int agrc = 1 + argv.size();
+			int argc = 1 + argv.size();
 
-			const auto options = boost::program_options::parse_command_line(agrc, argv_arr, desc);
+			const auto options = boost::program_options::parse_command_line(argc, argv_arr, desc);
 			boost::program_options::variables_map vm;
 			boost::program_options::store(options, vm);
 			notify(vm);
 
 			if (vm.count("help"))
 				std::cout << desc << '\n';
-			else if (!vm.count("cmd"))
-				std::cout << "The following flags are required: --cmd" << '\n';
-			else if (cmd == "init") {
-				if (!vm.count("scene"))
-					std::cout << "The following flags are required: --scene" << '\n';
-				else
+			else if (!vm.count("cmd")) {
+				std::cerr << "The following flags are required: --cmd" << '\n';
+				return -1;
+			} else if (cmd == "init") {
+				if (!vm.count("scene")) {
+					std::cerr << "The following flags are required: --scene" << '\n';
+					return -1;
+				} else
 					load_scene(scene_filename);
 			} else if (cmd == "query1") {
-				if (!vm.count("d") || !vm.count("out_filename"))
-					std::cout << "The following flags are required: --d --out" << '\n';
-				else
+				if (!vm.count("d") || !vm.count("out")) {
+					std::cerr << "The following flags are required: --d --out" << '\n';
+					return -1;
+				} else
 					query(d, out_filename);
 			} else if (cmd == "query2") {
-				if (!vm.count("d1") || !vm.count("d2") || !vm.count("out_filename"))
-					std::cout << "The following flags are required: --d1 --d2 --out" << '\n';
-				else
+				if (!vm.count("d1") || !vm.count("d2") || !vm.count("out")) {
+					std::cerr << "The following flags are required: --d1 --d2 --out" << '\n';
+					return -1;
+				} else
 					query(d1, d2, out_filename);
 			}
 			return 0;
 		} catch (const std::exception &ex) {
 			std::cerr << ex.what() << '\n';
-			return -1;
+			return -2;
 		}
 	}
 };
+
 
 int main(int argc, const char *argv[]) {
 	try {
@@ -170,8 +186,8 @@ int main(int argc, const char *argv[]) {
 		else if (!vm.count("cmdfile") || !vm.count("ackfile"))
 			std::cout << "The following flags are required: --cmdfile --ackfile" << '\n';
 		else {
-			LocalizatorDemon demon(cmd_filename, ack_filename);
-			demon.run();
+			LocalizatorDaemon daemon(cmd_filename, ack_filename);
+			daemon.run();
 		}
 		return 0;
 

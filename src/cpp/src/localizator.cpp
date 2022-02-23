@@ -66,7 +66,14 @@ static Point intersection(Line l1, Line l2) {
 	return boost::get<Point>(res.get());
 }
 
-void Localizator::query(const Kernel::FT &d, std::vector<std::pair<Segment, Polygon>> &res) {
+// TODO remove
+static bool is_degenerate(const Segment &s) {
+	Kernel::Kernel kernel;
+	Kernel::Comparison_result res = kernel.compare_xy_2_object()(s.source(), s.target());
+	return res == CGAL::EQUAL;
+}
+
+void Localizator::query(const Kernel::FT &d, std::vector<Polygon> &res) {
 	auto it =
 		std::lower_bound(sorted_by_max.begin(), sorted_by_max.end(), d, [this](const auto &trapezoid, const auto &d) {
 			return trapezoids[trapezoid].opening_max < d;
@@ -120,6 +127,7 @@ void Localizator::query(const Kernel::FT &d, std::vector<std::pair<Segment, Poly
 					Point begin = vertex + v_begin * d;
 					Point end = vertex + v_end * d;
 					double angle_between = std::acos((v_begin * v_end).exact().convert_to<double>());
+					assert(angle_between != 0);
 
 					points.push_back(begin);
 					for (unsigned int i = 1; i < ARC_APPX_POINTS_NUM; i++) {
@@ -155,17 +163,24 @@ void Localizator::query(const Kernel::FT &d, std::vector<std::pair<Segment, Poly
 			Polygon cell;
 			Point prev = left_points.front();
 			for (unsigned int i = 1; i < left_points.size(); i++) {
-				cell.push_back(Segment(prev, left_points[i]));
+				Segment s(prev, left_points[i]);
+				cell.push_back(s);
 				prev = left_points[i];
 			}
-			for (int i = right_points.size() - 1; i >= 0; i--) {
-				cell.push_back(Segment(prev, right_points[i]));
+			if (prev != right_points.back()) {
+				cell.push_back(Segment(prev, left_points.front()));
+				prev = left_points.front();
+			}
+			for (int i = right_points.size() - 2; i >= 0; i--) {
+				Segment s(prev, right_points[i]);
+				cell.push_back(s);
 				prev = right_points[i];
 			}
-			cell.push_back(Segment(prev, left_points.front()));
 
-			Segment top_edge = Segment(trapezoid.top_edge->source()->point(), trapezoid.top_edge->target()->point());
-			res.push_back(std::make_pair(top_edge, cell));
+			if (prev != left_points.front())
+				cell.push_back(Segment(prev, left_points.front()));
+
+			res.push_back(cell);
 		}
 	}
 }

@@ -1,6 +1,8 @@
 #include "defs.h"
 #include <CGAL/Visibility_2/visibility_utils.h>
 
+#ifndef __CLOSER_EDGE_HPP__
+#define __CLOSER_EDGE_HPP__
 
 class Closer_edge : public CGAL::cpp98::binary_function<Halfedge_const_handle, Halfedge_const_handle, bool> {
 	typedef Halfedge_const_handle EH;
@@ -135,3 +137,5 @@ class Closer_edge : public CGAL::cpp98::binary_function<Halfedge_const_handle, H
 		return false;
 	}
 };
+
+#endif
