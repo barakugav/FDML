@@ -4,6 +4,10 @@
 #ifndef __CLOSER_EDGE_HPP__
 #define __CLOSER_EDGE_HPP__
 
+/**
+ * @brief "Less" object used in a map during a rotational sweep to keep track of the closer edges intersection an
+ * imaginary ray comming out of a point 'q'
+ */
 class Closer_edge : public CGAL::cpp98::binary_function<Halfedge, Halfedge, bool> {
 	typedef Halfedge EH;
 	typedef Arrangement::Geometry_traits_2 Geometry_traits_2;

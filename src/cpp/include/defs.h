@@ -13,7 +13,6 @@ typedef Kernel::Direction_2 Direction;
 typedef CGAL::Arr_segment_traits_2<Kernel> Traits;
 typedef CGAL::Arrangement_2<Traits> Arrangement;
 typedef CGAL::Polygon_2<Kernel> Polygon;
-
 typedef Arrangement::Vertex_const_handle Vertex;
 typedef Arrangement::Halfedge_const_handle Halfedge;
 typedef Arrangement::Face_const_handle Face;

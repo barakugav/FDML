@@ -15,28 +15,29 @@ class Localizator:
         self.daemon_id = None
         self.cmdfile = None
         self.ackfile = None
-        self.outfile = None
+        self.querynum = 0
         self.logfile = None
         self.is_running = False
         self.daemon = None
         self.lock = threading.Lock()
 
+    def _working_dir(self):
+        return os.path.join(self.working_dir, str(self.daemon_id))
+
     def run(self, scene_filename):
         with self.lock:
             self.daemon_id = random.randint(0, 2**64)
-            daemon_working_dir = os.path.join(
-                self.working_dir, str(self.daemon_id))
+            working_dir = self._working_dir()
 
-            print(daemon_working_dir)
-            os.makedirs(daemon_working_dir, exist_ok=True)
-            self.cmdfile = os.path.join(daemon_working_dir, ".cmdfile")
-            self.ackfile = os.path.join(daemon_working_dir, ".ackfile")
-            self.outfile = os.path.join(daemon_working_dir, ".outfile")
-            self.logfile = open(os.path.join(daemon_working_dir, ".logfile"), "a")
+            os.makedirs(working_dir, exist_ok=True)
+            self.cmdfile = os.path.join(working_dir, ".cmdfile")
+            self.ackfile = os.path.join(working_dir, ".ackfile")
+            self.logfile = open(os.path.join(
+                working_dir, ".logfile"), "a")
 
             cmd = ["build/debug/robo_local_daemon", "--cmdfile",
-            # cmd = ["C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\build\\win\\Debug\\robo_local_daemon.exe", "--cmdfile",
-                self.cmdfile, "--ackfile", self.ackfile]
+                   # cmd = ["C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\build\\win\\Debug\\robo_local_daemon.exe", "--cmdfile",
+                   self.cmdfile, "--ackfile", self.ackfile]
             self.daemon = subprocess.Popen(
                 cmd, stdout=self.logfile,  stderr=self.logfile)
 
@@ -51,12 +52,11 @@ class Localizator:
             self.daemon_id = None
             self.cmdfile = None
             self.ackfile = None
-            self.outfile = None
             self.logfile.close()
             self.logfile = None
 
     def _exec_cmd(self, cmd):
-        print(cmd) # TODO remove
+        print(cmd)  # TODO remove
         if not self.daemon:
             raise ValueError("invalid state: localizator is not running")
         with open(self.cmdfile, "w") as cmdfile:
@@ -68,37 +68,57 @@ class Localizator:
             ret = int(ackfile.read().strip())
         os.remove(self.ackfile)
         if ret != 0:
-            if os.path.isfile(self.outfile):
-                os.remove(self.outfile)
             raise ValueError(
                 "Error during command execution. Full log can be found at", self.logfile.name)
 
+    def _next_outfile(self):
+        self.querynum += 1
+        return os.path.join(self._working_dir(), ".outfile{}".format(self.querynum))
+
     def query1(self, d):
         with self.lock:
-            self._exec_cmd("--cmd query1 --d {} --out {}".format(d, self.outfile))
+            outfile = self._next_outfile()
             try:
-                with open(self.outfile, "r") as outfile:
-                    data = json.load(outfile)
-                polygons = []
-                polygons_json = data["polygons"]
-                for polygon in polygons_json:
-                    polygons.append(np.array(polygon))
-                return polygons
-            except Exception as e:
-                print("Failed to read result file", self.outfile)
-                raise e
+                self._exec_cmd(
+                    "--cmd query1 --d {} --out {}".format(d, outfile))
+                try:
+                    with open(outfile, "r") as outf:
+                        data = json.load(outf)
+                    polygons = []
+                    polygons_json = data["polygons"]
+                    for polygon in polygons_json:
+                        polygons.append(np.array(polygon))
+                    return polygons
+
+                except Exception as e:
+                    print("Failed to read result file", outfile)
+                    raise e
             finally:
-                if os.path.isfile(self.outfile):
-                    os.remove(self.outfile)
+                if os.path.isfile(outfile):
+                    os.remove(outfile)
 
     def query2(self, d1, d2):
         with self.lock:
-            self._exec_cmd(
-                "--cmd query2 --d1 {} --d2 {} --out {}".format(d1, d2, self.outfile))
+            outfile = self._next_outfile()
+            try:
+                self._exec_cmd(
+                    "--cmd query2 --d1 {} --d2 {} --out {}".format(d1, d2, outfile), outfile)
+                try:
+                    with open(outfile, "r") as outf:
+                        data = json.load(outf)
+                    # TODO
+
+                except Exception as e:
+                    print("Failed to read result file", outfile)
+                    raise e
+            finally:
+                if os.path.isfile(outfile):
+                    os.remove(outfile)
 
 
 if __name__ == "__main__":
-    localizator = Localizator(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".localizator"))
+    localizator = Localizator(os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), ".localizator"))
     localizator.run("scene01.json")
     # localizator.run("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\scene01.json")
     localizator.query1(6)

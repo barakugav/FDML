@@ -5,6 +5,13 @@
 
 static const Direction ANGLE_NONE(0, 0);
 
+/**
+ * The Trapezoid class represent a 3D cell in the (x,y,theta) configuration space. A trapezoid is defined by it's top
+ * and bottom edges, and the right and left vertices and defines its imaginary rotated parallel edges. Each trapezoid
+ * exists in a single angle interval, which we represent by two direction vectors. Along all the possible angles a
+ * trapezoid exists in, we calculate the maximum and minimum openings - the distance from the top and bottom edge within
+ * the trapezoid.
+ */
 class Trapezoid {
   public:
 	typedef unsigned int ID;
@@ -27,7 +34,20 @@ class Trapezoid {
 	Trapezoid(const Trapezoid &) = default;
 	Trapezoid::ID get_id() const;
 
+	/**
+	 * @brief Get the 2D bounds polygon of the trapezoid, which should be intersected with the calculated result area
+	 * during a localization query.
+	 *
+	 * @return Polygon that represent the 2D bounds of the trapezoid
+	 */
 	Polygon get_bounds_2d() const;
+
+	/**
+	 * @brief Calculate the minimum and maximum opening of this trapezoid, and fill the object fields
+	 *
+	 * This function should be called after all of the trapezoid's defining fields (top edge, bottom edge, left vertex,
+	 * right vertex, start angle, end angle) have been assigned.
+	 */
 	void calc_min_max_openings();
 };
 

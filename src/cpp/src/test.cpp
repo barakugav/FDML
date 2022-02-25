@@ -25,6 +25,6 @@ void test_localizator() {
 int main() {
 	test_localizator();
 
-	debug_println("exit code: 0");
+	debugln("exit code: 0");
 	return 0;
 }
