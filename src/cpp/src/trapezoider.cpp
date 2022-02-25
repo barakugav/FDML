@@ -373,10 +373,11 @@ static const char *_debug_plane_side_tostr(HalfPlaneSide s) {
 	}
 }
 
-static const char *_debug_trapezoid(const Trapezoid &trapezoid) {
-	debug("Top(" << trapezoid.top_edge->curve() << ") Bottom(" << trapezoid.bottom_edge->curve() << ") Left("
-				 << trapezoid.left_vertex->point() << ") Right(" << trapezoid.right_vertex->point() << ")");
-	return "";
+static std::string _debug_trapezoid(const Trapezoid &trapezoid) {
+	std::ostringstream oss;
+	oss << "Top(" << trapezoid.top_edge->curve() << ") Bottom(" << trapezoid.bottom_edge->curve() << ") Left("
+				 << trapezoid.left_vertex->point() << ") Right(" << trapezoid.right_vertex->point() << ")";
+	return oss.str();
 }
 
 void Trapezoider::calc_trapezoids_with_rotational_sweep() {

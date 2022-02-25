@@ -30,6 +30,10 @@
 				specify the Generator (e.g., Visual Studio 16 2019),
 				specify the Optional Platform: win32
 				select Specify toolchain file for cross compilation (the file vcpkg.cmake within the directory where you have installed vcpkg, e.g. C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake).
+		== compilation:
+			cd build/win/
+			open robo_local_daemon.sln with Visual Studio
+			Build -> Build Solution
 
 	== CMakeLists creation (internal):
 		cd src/cpp; /usr/bin/cgal_create_CMakeLists -s robo_local_daemon; cd ../../

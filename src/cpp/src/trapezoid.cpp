@@ -12,31 +12,49 @@ Trapezoid::Trapezoid(Trapezoid::ID id, Halfedge top_edge, Halfedge bottom_edge, 
 
 Trapezoid::ID Trapezoid::get_id() const { return id; }
 
-Polygon Trapezoid::get_bounds_2d() const {
-	Point t1 = top_edge->source()->point(), t2 = top_edge->target()->point();
-	Point b1 = bottom_edge->source()->point(), b2 = bottom_edge->target()->point();
-	if (cmp(t1, t2) > 0)
-		std::swap(t1, t2);
-	if (cmp(b1, b2) > 0)
-		std::swap(b1, b2);
-	std::vector<Point> points;
+template <typename _Direction>
+static _Direction rotate(const _Direction& d, double r) {
+	return d.transform(Kernel::Aff_transformation_2(CGAL::Rotation(), std::sin(r), std::cos(r)));
+}
 
-	if (CGAL::do_intersect(Segment(t1, b1), Segment(t2, b2)))
-		std::swap(t1, t2);
-	assert(!CGAL::do_intersect(Segment(t1, b1), Segment(t2, b2)));
-	if (t1 == b1)
-		points = {t1, t2, b2};
-	else if (t2 == b2)
-		points = {t1, t2, b1};
+static void calc_edge_left_right_vertices(const Halfedge& edge, const Direction& dir,  Point& left, Point& right) {
+	Point p1 = edge->source()->point(), p2 = edge->target()->point();
+	Point mid_top((p1.hx() + p2.hx()) / 2, (p1.hy() + p2.hy()) / 2);
+	if (calc_half_plane_side(dir, Direction(p1.hx() - mid_top.hx(), p1.hy() - mid_top.hy())) == HalfPlaneSide::Left) {
+		left = p1;
+		right = p2;
+	} else {
+		left = p2;
+		right = p1;
+	}
+}
+
+Polygon Trapezoid::get_bounds_2d() const {
+	auto v_begin = normalize(angle_begin.vector()), v_end = normalize(angle_end.vector());
+	double angle_between = std::acos((v_begin * v_end).exact().convert_to<double>());
+	assert(angle_between != 0);
+	double a_mid = angle_between / 2;
+	auto v_mid = rotate(v_begin, a_mid).direction();
+
+	Point t1 = top_edge->source()->point(), t2 = top_edge->target()->point();
+	Point top_left, top_right;
+	calc_edge_left_right_vertices(top_edge, v_mid, top_left, top_right);
+
+	Point b1 = bottom_edge->source()->point(), b2 = bottom_edge->target()->point();
+	Point bottom_left, bottom_right;
+	calc_edge_left_right_vertices(bottom_edge, v_mid, bottom_left, bottom_right);
+
+	std::vector<Point> points;
+	if (top_left == bottom_left)
+		points = {top_right, top_left, bottom_right};
+	else if (top_right == bottom_right)
+		points = {top_right, top_left, bottom_left};
 	else
-		points = {t1, t2, b2, b1};
+		points = {top_right, top_left, bottom_left, bottom_right};
 
 	Polygon bounds(points.begin(), points.end());
 	CGAL::Gps_default_traits<Polygon>::Traits traits;
-	if (!CGAL::has_valid_orientation_polygon(bounds, traits)) {
-		bounds.clear();
-		bounds.insert(bounds.vertices_end(), points.rbegin(), points.rend());
-	}
+	assert(CGAL::has_valid_orientation_polygon(bounds, traits));
 	return bounds;
 }
 
@@ -59,6 +77,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 	Direction mid_angle = top_edge_direction.perpendicular(CGAL::LEFT_TURN);
 
 	const Polygon trapezoid_bounds = get_bounds_2d();
+	debugln("\t\t trapezoid_bounds (" << trapezoid_bounds << ")");
 
 	bool begin_before_mid = calc_half_plane_side(mid_angle, a_begin) == HalfPlaneSide::Right;
 	bool end_after_mid = calc_half_plane_side(mid_angle, a_end) == HalfPlaneSide::Left;
@@ -77,17 +96,17 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 		auto i_begin = angle_interval[0], i_end = angle_interval[1];
 		if (i_begin == i_end)
 			continue;
+		auto top_edge_line = top_edge->curve().line();
 		auto v_begin = normalize(i_begin.vector()), v_end = normalize(i_end.vector());
-		std::vector<Point> left_points, right_points;
+		double angle_between = std::acos((v_begin * v_end).exact().convert_to<double>());
+		assert(angle_between != 0);
 		debugln("\t\t v_begin(" << v_begin << ") v_end(" << v_end << ")");
 
+		std::vector<Point> left_points, right_points;
 		const auto LEFT = 0, RIGHT = 1;
 		for (auto side : {LEFT, RIGHT}) {
 			auto vertex = (side == LEFT ? left_vertex : right_vertex)->point();
 			auto &points = side == LEFT ? left_points : right_points;
-			auto top_edge_line = top_edge->curve().line();
-			double angle_between = std::acos((v_begin * v_end).exact().convert_to<double>());
-			assert(angle_between != 0);
 
 			if (top_edge_line.has_on(vertex)) {
 				debugln("\t\t" << (side == LEFT ? "left" : "right") << " is arc");
@@ -96,13 +115,15 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 				unsigned int appx_num = (unsigned int)((std::abs(angle_between) / (M_PI * 2)) * ARC_APPX_POINTS_NUM);
 
 				points.push_back(begin);
+				debugln(points.back());
 				for (unsigned int i = 1; i < appx_num; i++) {
 					double a = i * angle_between / appx_num;
-					Direction dir =
-						i_begin.transform(Kernel::Aff_transformation_2(CGAL::Rotation(), std::sin(a), std::cos(a)));
+					Direction dir = rotate(i_begin, a);
 					points.push_back(Point(vertex + normalize(dir.vector()) * d));
+					debugln(points.back());
 				}
 				points.push_back(end);
+				debugln(points.back());
 				debugln("\t\t\t C(" << vertex << ") B(" << begin << ") E(" << end << ")");
 
 			} else {
@@ -116,8 +137,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 				debugln(points.back());
 				for (unsigned int i = 1; i < appx_num; i++) {
 					double a = i * angle_between / appx_num;
-					Direction dir =
-						i_begin.transform(Kernel::Aff_transformation_2(CGAL::Rotation(), std::sin(a), std::cos(a)));
+					Direction dir = rotate(i_begin, a);
 					points.push_back(intersection(top_edge_line, Line(vertex, dir)) + normalize(dir.vector()) * d);
 					debugln(points.back());
 				}
@@ -130,14 +150,14 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 			}
 		}
 
-		debug("left_points:");
-		for (auto &p : left_points)
-			debug(" (" << p << ")");
-		debugln("");
-		debug("right_points:");
-		for (auto &p : right_points)
-			debug(" (" << p << ")");
-		debugln("");
+		// debug("left_points:");
+		// for (auto &p : left_points)
+		// 	debug(" (" << p << ")");
+		// debugln("");
+		// debug("right_points:");
+		// for (auto &p : right_points)
+		// 	debug(" (" << p << ")");
+		// debugln("");
 
 		Polygon res_unbounded;
 		if (before_mid) {
@@ -160,14 +180,14 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 			res_unbounded.insert(res_unbounded.vertices_end(), right_begin, right_points.end());
 		}
 
-		debugln("trapezoid_bounds: " << trapezoid_bounds);
-		debugln("res_unbounded: " << res_unbounded);
+		// debugln("trapezoid_bounds: " << trapezoid_bounds);
+		// debugln("res_unbounded: " << res_unbounded);
 
 		std::vector<CGAL::Polygon_with_holes_2<Kernel>> res_bounded;
 		CGAL::intersection(trapezoid_bounds, res_unbounded, std::back_inserter(res_bounded));
 		for (const auto &res_cell : res_bounded) {
 			assert(res_cell.number_of_holes() == 0);
-			debugln("res_bounded: " << res_cell.outer_boundary());
+			// debugln("res_bounded: " << res_cell.outer_boundary());
 			res.push_back(res_cell.outer_boundary());
 		}
 	}

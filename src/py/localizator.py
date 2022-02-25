@@ -2,12 +2,24 @@
 
 import time
 import os
+import sys
 import subprocess
 import random
 import json
 import numpy as np
 import threading
+import atexit
 
+daemons = set()
+daemons_lock = threading.Lock()
+
+def kill_all_daemons():
+    with daemons_lock:
+        for deamon in daemons:
+            deamon.kill()
+        daemons.clear()
+
+atexit.register(kill_all_daemons)
 
 class Localizator:
     def __init__(self, working_dir):
@@ -35,11 +47,14 @@ class Localizator:
             self.logfile = open(os.path.join(
                 working_dir, ".logfile"), "a")
 
-            cmd = ["build/debug/robo_local_daemon", "--cmdfile",
-                   # cmd = ["C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\build\\win\\Debug\\robo_local_daemon.exe", "--cmdfile",
+            daemon_path = "build/linux/debug/robo_local_daemon" if sys.platform == "linux" or sys.platform == "linux2" else "build/win/Debug/robo_local_daemon.exe"
+
+            cmd = [daemon_path, "--cmdfile",
                    self.cmdfile, "--ackfile", self.ackfile]
             self.daemon = subprocess.Popen(
                 cmd, stdout=self.logfile,  stderr=self.logfile)
+            with daemons_lock:
+                daemons.add(self.daemon)
 
             self._exec_cmd("--cmd init --scene {}".format(scene_filename))
 
@@ -48,6 +63,8 @@ class Localizator:
             if not self.daemon:
                 return
             self.daemon.kill()
+            with daemons_lock:
+                daemons.remove(self.daemon)
             self.daemon = None
             self.daemon_id = None
             self.cmdfile = None
@@ -107,6 +124,7 @@ class Localizator:
                     with open(outfile, "r") as outf:
                         data = json.load(outf)
                     # TODO
+                    raise ValueError("not supported yet")
 
                 except Exception as e:
                     print("Failed to read result file", outfile)
@@ -117,13 +135,8 @@ class Localizator:
 
 
 if __name__ == "__main__":
-    localizator = Localizator(os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), ".localizator"))
+    localizator = Localizator(os.path.join(os.getcwd(), ".localizator"))
     localizator.run("scene01.json")
     # localizator.run("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\scene01.json")
     localizator.query1(6)
-    # localizator.query1(7)
-    # localizator.query1(8)
-    # localizator.query2(9, 10)
-    # localizator.query1(11)
     localizator.stop()

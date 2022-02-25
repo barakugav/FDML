@@ -256,7 +256,7 @@ class Polygons_scene():
 
 writer = None
 loaded_scene = None
-# localizator = localizator.Localizator(".localizator")
+localizator = localizator.Localizator(os.path.join(os.getcwd(), ".localizator"))
 res_polygons_gui = []
 
 
@@ -267,13 +267,13 @@ def clear_res_polygons_gui():
 
 
 def set_up_scene():
-    # localizator.stop()
+    localizator.stop()
     clear_res_polygons_gui()
     gui.clear_scene()
     scene_file = gui.get_field('scene')
     success = ps.load_scene(scene_file)
     loaded_scene = scene_file if success else None
-    # localizator.run(loaded_scene)
+    localizator.run(loaded_scene)
 
 
 def compute():
@@ -287,13 +287,13 @@ def compute():
         return
     print("compute", d)
 
-    with open("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json", "r") as outfile:
-        data = json.load(outfile)
-    res = []
-    polygons_json = data["polygons"]
-    for polygon in polygons_json:
-        res.append(np.array(polygon))
-    # res = localizator.query1(float(d))
+    # with open("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json", "r") as outfile:
+    #     data = json.load(outfile)
+    # res = []
+    # polygons_json = data["polygons"]
+    # for polygon in polygons_json:
+    #     res.append(np.array(polygon))
+    res = localizator.query1(float(d))
     # res = []
     for polygon in res:
         fill_color = QtGui.QColor(0, 0, 255, 100)

@@ -58,14 +58,3 @@ if ( WIN32 )
   target_link_libraries(robo_local_daemon PRIVATE Boost::json)
   target_link_libraries(robo_local_daemon PRIVATE Boost::program_options)
 endif ( WIN32 )
-
-
-# == test ==
-# include_directories ( test PUBLIC src/cpp/include/ )
-# add_executable( test
-#   ${CPP_SRC}/trapezoider.cpp
-#   ${CPP_SRC}/localizator.cpp
-#   ${CPP_SRC}/test.cpp
-# )
-# add_to_cached_list( CGAL_EXECUTABLE_TARGETS test )
-# target_link_libraries(test PRIVATE CGAL::CGAL )

@@ -77,6 +77,7 @@ void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) 
 }
 
 void LocalizatorDaemon::run() {
+	debugln("Waiting for next command...");
 	while (true) {
 		if (!file_exists(ack_filename) && file_exists(cmd_filename)) {
 			std::vector<std::string> argv;
@@ -86,8 +87,10 @@ void LocalizatorDaemon::run() {
 			std::ofstream ackfile(ack_filename);
 			ackfile << err;
 			ackfile.close();
+			debugln("Command proccessed. Waiting for next command...");
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100000)); /* 0.1 sec */
+		std::this_thread::sleep_for(std::chrono::milliseconds(100)); /* 0.1 sec */
+		debug(".");
 	}
 }
 
@@ -167,7 +170,7 @@ int main(int argc, const char *argv[]) {
 	// daemon.load_scene("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\scene01.json");
 	// daemon.query(1.0, "C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json");
 	// daemon.load_scene("scene01.json");
-	// daemon.query(1.0, "res.json");
+	// daemon.query(0.3, "res.json");
 	// debugln("done successfully");
 
 	try {
