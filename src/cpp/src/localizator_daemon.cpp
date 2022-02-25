@@ -3,6 +3,8 @@
 #include "utils.hpp"
 #include <boost/program_options.hpp>
 #include <stdexcept>
+#include <chrono>
+#include <thread>
 
 static bool file_exists(const std::string &filename) {
 	if (FILE *file = fopen(filename.c_str(), "r")) {
@@ -85,7 +87,7 @@ void LocalizatorDaemon::run() {
 			ackfile << err;
 			ackfile.close();
 		}
-		usleep(100000); /* 0.1 sec */
+		std::this_thread::sleep_for(std::chrono::milliseconds(100000)); /* 0.1 sec */
 	}
 }
 
@@ -161,6 +163,10 @@ void LocalizatorDaemon::check_state() {
 }
 
 int main(int argc, const char *argv[]) {
+	// LocalizatorDaemon daemon(".cmdfile", ".ackfile");
+	// daemon.load_scene("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\scene01.json");
+	// daemon.query(1.0, "C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json");
+
 	try {
 		std::string cmd_filename, ack_filename;
 		boost::program_options::options_description desc{"Options"};

@@ -12,7 +12,6 @@ from PyQt5.QtCore import (QObject, QPointF, QPoint, QRectF,
 from MainWindowsPlus import MainWindowPlus
 from GraphicsScenePlus import GraphicsScenePlus
 
-from RDiscRobot import RDiscRobot
 from RPolygon import RPolygon
 from RPolygonWithHoles import RPolygonWithHoles
 from RDisc import RDisc
@@ -76,7 +75,7 @@ class GUI(object):
 
     def setupUi(self):
         """
-        Setup the UI layout of the application. 
+        Setup the UI layout of the application.
         Should be overrided by any GUI application and define a custom layout.
         """
         pass
@@ -94,7 +93,7 @@ class GUI(object):
 
             # Enable for smoother animations and Antialiasing - may cause some issues with multiple displays
             # self.graphicsView.setViewport(QGLWidget(QGLFormat(QGL.SampleBuffers)))
-            
+
             self.graphicsView.scale(self.zoom, -self.zoom)
             self.graphicsView.setDragMode(1)
 
@@ -122,30 +121,6 @@ class GUI(object):
         return d
 
 
-    def add_disc_robot(self, r, x, y, text="", fill_color=QtCore.Qt.black):
-        """
-        Add a disc robot to the scene with radius r centered at (x, y) and return the object associated with it
-
-        :param r: radius of disc
-        :type r: float
-        :param x: x position of center of disc
-        :type x: float
-        :param y: y position of center of disc
-        :type y: float
-        :param text: label of the robot
-        :type text: str
-        :param fill_color: color of the interior of disc
-        :type fill_color: class:`QtGui.QColor`
-
-        :return: disc robot
-        :rtype: RDiscRobot
-        """
-        d = RDiscRobot(r, x, y, fill_color, line_width=self.base_line_width / self.zoom, text=text)
-        self.scene.addItem(d.disc)
-        self.scene.addItem(d._text)
-        return d
-
-    
     def add_polygon(self, points, fill_color=QtCore.Qt.black, line_color=QtCore.Qt.black):
         """
         Add a polygon to the scene and return the object associated with it
@@ -493,32 +468,32 @@ class GUI(object):
         """
         self.sequence.start()
 
-    
+
     def stop_queue(self):
         """
-        Stop (and empty) the animation queue    
+        Stop (and empty) the animation queue
         """
         self.sequence.stop()
         self.animation_finished()
 
-    
+
     def empty_queue(self):
         """
         Empty the animation queue
         """
         self.sequence.clear()
 
-    
+
     def clear_scene(self):
         """
         Clear the scene of all objects
         """
         self.scene.clear()
 
-    
+
     def redraw(self):
         """
-        Redraw the scene with updated parameters    
+        Redraw the scene with updated parameters
         """
         line_width = self.base_line_width / self.zoom
         text_size = max(1, self.base_text_size / self.zoom)
@@ -542,20 +517,20 @@ class GUI(object):
         print("Finished playing animation")
         self.animation_finished_action()
 
-    
+
     def set_animation_finished_action(self, action):
         """
-        Set the function to be called when the animation finishes playing  
+        Set the function to be called when the animation finishes playing
 
         :param action: action to be called when animation finished
-        :type action: function<()->()>    
+        :type action: function<()->()>
         """
         self.animation_finished_action = action
 
-    
+
     def set_field(self, key, s):
         """
-        Set the text of field with key <key> in the GUI    
+        Set the text of field with key <key> in the GUI
 
         :param key: key of line edit
         :type key: str
@@ -564,7 +539,7 @@ class GUI(object):
         """
         self.lineEdits[key].setText(s)
 
-    
+
     def get_field(self, key):
         """
         Get the text of field with key <key> in the GUI
@@ -577,10 +552,10 @@ class GUI(object):
         """
         return self.lineEdits[key].text()
 
-    
+
     def set_label(self, key, s, color=Qt.black):
         """
-        Set the text of label with key <key> in the GUI    
+        Set the text of label with key <key> in the GUI
 
         :param key: key of label
         :type key: str
@@ -594,7 +569,7 @@ class GUI(object):
         palette.setColor(QPalette.WindowText, color)
         self.labels[key].setPalette(palette)
 
-    
+
     def set_logic(self, key, logic):
         """
         Set the function to be called when the button with key <key> in the GUI is pressed
@@ -602,7 +577,7 @@ class GUI(object):
         :param key: key of pushbutton
         :type key: str
         :param logic: function that is connected to the button
-        :type logic: function<()->()>  
+        :type logic: function<()->()>
         """
         try:
             self.pushButtons[key].clicked.disconnect()
@@ -610,7 +585,7 @@ class GUI(object):
             pass
         self.pushButtons[key].clicked.connect(logic)
 
-    
+
     def set_button_text(self, key, s):
         """
         Set the text of the button with key <key> in the GUI
@@ -622,7 +597,7 @@ class GUI(object):
         """
         self.pushButtons[key].setText(s)
 
-    
+
     def set_progressbar_value(self, key, n: int):
         """
         Set the value of the progressBar with key <key>
@@ -634,7 +609,7 @@ class GUI(object):
         """
         self.progressBars[key].setValue(n)
 
-    
+
     def set_program_name(self, s):
         """
         Set the program's name (title of the window)

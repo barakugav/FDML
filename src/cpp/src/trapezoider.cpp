@@ -1,3 +1,10 @@
+#include <math.h>
+#ifndef M_PI
+// windows
+#define _USE_MATH_DEFINES
+#include <cmath>
+#endif
+
 #include "trapezoider.h"
 #include "utils.hpp"
 #include <CGAL/Arr_vertical_decomposition_2.h>
@@ -430,7 +437,10 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		assert(vertices_data.find(event.v1) != vertices_data.end());
 		const auto ray = event.get_angle_vector();
 		auto &ray_edges = vertices_data.find(event.v1)->second.ray_edges;
-		auto closest_edge_ptr_orig = ray_edges.begin();
+		bool closest_edge_orig_valid;
+		Halfedge closest_edge_orig;
+		if (closest_edge_orig_valid = ray_edges.size() > 0)
+			closest_edge_orig = *ray_edges.begin();
 
 		DEBUG_PRINT(std::endl
 					<< "Handle event (" << event.v1->point() << ") (" << event.v2->point() << ")" << std::endl);
@@ -517,10 +527,9 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		} else {
 			if (ray_edges.size() == 0)
 				continue;
-			auto closest_edge_ptr = ray_edges.begin();
-			if (closest_edge_ptr_orig == closest_edge_ptr)
+			auto closest_edge = *ray_edges.begin();
+			if (closest_edge_orig_valid && closest_edge_orig == closest_edge)
 				continue; // Closest edge didn't changed
-			auto closest_edge = *closest_edge_ptr;
 			DEBUG_PRINT("Type 2: closest edge: " << closest_edge->curve() << " "
 												 << (is_free(closest_edge->face()) ? "free" : "non free") << std::endl);
 			if (!is_free(closest_edge->face()))

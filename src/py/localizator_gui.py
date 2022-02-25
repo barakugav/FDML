@@ -5,14 +5,16 @@ import sys
 import json
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QFileDialog
+import localizator
+import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gui/"))
-from gui import GUI
-from logger import Logger, Writer
 from Worker import Worker
+from logger import Logger, Writer
+from gui import GUI
 
 
-class GUI_rod(GUI):
+class LocalizatorGUI(GUI):
     # comboBoxes = {}
 
     def __init__(self):
@@ -213,19 +215,6 @@ class GUI_rod(GUI):
         # self.comboBoxes['mode'] = self.comboBox
 
 
-worker = None
-writer = None
-
-
-def read_scene(filename):
-    obstacles = []
-    with open(filename, "r") as f:
-        d = json.load(f)
-        if 'obstacles' in d:
-            obstacles = d['obstacles']
-    return obstacles
-
-
 class Polygons_scene():
     def __init__(self, gui, writer):
         self.writer = writer
@@ -241,41 +230,76 @@ class Polygons_scene():
             self.gui_obstacles.append(
                 self.gui.add_polygon(obstacle, QtCore.Qt.darkGray))
 
+    @staticmethod
+    def read_scene(filename):
+        obstacles = []
+        with open(filename, "r") as f:
+            d = json.load(f)
+            if 'obstacles' in d:
+                obstacles = d['obstacles']
+        return obstacles
+
     def load_scene(self, filename):
         self.obstacles = []
         self.path = []
         try:
-            self.obstacles = read_scene(filename)
+            self.obstacles = Polygons_scene.read_scene(filename)
+            success = True
         except Exception as e:
             print('load_scene:', e, file=self.writer)
+            success = False
         self.gui.empty_queue()
         self.draw_scene()
         print("Loaded scene from", filename, file=self.writer)
+        return success
+
+
+writer = None
+loaded_scene = None
+# localizator = localizator.Localizator(".localizator")
+res_polygons_gui = []
+
+
+def clear_res_polygons_gui():
+    for gui_polygon in res_polygons_gui:
+        gui.scene.removeItem(gui_polygon.polygon)
+    res_polygons_gui.clear()
 
 
 def set_up_scene():
+    # localizator.stop()
+    clear_res_polygons_gui()
     gui.clear_scene()
     scene_file = gui.get_field('scene')
-    ps.load_scene(scene_file)
-
-
-def stop():
-    if worker is not None:
-        worker.stop()
-    else:
-        gui.stop_queue()
-
-
-def disable():
-    key: str
-    for key in gui.pushButtons:
-        if 'search' not in key:
-            gui.set_button_text(key, 'Abort')
-            gui.set_logic(key, stop)
+    success = ps.load_scene(scene_file)
+    loaded_scene = scene_file if success else None
+    # localizator.run(loaded_scene)
 
 
 def compute():
-    print("compute")
+    clear_res_polygons_gui()
+
+    d = gui.get_field('d')
+    try:
+        d = float(d)
+    except:
+        print("invalid d value")
+        return
+    print("compute", d)
+
+    # with open("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\src\\py\\.localizator\\8174572161177201748\\.outfile", "r") as outfile:
+    #     data = json.load(outfile)
+    # res = []
+    # polygons_json = data["polygons"]
+    # for polygon in polygons_json:
+    #     res.append(np.array(polygon))
+    # res = localizator.query1(float(d))
+    res = []
+    for polygon in res:
+        fill_color = QtGui.QColor(0, 0, 255, 100)
+        line_color = QtCore.Qt.transparent
+        gui_polygon = gui.add_polygon(polygon, fill_color, line_color)
+        res_polygons_gui.append(gui_polygon)
 
 
 def enable():
@@ -308,14 +332,6 @@ def enable():
     # gui.set_logic('verify', is_path_valid)
 
 
-def done(res):
-    global worker
-    worker = None
-    if res:
-        ps.path = res[0]
-    enable()
-
-
 def get_file():
     dlg = QFileDialog()
     dlg.setFileMode(QFileDialog.AnyFile)
@@ -332,18 +348,11 @@ def set_input_file():
 
 
 if __name__ == "__main__":
-    import sys
     app = QtWidgets.QApplication(sys.argv)
-    gui = GUI_rod()
+    gui = LocalizatorGUI()
+    gui.set_program_name("Robot Localization")
     writer = Writer(gui.textEdit)
-    gui.set_program_name("Robot Motion Planning - Rod")
-    i = 1
-    for field in gui.lineEdits:
-        if i >= len(sys.argv):
-            break
-        gui.set_field(field, sys.argv[i])
-        i += 1
-    # gui.comboBoxes['mode'].addItems(["Rod"])
+
     enable()
     gui.mainWindow.signal_drop.connect(
         lambda path: gui.set_field('scene', path))

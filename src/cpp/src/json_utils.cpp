@@ -100,7 +100,11 @@ inline std::string read_file(char const *path) {
 }
 
 static boost::json::value parse_file(std::string filename) {
-	char filename_arr[filename.size() + 1];
+	const unsigned int filename_maxsize = 256;
+	if (filename.size() >= filename_maxsize)
+		throw std::runtime_error("failed to parse json file. filename is too big");
+
+	char filename_arr[filename_maxsize];
 	strcpy(filename_arr, filename.c_str());
 
 	file f(filename_arr, "r");
