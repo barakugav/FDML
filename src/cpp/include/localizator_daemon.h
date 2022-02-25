@@ -33,7 +33,7 @@ class LocalizatorDaemon {
 	 * @param d the single measurament value
 	 * @param outfile path to an output file for the query result (json)
 	 */
-	void query(double d, const std::string &outfile);
+	void query(double d, const std::string &outfile) const;
 
 	/**
 	 * @brief Query command of two measurament
@@ -44,7 +44,7 @@ class LocalizatorDaemon {
 	 * @param d2 the second measurament value
 	 * @param outfile path to an output file for the query result (json)
 	 */
-	void query(double d1, double d2, const std::string &outfile);
+	void query(double d1, double d2, const std::string &outfile) const;
 
 	/**
 	 * @brief Run a infinity loop, reading commands from the given cmd_filename
@@ -63,7 +63,7 @@ class LocalizatorDaemon {
 
   private:
 	/* Checks that a scene was actually loaded before handling a query command */
-	void check_state();
+	void check_state() const;
 };
 
 #endif

@@ -61,7 +61,7 @@ void LocalizatorDaemon::load_scene(const std::string &scene_filename) {
 	}
 }
 
-void LocalizatorDaemon::query(double d, const std::string &outfile) {
+void LocalizatorDaemon::query(double d, const std::string &outfile) const {
 	std::cout << "# query1: " << d << std::endl;
 	check_state();
 
@@ -70,7 +70,7 @@ void LocalizatorDaemon::query(double d, const std::string &outfile) {
 	write_polygons_to_json(polygons, outfile);
 }
 
-void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) {
+void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) const {
 	std::cout << "# query2: " << d1 << " " << d2 << std::endl;
 	check_state();
 	throw std::runtime_error("not supported"); // TODO
@@ -157,7 +157,7 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv) {
 	}
 }
 
-void LocalizatorDaemon::check_state() {
+void LocalizatorDaemon::check_state() const {
 	if (!localizator)
 		throw std::runtime_error("Localizator wan't initiated");
 }
@@ -168,6 +168,7 @@ int main(int argc, const char *argv[]) {
 	// daemon.query(1.0, "C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json");
 	// daemon.load_scene("scene01.json");
 	// daemon.query(1.0, "res.json");
+	// debugln("done successfully");
 
 	try {
 		std::string cmd_filename, ack_filename;

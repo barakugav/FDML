@@ -1,16 +1,16 @@
-#include "defs.h"
-#include <math.h>
 #ifndef M_PI
 // windows
 #define _USE_MATH_DEFINES
 #include <cmath>
 #endif
+#include "defs.h"
+#include <math.h>
 
 #ifndef __UTILS_HPP__
 #define __UTILS_HPP__
 
 #define DEBUG_PRINT_EN 1
-#define debug(args)                                                                                              \
+#define debug(args)                                                                                                    \
 	do {                                                                                                               \
 		if (DEBUG_PRINT_EN)                                                                                            \
 			std::cout << args;                                                                                         \

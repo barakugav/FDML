@@ -44,10 +44,10 @@ class Localizator {
 	 * @param d the single measurement value
 	 * @param res collections of polygons representing all the possible points in the room a sensor might be in
 	 */
-	void query(const Kernel::FT &d, std::vector<Polygon> &res);
+	void query(const Kernel::FT &d, std::vector<Polygon> &res) const;
 
 	// TODO change output type
-	void query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement &res);
+	void query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement &res) const;
 };
 
 #endif

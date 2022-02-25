@@ -3,8 +3,6 @@
 #ifndef __TRAPEZOID_H__
 #define __TRAPEZOID_H__
 
-static const Direction ANGLE_NONE(0, 0);
-
 /**
  * The Trapezoid class represent a 3D cell in the (x,y,theta) configuration space. A trapezoid is defined by it's top
  * and bottom edges, and the right and left vertices and defines its imaginary rotated parallel edges. Each trapezoid
@@ -29,6 +27,8 @@ class Trapezoid {
 	Kernel::FT opening_max;
 	Kernel::FT opening_min;
 
+	static const Direction ANGLE_NONE;
+
 	Trapezoid() = default;
 	Trapezoid(Trapezoid::ID id, Halfedge top_edge, Halfedge bottom_edge, Vertex left_vertex, Vertex right_vertex);
 	Trapezoid(const Trapezoid &) = default;
@@ -41,6 +41,14 @@ class Trapezoid {
 	 * @return Polygon that represent the 2D bounds of the trapezoid
 	 */
 	Polygon get_bounds_2d() const;
+
+	/**
+	 * @brief Calculates all the points a sensor might be within the trapezoid measering distance 'd' at the top edge
+	 *
+	 * @param d the measurement value
+	 * @param res output result
+	 */
+	void calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) const;
 
 	/**
 	 * @brief Calculate the minimum and maximum opening of this trapezoid, and fill the object fields
