@@ -128,35 +128,34 @@ static boost::json::value parse_file(std::string filename) {
 #define ERR(...)                                                                                                       \
 	do {                                                                                                               \
 		std::ostringstream oss;                                                                                        \
-		oss << __VA_ARGS__;                                                                                            \
+		oss << __VA_ARGS__ << std::endl;                                                                               \
 		throw std::runtime_error(oss.str());                                                                           \
 	} while (0)
 
 static const boost::json::object &get_object(const boost::json::value &v, const char *obj_name) {
 	if (v.kind() != boost::json::kind::object)
 		ERR("Expected field \"" << obj_name << "\" to be Json object (" << boost::json::kind::object << "), actual is "
-								<< v.kind() << std::endl);
+								<< v.kind());
 	return v.get_object();
 }
 
 static const boost::json::array &get_array(const boost::json::value &v, const char *obj_name) {
 	if (v.kind() != boost::json::kind::array)
 		ERR("Expected field \"" << obj_name << "\" to be Json array (" << boost::json::kind::array << "), actual is "
-								<< v.kind() << std::endl);
+								<< v.kind());
 	return v.get_array();
 }
 
 static double get_double(const boost::json::value &v, const char *obj_name) {
 	if (v.kind() != boost::json::kind::double_)
 		ERR("Expected field \"" << obj_name << "\" to be Json double (" << boost::json::kind::double_ << "), actual is "
-								<< v.kind() << std::endl);
+								<< v.kind());
 	return v.get_double();
 }
 
 template <typename JsonObj> static void validate_size(const JsonObj &obj, unsigned int size, const char *obj_name) {
 	if (obj.size() != size)
-		ERR("Unexpected number of elements in \"" << obj_name << "\" Json object: " << obj.size() << " != " << size
-												  << std::endl);
+		ERR("Unexpected number of elements in \"" << obj_name << "\" Json object: " << obj.size() << " != " << size);
 }
 
 void parse_scene_from_json(const std::string &filename, std::vector<Point> &points) {
@@ -180,7 +179,7 @@ void parse_scene_from_json(const std::string &filename, std::vector<Point> &poin
 				points.push_back(Point(x, y));
 			}
 		} else
-			ERR("Unknown Json tag: " << obstacles_key << std::endl);
+			ERR("Unknown Json tag: " << obstacles_key);
 	}
 }
 
@@ -266,10 +265,9 @@ void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::str
 	std::vector<boost::json::array> polygon_objs;
 	for (const Polygon &polygon : polygons) {
 		std::vector<boost::json::array> point_objs;
-		for (auto it = polygon.curves_begin(); it != polygon.curves_end(); ++it) {
-			auto &p = it->source();
-			double x = p.hx().exact().convert_to<double>();
-			double y = p.hy().exact().convert_to<double>();
+		for (auto it = polygon.vertices_begin(); it != polygon.vertices_end(); ++it) {
+			double x = it->hx().exact().convert_to<double>();
+			double y = it->hy().exact().convert_to<double>();
 			std::vector<double> point{x, y};
 			point_objs.push_back(boost::json::array(point.begin(), point.end()));
 		}

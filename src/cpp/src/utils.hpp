@@ -4,13 +4,13 @@
 #define __UTILS_HPP__
 
 #define DEBUG_PRINT_EN 1
-#define DEBUG_PRINT(args)                                                                                              \
+#define debug_print(args)                                                                                              \
 	do {                                                                                                               \
 		if (DEBUG_PRINT_EN)                                                                                            \
 			std::cout << args;                                                                                         \
 	} while (false)
-#define DEBUG_PRINTLN(args) DEBUG_PRINT(args << std::endl)
-#define DEBUG_PRINT_LINE() DEBUG_PRINT(__FILE__ << ":" << __LINE__ << std::endl)
+#define debug_println(args) debug_print(args << std::endl)
+#define debug_print_line() debug_print(__FILE__ << ":" << __LINE__ << std::endl)
 
 enum HalfPlaneSide {
 	None, // exactly on plane

@@ -2,8 +2,8 @@
 #include "json_utils.h"
 #include "utils.hpp"
 #include <boost/program_options.hpp>
-#include <stdexcept>
 #include <chrono>
+#include <stdexcept>
 #include <thread>
 
 static bool file_exists(const std::string &filename) {
@@ -166,6 +166,8 @@ int main(int argc, const char *argv[]) {
 	// LocalizatorDaemon daemon(".cmdfile", ".ackfile");
 	// daemon.load_scene("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\scene01.json");
 	// daemon.query(1.0, "C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json");
+	// daemon.load_scene("scene01.json");
+	// daemon.query(1.0, "res.json");
 
 	try {
 		std::string cmd_filename, ack_filename;

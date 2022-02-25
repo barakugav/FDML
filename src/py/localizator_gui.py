@@ -287,14 +287,14 @@ def compute():
         return
     print("compute", d)
 
-    # with open("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\src\\py\\.localizator\\8174572161177201748\\.outfile", "r") as outfile:
-    #     data = json.load(outfile)
-    # res = []
-    # polygons_json = data["polygons"]
-    # for polygon in polygons_json:
-    #     res.append(np.array(polygon))
-    # res = localizator.query1(float(d))
+    with open("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json", "r") as outfile:
+        data = json.load(outfile)
     res = []
+    polygons_json = data["polygons"]
+    for polygon in polygons_json:
+        res.append(np.array(polygon))
+    # res = localizator.query1(float(d))
+    # res = []
     for polygon in res:
         fill_color = QtGui.QColor(0, 0, 255, 100)
         line_color = QtCore.Qt.transparent

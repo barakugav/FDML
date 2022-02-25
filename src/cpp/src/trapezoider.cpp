@@ -291,7 +291,7 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 			!find_vertex_left_edge_with_min_angle(v, top_edge)) {
 
 			// Reflex (more than 180 degrees) vertex
-			DEBUG_PRINT("trapezoid from reflex vertex " << v->point() << std::endl);
+			debug_println("trapezoid from reflex vertex " << v->point());
 			auto left_v = most_right_vertex[v_decomp_data.edge_above];
 			auto &trapezoid =
 				trapezoids[create_trapezoid(v_decomp_data.edge_above, v_decomp_data.edge_below, left_v, v)];
@@ -304,7 +304,7 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 				   find_vertex_left_edge_with_max_angle(v, bottom_edge)) {
 
 			// Triangle cell terminates at v
-			DEBUG_PRINT("triangle trapezoid " << v->point() << std::endl);
+			debug_println("triangle trapezoid " << v->point());
 			auto left_v = most_right_vertex[top_edge];
 			create_trapezoid(top_edge, bottom_edge, left_v, v);
 
@@ -312,7 +312,7 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 			if (v_decomp_data.is_edge_above && is_free(v_decomp_data.edge_above->face())) {
 
 				// Edge above the vertex
-				DEBUG_PRINT("trapezoid up " << v->point() << std::endl);
+				debug_println("trapezoid up " << v->point());
 				if (!find_vertex_left_edge_with_min_angle(v, bottom_edge))
 					throw std::logic_error("find_vertex_left_edge_with_min_angle fail");
 
@@ -324,7 +324,7 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 			if (v_decomp_data.is_edge_below && is_free(v_decomp_data.edge_below->face())) {
 
 				// Edge below the vertex
-				DEBUG_PRINT("trapezoid down " << v->point() << std::endl);
+				debug_println("trapezoid down " << v->point());
 				if (!find_vertex_left_edge_with_max_angle(v, top_edge))
 					throw std::logic_error("find_vertex_left_edge_with_max_angle fail");
 
@@ -337,21 +337,21 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 	}
 
 	// TODO remove
-	DEBUG_PRINT("After regular vertical decomposition, trapezoids:" << std::endl);
+	debug_println("After regular vertical decomposition, trapezoids:");
 	for (const auto &t : trapezoids) {
 		const auto &trapezoid = t.second;
-		DEBUG_PRINT("\tT" << trapezoid.get_id() << " Top(" << trapezoid.top_edge->curve() << ") Bottom("
-						  << trapezoid.bottom_edge->curve() << ") Left(" << trapezoid.left_vertex->point() << ") Right("
-						  << trapezoid.right_vertex->point() << ")" << std::endl);
+		debug_println("\tT" << trapezoid.get_id() << " Top(" << trapezoid.top_edge->curve() << ") Bottom("
+							<< trapezoid.bottom_edge->curve() << ") Left(" << trapezoid.left_vertex->point()
+							<< ") Right(" << trapezoid.right_vertex->point() << ")");
 	}
-	DEBUG_PRINT("After regular vertical decomposition, vertices_data:" << std::endl);
+	debug_println("After regular vertical decomposition, vertices_data:");
 	for (const auto &v_pair : vertices_data) {
 		const auto &v = v_pair.first;
 		const auto &v_data = v_pair.second;
-		DEBUG_PRINT("\t(" << v->point() << "):"
-						  << " TopLeftT " << (int)v_data.top_left_trapezoid << " TopRightT "
-						  << (int)v_data.top_right_trapezoid << " BottomLeftT " << (int)v_data.bottom_left_trapezoid
-						  << " BottomRightT " << (int)v_data.bottom_right_trapezoid << std::endl);
+		debug_println("\t(" << v->point() << "):"
+							<< " TopLeftT " << (int)v_data.top_left_trapezoid << " TopRightT "
+							<< (int)v_data.top_right_trapezoid << " BottomLeftT " << (int)v_data.bottom_left_trapezoid
+							<< " BottomRightT " << (int)v_data.bottom_right_trapezoid);
 	}
 }
 
@@ -389,7 +389,7 @@ static const char *_debug_plane_side_tostr(HalfPlaneSide s) {
 }
 
 static const char *_debug_print_trapezoid(const Trapezoid &trapezoid) {
-	DEBUG_PRINT("Top(" << trapezoid.top_edge->curve() << ") Bottom(" << trapezoid.bottom_edge->curve() << ") Left("
+	debug_print("Top(" << trapezoid.top_edge->curve() << ") Bottom(" << trapezoid.bottom_edge->curve() << ") Left("
 					   << trapezoid.left_vertex->point() << ") Right(" << trapezoid.right_vertex->point() << ")");
 	return "";
 }
@@ -428,10 +428,10 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		return a2_side == HalfPlaneSide::Right && calc_half_plane_side(a2, a1) == HalfPlaneSide::Right;
 	});
 
-	DEBUG_PRINT("Events:" << std::endl);
+	debug_println("Events:");
 	for (const auto &event : events)
-		DEBUG_PRINT("\t(" << event.v1->point() << ") (" << event.v2->point()
-						  << ") angle= " << _debug_get_event_angle(event) << std::endl);
+		debug_println("\t(" << event.v1->point() << ") (" << event.v2->point()
+							<< ") angle= " << _debug_get_event_angle(event));
 
 	for (Event &event : events) {
 		assert(vertices_data.find(event.v1) != vertices_data.end());
@@ -442,8 +442,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		if (closest_edge_orig_valid = ray_edges.size() > 0)
 			closest_edge_orig = *ray_edges.begin();
 
-		DEBUG_PRINT(std::endl
-					<< "Handle event (" << event.v1->point() << ") (" << event.v2->point() << ")" << std::endl);
+		debug_println(std::endl << "Handle event (" << event.v1->point() << ") (" << event.v2->point() << ")");
 
 		// Maintaine ray_edges
 		std::vector<Halfedge> edges_to_insert;
@@ -470,8 +469,8 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		if (get_edge(event.v1, event.v2, v1v2_edge)) {
 			// type 1
 			bool left_is_free = is_free(v1v2_edge->face());
-			DEBUG_PRINT("Type 1: v1v2_edge " << v1v2_edge->curve() << " left is "
-											 << (left_is_free ? "free" : "not free") << std::endl);
+			debug_println("Type 1: v1v2_edge " << v1v2_edge->curve() << " left is "
+											   << (left_is_free ? "free" : "not free"));
 			if (left_is_free) {
 				assert(v2_data.bottom_left_trapezoid != INVALID_TRAPEZOID_ID);
 				assert(v2_data.bottom_right_trapezoid != INVALID_TRAPEZOID_ID);
@@ -487,16 +486,16 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 				mid.angle_end = current_angle;
 				finalize_trapezoid(mid);
 
-				DEBUG_PRINT("old left: " << _debug_print_trapezoid(left) << std::endl);
+				debug_println("old left: " << _debug_print_trapezoid(left));
 				Trapezoid &left_new =
 					trapezoids[create_trapezoid(left.top_edge, left.bottom_edge, left.left_vertex, event.v1)];
 				left_new.angle_begin = current_angle;
-				DEBUG_PRINT("new left: " << _debug_print_trapezoid(left_new) << std::endl);
+				debug_println("new left: " << _debug_print_trapezoid(left_new));
 
-				DEBUG_PRINT("old mid: " << _debug_print_trapezoid(mid) << std::endl);
+				debug_println("old mid: " << _debug_print_trapezoid(mid));
 				Trapezoid &mid_new = trapezoids[create_trapezoid(left.top_edge, v1v2_edge, event.v1, event.v2)];
 				mid_new.angle_begin = current_angle;
-				DEBUG_PRINT("new mid: " << _debug_print_trapezoid(mid_new) << std::endl);
+				debug_println("new mid: " << _debug_print_trapezoid(mid_new));
 
 			} else {
 				assert(v1_data.top_left_trapezoid != INVALID_TRAPEZOID_ID);
@@ -513,16 +512,16 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 				right.angle_end = current_angle;
 				finalize_trapezoid(right);
 
-				DEBUG_PRINT("old mid: " << _debug_print_trapezoid(mid) << std::endl);
+				debug_println("old mid: " << _debug_print_trapezoid(mid));
 				Trapezoid &mid_new = trapezoids[create_trapezoid(v1v2_edge, right.bottom_edge, event.v1, event.v2)];
 				mid_new.angle_begin = current_angle;
-				DEBUG_PRINT("new mid: " << _debug_print_trapezoid(mid_new) << std::endl);
+				debug_println("new mid: " << _debug_print_trapezoid(mid_new));
 
-				DEBUG_PRINT("old right: " << _debug_print_trapezoid(right) << std::endl);
+				debug_println("old right: " << _debug_print_trapezoid(right));
 				Trapezoid &right_new =
 					trapezoids[create_trapezoid(right.top_edge, right.bottom_edge, event.v2, right.right_vertex)];
 				right_new.angle_begin = current_angle;
-				DEBUG_PRINT("new right: " << _debug_print_trapezoid(right_new) << std::endl);
+				debug_println("new right: " << _debug_print_trapezoid(right_new));
 			}
 		} else {
 			if (ray_edges.size() == 0)
@@ -530,8 +529,8 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 			auto closest_edge = *ray_edges.begin();
 			if (closest_edge_orig_valid && closest_edge_orig == closest_edge)
 				continue; // Closest edge didn't changed
-			DEBUG_PRINT("Type 2: closest edge: " << closest_edge->curve() << " "
-												 << (is_free(closest_edge->face()) ? "free" : "non free") << std::endl);
+			debug_println("Type 2: closest edge: " << closest_edge->curve() << " "
+												   << (is_free(closest_edge->face()) ? "free" : "non free"));
 			if (!is_free(closest_edge->face()))
 				continue; // The ray is in non free area of the room
 
@@ -556,29 +555,29 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 			right.angle_end = current_angle;
 			finalize_trapezoid(right);
 
-			DEBUG_PRINT("old left: " << _debug_print_trapezoid(left) << std::endl);
+			debug_println("old left: " << _debug_print_trapezoid(left));
 			Trapezoid &left_new =
 				trapezoids[create_trapezoid(left.top_edge, left.bottom_edge, left.left_vertex, event.v1)];
 			left_new.angle_begin = current_angle;
-			DEBUG_PRINT("new left: " << _debug_print_trapezoid(left_new) << std::endl);
+			debug_println("new left: " << _debug_print_trapezoid(left_new));
 
-			DEBUG_PRINT("old mid: " << _debug_print_trapezoid(mid) << std::endl);
+			debug_println("old mid: " << _debug_print_trapezoid(mid));
 			Halfedge bottom_edge;
 			if (!find_edge_relative_to_angle(event.v1, current_angle, HalfPlaneSide::Right, MinMax::Max, bottom_edge))
 				bottom_edge = right.bottom_edge;
 			Trapezoid &mid_new = trapezoids[create_trapezoid(left.top_edge, bottom_edge, event.v1, event.v2)];
 			mid_new.angle_begin = current_angle;
-			DEBUG_PRINT("new mid: " << _debug_print_trapezoid(mid_new) << std::endl);
+			debug_println("new mid: " << _debug_print_trapezoid(mid_new));
 
-			DEBUG_PRINT("old right: " << _debug_print_trapezoid(right) << std::endl);
+			debug_println("old right: " << _debug_print_trapezoid(right));
 			Trapezoid &right_new =
 				trapezoids[create_trapezoid(right.top_edge, right.bottom_edge, event.v2, right.right_vertex)];
 			right_new.angle_begin = current_angle;
-			DEBUG_PRINT("new right: " << _debug_print_trapezoid(right_new) << std::endl);
+			debug_println("new right: " << _debug_print_trapezoid(right_new));
 		}
 	}
 
-	DEBUG_PRINT("Merge unfinished trapezoids:" << std::endl);
+	debug_println("Merge unfinished trapezoids:");
 	std::map<std::pair<Vertex, Vertex>, TrapezoidID> no_begin_ts;
 	std::map<std::pair<Vertex, Vertex>, TrapezoidID> no_end_ts;
 	for (auto &p : trapezoids) {
@@ -598,8 +597,8 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		Trapezoid &trapezoid = trapezoids[p.second];
 		assert(no_end_ts.find(v) != no_end_ts.end());
 		Trapezoid &other = trapezoids[no_end_ts[v]];
-		DEBUG_PRINT("\tT" << trapezoid.get_id() << " with T" << other.get_id() << ": "
-						  << _debug_print_trapezoid(trapezoid) << std::endl);
+		debug_println("\tT" << trapezoid.get_id() << " with T" << other.get_id() << ": "
+							<< _debug_print_trapezoid(trapezoid));
 		assert(undirected_eq(trapezoid.top_edge, other.top_edge));
 		assert(undirected_eq(trapezoid.bottom_edge, other.bottom_edge));
 		assert(trapezoid.left_vertex == other.left_vertex);
@@ -634,18 +633,18 @@ void Trapezoider::calc_trapezoids(const std::vector<Point> &points, std::vector<
 
 	calc_trapezoids_with_rotational_sweep();
 
-	DEBUG_PRINT("After rotational sweep, trapezoids:" << std::endl);
+	debug_println("After rotational sweep, trapezoids:");
 	for (const auto &p : trapezoids) {
 		const auto &trapezoid = p.second;
-		DEBUG_PRINT("\tT" << trapezoid.get_id() << " ");
+		debug_print("\tT" << trapezoid.get_id() << " ");
 		double begin_x = trapezoid.angle_begin.dx().exact().convert_to<double>();
 		double begin_y = trapezoid.angle_begin.dy().exact().convert_to<double>();
 		double end_x = trapezoid.angle_end.dx().exact().convert_to<double>();
 		double end_y = trapezoid.angle_end.dy().exact().convert_to<double>();
 		int angle_begin = (int)(atan2(begin_y, begin_x) * 180 / M_PI);
 		int angle_end = (int)(atan2(end_y, end_x) * 180 / M_PI);
-		DEBUG_PRINT("(" << angle_begin << ", " << angle_end << ")");
-		DEBUG_PRINT(" " << _debug_print_trapezoid(trapezoid) << std::endl);
+		debug_print("(" << angle_begin << ", " << angle_end << ")");
+		debug_println(" " << _debug_print_trapezoid(trapezoid));
 	}
 
 	for (const auto &p : trapezoids)

@@ -25,6 +25,6 @@ void test_localizator() {
 int main() {
 	test_localizator();
 
-	DEBUG_PRINT("exit code: 0" << std::endl);
+	debug_println("exit code: 0");
 	return 0;
 }
