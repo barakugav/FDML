@@ -1,10 +1,3 @@
-#include <math.h>
-#ifndef M_PI
-// windows
-#define _USE_MATH_DEFINES
-#include <cmath>
-#endif
-
 #include "trapezoider.h"
 #include "utils.hpp"
 #include <CGAL/Arr_vertical_decomposition_2.h>
@@ -71,14 +64,6 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 		decomp[v] = v_data;
 	}
 }
-
-static const Direction ANGLE_NONE(0, 0);
-
-Trapezoid::Trapezoid(TrapezoidID id, Halfedge top_edge, Halfedge bottom_edge, Vertex left_vertex, Vertex right_vertex)
-	: id(id), top_edge(top_edge), bottom_edge(bottom_edge), left_vertex(left_vertex), right_vertex(right_vertex),
-	  angle_begin(ANGLE_NONE), angle_end(ANGLE_NONE) {}
-
-TrapezoidID Trapezoid::get_id() const { return id; }
 
 static bool undirected_eq(const Halfedge &e1, const Halfedge &e2) { return e1 == e2 || e1 == e2->twin(); }
 
@@ -229,9 +214,9 @@ class Event {
 
 static Halfedge direct_edge_free_face(const Halfedge &edge) { return is_free(edge->face()) ? edge : edge->twin(); }
 
-TrapezoidID Trapezoider::create_trapezoid(const Halfedge &top_edge, const Halfedge &bottom_edge,
-										  const Vertex &left_vertex, const Vertex &right_vertex) {
-	TrapezoidID t_id = ++trapezoids_id_counter;
+Trapezoid::ID Trapezoider::create_trapezoid(const Halfedge &top_edge, const Halfedge &bottom_edge,
+											const Vertex &left_vertex, const Vertex &right_vertex) {
+	Trapezoid::ID t_id = ++trapezoids_id_counter;
 	auto top_edge_d = direct_edge_free_face(top_edge), bottom_edge_d = direct_edge_free_face(bottom_edge);
 	Trapezoid trapezoid(t_id, top_edge_d, bottom_edge, left_vertex, right_vertex);
 	trapezoids[t_id] = trapezoid;
@@ -578,8 +563,8 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 	}
 
 	debug_println("Merge unfinished trapezoids:");
-	std::map<std::pair<Vertex, Vertex>, TrapezoidID> no_begin_ts;
-	std::map<std::pair<Vertex, Vertex>, TrapezoidID> no_end_ts;
+	std::map<std::pair<Vertex, Vertex>, Trapezoid::ID> no_begin_ts;
+	std::map<std::pair<Vertex, Vertex>, Trapezoid::ID> no_end_ts;
 	for (auto &p : trapezoids) {
 		Trapezoid &trapezoid = p.second;
 		assert(!(trapezoid.angle_begin == ANGLE_NONE && trapezoid.angle_end == ANGLE_NONE));
@@ -608,13 +593,13 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 	}
 
 	// Remove trapezoids that start and finish at the same angle
-	std::vector<TrapezoidID> empty_trapezoids;
+	std::vector<Trapezoid::ID> empty_trapezoids;
 	for (const auto &p : trapezoids) {
 		const auto &trapezoid = p.second;
 		if (is_same_direction(trapezoid.angle_begin, trapezoid.angle_end))
 			empty_trapezoids.push_back(p.first);
 	}
-	for (TrapezoidID empty_trapezoid : empty_trapezoids)
+	for (Trapezoid::ID empty_trapezoid : empty_trapezoids)
 		trapezoids.erase(empty_trapezoid);
 }
 

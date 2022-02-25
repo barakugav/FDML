@@ -36,6 +36,7 @@ include_directories ( robo_local_daemon PUBLIC ${CPP_SRC}/include/ )
 include_directories ( robo_local_daemon PRIVATE ${CPP_SRC}/src/ )
 
 add_executable( robo_local_daemon
+  ${CPP_SRC}/src/trapezoid.cpp
   ${CPP_SRC}/src/trapezoider.cpp
   ${CPP_SRC}/src/localizator.cpp
   ${CPP_SRC}/src/json_utils.cpp

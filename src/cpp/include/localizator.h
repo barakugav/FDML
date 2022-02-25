@@ -10,12 +10,12 @@ class Localizator {
 	typedef boost::geometry::model::point<Kernel::FT, 1, boost::geometry::cs::cartesian> TrapezoidRTreePoint;
 	typedef boost::geometry::model::box<TrapezoidRTreePoint> TrapezoidRTreeSegment;
 	typedef boost::geometry::index::linear<3> TrapezoidRTreeParams;
-	typedef std::pair<TrapezoidRTreeSegment, TrapezoidID> TrapezoidRTreeValue;
+	typedef std::pair<TrapezoidRTreeSegment, Trapezoid::ID> TrapezoidRTreeValue;
 	typedef boost::geometry::index::rtree<TrapezoidRTreeValue, TrapezoidRTreeParams> TrapezoidRTree;
 
 	Trapezoider trapezoider;
-	std::map<TrapezoidID, Trapezoid> trapezoids;
-	std::vector<TrapezoidID> sorted_by_max;
+	std::map<Trapezoid::ID, Trapezoid> trapezoids;
+	std::vector<Trapezoid::ID> sorted_by_max;
 	TrapezoidRTree rtree;
 
   public:
