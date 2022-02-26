@@ -26,6 +26,64 @@ static Halfedge direct_edge(const Halfedge &edge) {
 	return edge->curve().target().hy() >= edge->curve().source().hy() ? edge : edge->twin();
 }
 
+/* perform an operation on all edges coming out of a vertex */
+template <typename OP> static void foreach_vertex_edge(const Vertex &v, const OP &op) {
+	auto edge = v->incident_halfedges();
+	for (auto edges_end = edge;;) {
+		auto directed_edge = edge->source() == v ? edge : edge->twin();
+		assert(directed_edge->source() == v);
+		op(directed_edge);
+		if (++edge == edges_end)
+			break;
+	}
+}
+
+enum MinMax {
+	Min,
+	Max,
+};
+
+/**
+ * @brief Finds an edge coming out of a vertex, which is on the right/left relative to a given angle, and has a max/min
+ * angle relative to the angle.
+ *
+ * @param v the source vertex
+ * @param angle the relative angle
+ * @param side right/left side to search for an edge
+ * @param min_max min/max to find the most fit edge
+ * @param res output result
+ * @return true if found, else false
+ */
+static bool find_edge_relative_to_angle(const Vertex &v, const Direction &angle, enum HalfPlaneSide side,
+										enum MinMax min_max, Halfedge &res) {
+	bool found = false;
+	Halfedge best;
+	foreach_vertex_edge(v, [&v, &angle, side, min_max, &found, &best](const Halfedge &edge) {
+		auto calc_edge_angle = [&v](const auto &e) {
+			Point target = (e->source() == v ? e->target() : e->source())->point();
+			Point vp = v->point();
+			return Direction(target.hx() - vp.hx(), target.hy() - vp.hy());
+		};
+		auto e_angle = calc_edge_angle(edge);
+
+		if (side == calc_half_plane_side(angle, e_angle)) {
+			auto min_max_side = min_max == MinMax::Max ? HalfPlaneSide::Left : HalfPlaneSide::Right;
+			if (!found || calc_half_plane_side(calc_edge_angle(best), e_angle) == min_max_side) {
+				best = edge;
+				found = true;
+			}
+		}
+	});
+	if (found)
+		res = best;
+	return found;
+}
+
+/* same as the generic function, but always relative to y-axis and the left side */
+static bool find_vertex_left_edge_with(const Vertex &v, enum MinMax min_max, Halfedge &res) {
+	return find_edge_relative_to_angle(v, Direction(0, 1), HalfPlaneSide::Left, min_max, res);
+}
+
 class DecompVertexData {
   public:
 	bool is_edge_above;
@@ -50,9 +108,10 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 	std::map<Vertex, CGAL::Object> above_orig;
 	std::map<Vertex, CGAL::Object> below_orig;
 	for (auto &decomp_entry : vd_list) {
-		vertices.push_back(decomp_entry.first);
-		above_orig[decomp_entry.first] = decomp_entry.second.second;
-		below_orig[decomp_entry.first] = decomp_entry.second.first;
+		const auto &v = decomp_entry.first;
+		vertices.push_back(v);
+		above_orig[v] = decomp_entry.second.second;
+		below_orig[v] = decomp_entry.second.first;
 	}
 
 	/* sort vertices firstly by x and than by y */
@@ -111,18 +170,6 @@ class Less_edge : public CGAL::cpp98::binary_function<Halfedge, Halfedge, bool> 
 	bool operator()(Halfedge e1, Halfedge e2) const { return !undirected_eq(e1, e2) && &(*e1) < &(*e2); }
 };
 
-/* perform an operation on all edges coming out of a vertex */
-template <typename OP> static void foreach_vertex_edge(const Vertex &v, const OP &op) {
-	auto edge = v->incident_halfedges();
-	for (auto edges_end = edge;;) {
-		auto directed_edge = edge->source() == v ? edge : edge->twin();
-		assert(directed_edge->source() == v);
-		op(directed_edge);
-		if (++edge == edges_end)
-			break;
-	}
-}
-
 /* Create an arrangement out of a list of points. The accepted arrangements are only the ones which represent a simple
  * polygon with no holes - each vertex has a degree of 2, there are only 2 faces (one bounded, one unbounded), each edge
  * has each of the two faces on each side. */
@@ -175,56 +222,6 @@ static void create_arrangement(Arrangement &arr, const std::vector<Point> &point
 			if (is_free(e->face()) ^ is_free(e->face()))
 				throw std::invalid_argument("zero width edges are not supported");
 		});
-}
-
-enum MinMax {
-	Min,
-	Max,
-};
-
-/**
- * @brief Finds an edge coming out of a vertex, which is on the right/left relative to a given angle, and has a max/min
- * angle relative to the angle.
- *
- * @param v the source vertex
- * @param angle the relative angle
- * @param side right/left side to search for an edge
- * @param min_max min/max to find the most fit edge
- * @param res output result
- * @return true if found, else false
- */
-static bool find_edge_relative_to_angle(const Vertex &v, const Direction &angle, enum HalfPlaneSide side,
-										enum MinMax min_max, Halfedge &res) {
-	bool found = false;
-	Halfedge best;
-	foreach_vertex_edge(v, [&v, &angle, side, min_max, &found, &best](const Halfedge &edge) {
-		auto calc_edge_angle = [&v](const auto &e) {
-			Point target = (e->source() == v ? e->target() : e->source())->point();
-			Point vp = v->point();
-			return Direction(target.hx() - vp.hx(), target.hy() - vp.hy());
-		};
-		auto e_angle = calc_edge_angle(edge);
-
-		if (side == calc_half_plane_side(angle, e_angle)) {
-			auto min_max_side = min_max == MinMax::Max ? HalfPlaneSide::Left : HalfPlaneSide::Right;
-			if (!found || calc_half_plane_side(calc_edge_angle(best), e_angle) == min_max_side) {
-				best = edge;
-				found = true;
-			}
-		}
-	});
-	if (found)
-		res = best;
-	return found;
-}
-
-/* same as the generic function, but always relative to y-axis and the left side */
-static bool find_vertex_left_edge_with(const Vertex &v, enum MinMax min_max, Halfedge &res) {
-	return find_edge_relative_to_angle(v, Direction(0, 1), HalfPlaneSide::Left, min_max, res);
-}
-
-static bool is_same_direction(Direction d1, Direction d2) {
-	return calc_half_plane_side(d1, d2) == HalfPlaneSide::None && d1.vector() * d2.vector() > 0;
 }
 
 /* return an edge or it's twin, the one with the free face, that is face representing the interior of the room */
@@ -358,6 +355,10 @@ static bool get_edge(const Vertex &source, const Vertex &target, Halfedge &res) 
 		}
 	});
 	return found;
+}
+
+static bool is_same_direction(Direction d1, Direction d2) {
+	return calc_half_plane_side(d1, d2) == HalfPlaneSide::None && d1.vector() * d2.vector() > 0;
 }
 
 /* perfrom a parallel rotational sweep to calculate all trapezoids of all angles. Assume the data structres have been

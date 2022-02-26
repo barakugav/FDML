@@ -15,8 +15,6 @@ from gui import GUI
 
 
 class LocalizatorGUI(GUI):
-    # comboBoxes = {}
-
     def __init__(self):
         super().__init__()
         self.redraw()
@@ -45,138 +43,51 @@ class LocalizatorGUI(GUI):
         self.gridLayout.addWidget(self.graphicsView, 3, 2, 1, 1)
         self.gridLayout_0 = QtWidgets.QGridLayout()
         self.gridLayout_0.setObjectName("gridLayout_0")
-        # self.lineEdit_2 = QtWidgets.QLineEdit(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.lineEdit_2.setFont(font)
-        # self.lineEdit_2.setObjectName("lineEdit_2")
-        # self.gridLayout_0.addWidget(self.lineEdit_2, 14, 0, 1, 1)
-        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_compute = QtWidgets.QPushButton(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.pushButton_2.setFont(font)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.gridLayout_0.addWidget(self.pushButton_2, 15, 0, 1, 1)
-        # self.pushButton_1 = QtWidgets.QPushButton(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.pushButton_1.setFont(font)
-        # self.pushButton_1.setObjectName("pushButton_1")
-        # self.gridLayout_0.addWidget(self.pushButton_1, 11, 0, 1, 1)
-        # self.label_1 = QtWidgets.QLabel(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.label_1.setFont(font)
-        # self.label_1.setObjectName("label_1")
-        # self.gridLayout_0.addWidget(self.label_1, 6, 0, 1, 1)
-        self.lineEdit_0 = QtWidgets.QLineEdit(self.centralwidget)
+        self.pushButton_compute.setFont(font)
+        self.pushButton_compute.setObjectName("pushButton_compute")
+        self.gridLayout_0.addWidget(self.pushButton_compute, 15, 0, 1, 1)
+        self.lineEdit_scene = QtWidgets.QLineEdit(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.lineEdit_0.setFont(font)
-        self.lineEdit_0.setObjectName("lineEdit_0")
-        self.gridLayout_0.addWidget(self.lineEdit_0, 4, 0, 1, 1)
-        # self.comboBox = QtWidgets.QComboBox(self.centralwidget)
-        # self.comboBox.setObjectName("comboBox")
-        # self.gridLayout_0.addWidget(self.comboBox, 2, 0, 1, 1)
-        # self.toolButton_1 = QtWidgets.QToolButton(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.toolButton_1.setFont(font)
-        # self.toolButton_1.setObjectName("toolButton_1")
-        # self.gridLayout_0.addWidget(self.toolButton_1, 7, 1, 1, 1)
-        # self.toolButton_2 = QtWidgets.QToolButton(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.toolButton_2.setFont(font)
-        # self.toolButton_2.setObjectName("toolButton_2")
-        # self.gridLayout_0.addWidget(self.toolButton_2, 14, 1, 1, 1)
-        # self.lineEdit_1 = QtWidgets.QLineEdit(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.lineEdit_1.setFont(font)
-        # self.lineEdit_1.setObjectName("lineEdit_1")
-        # self.gridLayout_0.addWidget(self.lineEdit_1, 7, 0, 1, 1)
-        # self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.pushButton_4.setFont(font)
-        # self.pushButton_4.setObjectName("pushButton_4")
-        # self.gridLayout_0.addWidget(self.pushButton_4, 20, 0, 1, 1)
-        self.toolButton_0 = QtWidgets.QToolButton(self.centralwidget)
+        self.lineEdit_scene.setFont(font)
+        self.lineEdit_scene.setObjectName("lineEdit_scene")
+        self.gridLayout_0.addWidget(self.lineEdit_scene, 4, 0, 1, 1)
+        self.toolButton_searchScene = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.toolButton_0.setFont(font)
-        self.toolButton_0.setObjectName("toolButton_0")
-        self.gridLayout_0.addWidget(self.toolButton_0, 4, 1, 1, 1)
-        # self.pushButton_8 = QtWidgets.QPushButton(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.pushButton_8.setFont(font)
-        # self.pushButton_8.setObjectName("pushButton_8")
-        # self.gridLayout_0.addWidget(self.pushButton_8, 18, 0, 1, 1)
-        # self.label_7 = QtWidgets.QLabel(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.label_7.setFont(font)
-        # self.label_7.setObjectName("label_7")
-        # self.gridLayout_0.addWidget(self.label_7, 1, 0, 1, 1)
-        self.label_0 = QtWidgets.QLabel(self.centralwidget)
+        self.toolButton_searchScene.setFont(font)
+        self.toolButton_searchScene.setObjectName("toolButton_searchScene")
+        self.gridLayout_0.addWidget(self.toolButton_searchScene, 4, 1, 1, 1)
+        self.label_scene = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.label_0.setFont(font)
-        self.label_0.setObjectName("label_0")
-        self.gridLayout_0.addWidget(self.label_0, 3, 0, 1, 1)
-        # self.lineEdit_5 = QtWidgets.QLineEdit(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.lineEdit_5.setFont(font)
-        # self.lineEdit_5.setObjectName("lineEdit_5")
-        # self.gridLayout_0.addWidget(self.lineEdit_5, 17, 0, 1, 1)
-        # self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.pushButton_3.setFont(font)
-        # self.pushButton_3.setObjectName("pushButton_3")
-        # self.gridLayout_0.addWidget(self.pushButton_3, 19, 0, 1, 1)
-        self.pushButton_0 = QtWidgets.QPushButton(self.centralwidget)
+        self.label_scene.setFont(font)
+        self.label_scene.setObjectName("label_scene")
+        self.gridLayout_0.addWidget(self.label_scene, 3, 0, 1, 1)
+        self.pushButton_scene = QtWidgets.QPushButton(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.pushButton_0.setFont(font)
-        self.pushButton_0.setObjectName("pushButton_0")
-        self.gridLayout_0.addWidget(self.pushButton_0, 5, 0, 1, 1)
-        # self.label_5 = QtWidgets.QLabel(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.label_5.setFont(font)
-        # self.label_5.setObjectName("label_5")
-        # self.gridLayout_0.addWidget(self.label_5, 16, 0, 1, 1)
+        self.pushButton_scene.setFont(font)
+        self.pushButton_scene.setObjectName("pushButton_scene")
+        self.gridLayout_0.addWidget(self.pushButton_scene, 5, 0, 1, 1)
         spacerItem = QtWidgets.QSpacerItem(300, 0, QtWidgets.QSizePolicy.MinimumExpanding,
                                            QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_0.addItem(spacerItem, 22, 0, 3, 1)
-        # self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.pushButton_7.setFont(font)
-        # self.pushButton_7.setObjectName("pushButton_7")
-        # self.gridLayout_0.addWidget(self.pushButton_7, 0, 0, 1, 1)
-        self.label_4 = QtWidgets.QLabel(self.centralwidget)
+        self.label_d = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.label_4.setFont(font)
-        self.label_4.setObjectName("label_4")
-        self.gridLayout_0.addWidget(self.label_4, 8, 0, 1, 1)
-        self.lineEdit_4 = QtWidgets.QLineEdit(self.centralwidget)
+        self.label_d.setFont(font)
+        self.label_d.setObjectName("label_d")
+        self.gridLayout_0.addWidget(self.label_d, 8, 0, 1, 1)
+        self.lineEdit_d = QtWidgets.QLineEdit(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.lineEdit_4.setFont(font)
-        self.lineEdit_4.setObjectName("lineEdit_4")
-        self.gridLayout_0.addWidget(self.lineEdit_4, 10, 0, 1, 1)
-        # self.label_2 = QtWidgets.QLabel(self.centralwidget)
-        # font = QtGui.QFont()
-        # font.setPointSize(12)
-        # self.label_2.setFont(font)
-        # self.label_2.setObjectName("label_2")
-        # self.gridLayout_0.addWidget(self.label_2, 13, 0, 1, 1)
+        self.lineEdit_d.setFont(font)
+        self.lineEdit_d.setObjectName("lineEdit_d")
+        self.gridLayout_0.addWidget(self.lineEdit_d, 10, 0, 1, 1)
         self.gridLayout.addLayout(self.gridLayout_0, 3, 1, 1, 1)
         self.textEdit = Logger(self.centralwidget)
         self.textEdit.setObjectName("textEdit")
@@ -188,31 +99,13 @@ class LocalizatorGUI(GUI):
 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        # end of eq designer generated code
-
-        self.lineEdits['scene'] = self.lineEdit_0
-        # self.lineEdits['planner'] = self.lineEdit_1
-        self.lineEdits['d'] = self.lineEdit_4
-        # self.lineEdits['solution'] = self.lineEdit_2
-        # self.lineEdits['export'] = self.lineEdit_5
-        self.pushButtons['scene'] = self.pushButton_0
-        # self.pushButtons['planner'] = self.pushButton_1
-        self.pushButtons['compute'] = self.pushButton_2
-        # self.pushButtons['animate'] = self.pushButton_3
-        # self.pushButtons['verify'] = self.pushButton_4
-        # self.pushButtons['compute'] = self.pushButton_7
-        # self.pushButtons['export'] = self.pushButton_8
-        self.pushButtons['searchScene'] = self.toolButton_0
-        # self.pushButtons['searchPlanner'] = self.toolButton_1
-        # self.pushButtons['searchSolution'] = self.toolButton_2
-        self.labels['scene'] = self.label_0
-        # self.labels['planner'] = self.label_1
-        # self.labels['solution'] = self.label_2
-        self.labels['d'] = self.label_4
-        # self.labels['export'] = self.label_5
-        # self.labels['mode'] = self.label_7
-
-        # self.comboBoxes['mode'] = self.comboBox
+        self.lineEdits['scene'] = self.lineEdit_scene
+        self.lineEdits['d'] = self.lineEdit_d
+        self.pushButtons['scene'] = self.pushButton_scene
+        self.pushButtons['compute'] = self.pushButton_compute
+        self.pushButtons['searchScene'] = self.toolButton_searchScene
+        self.labels['scene'] = self.label_scene
+        self.labels['d'] = self.label_d
 
 
 class Polygons_scene():
@@ -287,14 +180,7 @@ def compute():
         return
     print("compute", d)
 
-    # with open("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json", "r") as outfile:
-    #     data = json.load(outfile)
-    # res = []
-    # polygons_json = data["polygons"]
-    # for polygon in polygons_json:
-    #     res.append(np.array(polygon))
     res = localizator.query1(float(d))
-    # res = []
     for polygon in res:
         fill_color = QtGui.QColor(0, 0, 255, 100)
         line_color = QtCore.Qt.transparent
@@ -303,33 +189,14 @@ def compute():
 
 
 def enable():
-    # gui.set_button_text('help', "Help")
-    # gui.set_logic('help', display_help)
-    # gui.set_label('mode', "Mode:")
     gui.set_label('scene', "Scene File (.json):")
     gui.set_logic('scene', set_up_scene)
     gui.set_button_text('scene', "Load Scene")
-    # gui.set_label('planner', "Planner File (.py):")
-    # gui.set_logic('planner', generate_path)
-    # gui.set_button_text('planner', "Generate Path")
     gui.set_button_text('searchScene', "..")
     gui.set_logic('searchScene', set_input_file)
-    # gui.set_button_text('searchPlanner', "..")
     gui.set_button_text('compute', "Compute")
     gui.set_logic('compute', compute)
     gui.set_label('d', "measurement size (d)")
-    # gui.set_label('solution', "Solution File (.txt):")
-    # gui.set_logic('solution', load_path)
-    # gui.set_button_text('solution', "Load Solution")
-    # gui.set_button_text('searchSolution', "..")
-    # gui.set_logic('searchSolution', set_solution_file)
-    # gui.set_label('export', "Export solution:")
-    # gui.set_logic('export', export_path)
-    # gui.set_button_text('export', "Export")
-    # gui.set_button_text('animate', "Animate Movement Along Path")
-    # gui.set_logic('animate', animate_path)
-    # gui.set_button_text('verify', "Check Path Validity")
-    # gui.set_logic('verify', is_path_valid)
 
 
 def get_file():

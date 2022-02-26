@@ -73,7 +73,6 @@ class Localizator:
             self.logfile = None
 
     def _exec_cmd(self, cmd):
-        print(cmd)  # TODO remove
         if not self.daemon:
             raise ValueError("invalid state: localizator is not running")
         with open(self.cmdfile, "w") as cmdfile:
@@ -134,9 +133,9 @@ class Localizator:
                     os.remove(outfile)
 
 
+# TODO remove
 if __name__ == "__main__":
     localizator = Localizator(os.path.join(os.getcwd(), ".localizator"))
     localizator.run("scene01.json")
-    # localizator.run("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\scene01.json")
     localizator.query1(6)
     localizator.stop()

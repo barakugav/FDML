@@ -67,80 +67,80 @@ class GUI_scene_designer(GUI):
         self.gridLayout.addWidget(self.graphicsView, 3, 1, 1, 1)
         self.gridLayout_0 = QtWidgets.QGridLayout()
         self.gridLayout_0.setObjectName("gridLayout_0")
-        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_resolution = QtWidgets.QPushButton(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.pushButton_3.setFont(font)
-        self.pushButton_3.setObjectName("pushButton_3")
+        self.pushButton_resolution.setFont(font)
+        self.pushButton_resolution.setObjectName("pushButton_resolution")
         spacerItem = QtWidgets.QSpacerItem(300, 20, QtWidgets.QSizePolicy.MinimumExpanding,
                                            QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_0.addItem(spacerItem, 33, 0, 1, 1)
-        self.label_1 = QtWidgets.QLabel(self.centralwidget)
+        self.label_saveLocation = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.label_1.setFont(font)
-        self.label_1.setObjectName("label_1")
-        self.gridLayout_0.addWidget(self.label_1, 4, 0, 1, 1)
-        self.lineEdit_0 = QtWidgets.QLineEdit(self.centralwidget)
+        self.label_saveLocation.setFont(font)
+        self.label_saveLocation.setObjectName("label_saveLocation")
+        self.gridLayout_0.addWidget(self.label_saveLocation, 4, 0, 1, 1)
+        self.lineEdit_scene = QtWidgets.QLineEdit(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.lineEdit_0.setFont(font)
-        self.lineEdit_0.setObjectName("lineEdit_0")
-        self.gridLayout_0.addWidget(self.lineEdit_0, 2, 0, 1, 1)
-        self.lineEdit_1 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEdit_scene.setFont(font)
+        self.lineEdit_scene.setObjectName("lineEdit_scene")
+        self.gridLayout_0.addWidget(self.lineEdit_scene, 2, 0, 1, 1)
+        self.lineEdit_location = QtWidgets.QLineEdit(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.lineEdit_1.setFont(font)
-        self.lineEdit_1.setObjectName("lineEdit_1")
-        self.gridLayout_0.addWidget(self.lineEdit_1, 5, 0, 1, 1)
-        self.label_0 = QtWidgets.QLabel(self.centralwidget)
+        self.lineEdit_location.setFont(font)
+        self.lineEdit_location.setObjectName("lineEdit_location")
+        self.gridLayout_0.addWidget(self.lineEdit_location, 5, 0, 1, 1)
+        self.label_scene = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.label_0.setFont(font)
-        self.label_0.setObjectName("label_0")
-        self.gridLayout_0.addWidget(self.label_0, 1, 0, 1, 1)
+        self.label_scene.setFont(font)
+        self.label_scene.setObjectName("label_scene")
+        self.gridLayout_0.addWidget(self.label_scene, 1, 0, 1, 1)
         self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
         self.textEdit.setObjectName("textEdit")
         self.gridLayout_0.addWidget(self.textEdit, 9, 0, 1, 1)
-        self.pushButton_1 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_save = QtWidgets.QPushButton(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.pushButton_1.setFont(font)
-        self.pushButton_1.setObjectName("pushButton_1")
-        self.gridLayout_0.addWidget(self.pushButton_1, 8, 0, 1, 1)
-        self.label_3 = QtWidgets.QLabel(self.centralwidget)
+        self.pushButton_save.setFont(font)
+        self.pushButton_save.setObjectName("pushButton_save")
+        self.gridLayout_0.addWidget(self.pushButton_save, 8, 0, 1, 1)
+        self.label_resolution = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.label_3.setFont(font)
-        self.label_3.setObjectName("label_3")
-        self.gridLayout_0.addWidget(self.label_3, 13, 0, 1, 1)
-        self.lineEdit_3 = QtWidgets.QLineEdit(self.centralwidget)
+        self.label_resolution.setFont(font)
+        self.label_resolution.setObjectName("label_resolution")
+        self.gridLayout_0.addWidget(self.label_resolution, 13, 0, 1, 1)
+        self.lineEdit_resolution = QtWidgets.QLineEdit(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.lineEdit_3.setFont(font)
-        self.lineEdit_3.setObjectName("lineEdit_3")
-        self.gridLayout_0.addWidget(self.lineEdit_3, 14, 0, 1, 1)
-        self.toolButton_0 = QtWidgets.QToolButton(self.centralwidget)
+        self.lineEdit_resolution.setFont(font)
+        self.lineEdit_resolution.setObjectName("lineEdit_resolution")
+        self.gridLayout_0.addWidget(self.lineEdit_resolution, 14, 0, 1, 1)
+        self.toolButton_searchScene = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.toolButton_0.setFont(font)
-        self.toolButton_0.setObjectName("toolButton_0")
-        self.gridLayout_0.addWidget(self.toolButton_0, 2, 1, 1, 1)
-        self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
+        self.toolButton_searchScene.setFont(font)
+        self.toolButton_searchScene.setObjectName("toolButton_searchScene")
+        self.gridLayout_0.addWidget(self.toolButton_searchScene, 2, 1, 1, 1)
+        self.pushButton_clear = QtWidgets.QPushButton(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.pushButton_7.setFont(font)
-        self.pushButton_7.setObjectName("pushButton_7")
-        self.gridLayout_0.addWidget(self.pushButton_7, 29, 0, 1, 1)
+        self.pushButton_clear.setFont(font)
+        self.pushButton_clear.setObjectName("pushButton_clear")
+        self.gridLayout_0.addWidget(self.pushButton_clear, 29, 0, 1, 1)
         spacerItem1 = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_0.addItem(spacerItem1, 30, 0, 1, 1)
-        self.pushButton_0 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_load = QtWidgets.QPushButton(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.pushButton_0.setFont(font)
-        self.pushButton_0.setObjectName("pushButton_0")
-        self.gridLayout_0.addWidget(self.pushButton_0, 3, 0, 1, 1)
+        self.pushButton_load.setFont(font)
+        self.pushButton_load.setObjectName("pushButton_load")
+        self.gridLayout_0.addWidget(self.pushButton_load, 3, 0, 1, 1)
         self.gridLayout.addLayout(self.gridLayout_0, 3, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -149,17 +149,17 @@ class GUI_scene_designer(GUI):
 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.lineEdits['scene'] = self.lineEdit_0
-        self.lineEdits['saveLocation'] = self.lineEdit_1
-        self.lineEdits['resolution'] = self.lineEdit_3
-        self.pushButtons['load'] = self.pushButton_0
-        self.pushButtons['save'] = self.pushButton_1
-        self.pushButtons['resolution'] = self.pushButton_3
-        self.pushButtons['clear'] = self.pushButton_7
-        self.pushButtons['searchScene'] = self.toolButton_0
-        self.labels['scene'] = self.label_0
-        self.labels['saveLocation'] = self.label_1
-        self.labels['resolution'] = self.label_3
+        self.lineEdits['scene'] = self.lineEdit_scene
+        self.lineEdits['saveLocation'] = self.lineEdit_location
+        self.lineEdits['resolution'] = self.lineEdit_resolution
+        self.pushButtons['load'] = self.pushButton_load
+        self.pushButtons['save'] = self.pushButton_save
+        self.pushButtons['resolution'] = self.pushButton_resolution
+        self.pushButtons['clear'] = self.pushButton_clear
+        self.pushButtons['searchScene'] = self.toolButton_searchScene
+        self.labels['scene'] = self.label_scene
+        self.labels['saveLocation'] = self.label_saveLocation
+        self.labels['resolution'] = self.label_resolution
 
 
 colors = [QtCore.Qt.yellow, QtCore.Qt.green, QtCore.Qt.red, QtCore.Qt.magenta,

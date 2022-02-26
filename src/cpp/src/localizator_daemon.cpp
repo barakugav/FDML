@@ -171,12 +171,15 @@ void LocalizatorDaemon::check_state() const {
 }
 
 int main(int argc, const char *argv[]) {
-	// LocalizatorDaemon daemon(".cmdfile", ".ackfile");
-	// daemon.load_scene("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\scene01.json");
-	// daemon.query(1.0, "C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json");
-	// daemon.load_scene("scene01.json");
-	// daemon.query(0.3, "res.json");
-	// debugln("done successfully");
+	if (false) {
+		LocalizatorDaemon daemon(".cmdfile", ".ackfile");
+		// daemon.load_scene("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\scene01.json");
+		// daemon.query(1.0, "C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json");
+		daemon.load_scene("scenes/scene02.json");
+		daemon.query(0.3, "res.json");
+		debugln("done successfully");
+		return 0;
+	}
 
 	try {
 		std::string cmd_filename, ack_filename;
