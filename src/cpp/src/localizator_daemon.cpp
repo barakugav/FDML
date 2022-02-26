@@ -42,7 +42,7 @@ LocalizatorDaemon::LocalizatorDaemon(const std::string &cmd_filename, const std:
 	: cmd_filename(cmd_filename), ack_filename(ack_filename), localizator(nullptr) {}
 
 void LocalizatorDaemon::load_scene(const std::string &scene_filename) {
-	std::cout << "# init: " << scene_filename << std::endl;
+	infoln("[LocalizatorDaemon] Init with scene: " << scene_filename);
 
 	try {
 		if (localizator)
@@ -62,7 +62,7 @@ void LocalizatorDaemon::load_scene(const std::string &scene_filename) {
 }
 
 void LocalizatorDaemon::query(double d, const std::string &outfile) const {
-	std::cout << "# query1: " << d << std::endl;
+	infoln("[LocalizatorDaemon] Query1: " << d);
 	check_state();
 
 	std::vector<Polygon> polygons;
@@ -71,13 +71,13 @@ void LocalizatorDaemon::query(double d, const std::string &outfile) const {
 }
 
 void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) const {
-	std::cout << "# query2: " << d1 << " " << d2 << std::endl;
+	infoln("[LocalizatorDaemon] Query2: " << d1 << " " << d2);
 	check_state();
 	throw std::runtime_error("not supported"); // TODO
 }
 
 void LocalizatorDaemon::run() {
-	debugln("Waiting for next command...");
+	infoln("[LocalizatorDaemon] Daemon is running. Waiting for next command...");
 	while (true) {
 		if (!file_exists(ack_filename) && file_exists(cmd_filename)) {
 			std::vector<std::string> argv;
@@ -87,7 +87,7 @@ void LocalizatorDaemon::run() {
 			std::ofstream ackfile(ack_filename);
 			ackfile << err;
 			ackfile.close();
-			debugln("Command proccessed. Waiting for next command...");
+			infoln("[LocalizatorDaemon] Command proccessed. Waiting for next command...");
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(100)); /* 0.1 sec */
 		debug(".");
@@ -95,7 +95,21 @@ void LocalizatorDaemon::run() {
 }
 
 int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv) {
+	debug("[LocalizatorDaemon] executing command:");
+	for (const auto &arg : argv)
+		debug(' ' << arg);
+	debugln("");
+
 	try {
+		const unsigned int MAX_ARGS_NUM = 16;
+		if (argv.size() > MAX_ARGS_NUM)
+			throw std::runtime_error("too many args");
+		const char *argv_arr[MAX_ARGS_NUM + 1];
+		argv_arr[0] = "localizator_daemon";
+		for (unsigned int i = 0; i < argv.size(); i++)
+			argv_arr[1 + i] = argv[i].c_str();
+		int argc = 1 + argv.size();
+
 		std::string cmd;
 		std::string scene_filename;
 		double d;
@@ -111,15 +125,6 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv) {
 		desc.add_options()("d2", boost::program_options::value<double>(&d2),
 						   "second value of double measurement query");
 		desc.add_options()("out", boost::program_options::value<std::string>(&out_filename), "Output file");
-
-		const unsigned int MAX_ARGS_NUM = 16;
-		if (argv.size() > MAX_ARGS_NUM)
-			throw std::runtime_error("too many args");
-		const char *argv_arr[MAX_ARGS_NUM + 1];
-		argv_arr[0] = "localizator_daemon";
-		for (unsigned int i = 0; i < argv.size(); i++)
-			argv_arr[1 + i] = argv[i].c_str();
-		int argc = 1 + argv.size();
 
 		const auto options = boost::program_options::parse_command_line(argc, argv_arr, desc);
 		boost::program_options::variables_map vm;

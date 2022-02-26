@@ -1,4 +1,5 @@
 #include "defs.h"
+#include "utils.hpp"
 
 #ifndef __TRAPEZOID_H__
 #define __TRAPEZOID_H__
@@ -58,5 +59,15 @@ class Trapezoid {
 	 */
 	void calc_min_max_openings();
 };
+
+template <class OutputStream> OutputStream &operator<<(OutputStream &os, const Trapezoid &trapezoid) {
+	os << 'T' << trapezoid.get_id();
+	int angle_begin = trapezoid.angle_begin != Trapezoid::ANGLE_NONE ? direction_to_angles(trapezoid.angle_begin) : 0;
+	int angle_end = trapezoid.angle_end != Trapezoid::ANGLE_NONE ? direction_to_angles(trapezoid.angle_end) : 0;
+	os << " (" << angle_begin << ", " << angle_end << ')';
+	os << " t(" << trapezoid.top_edge->curve() << ") b(" << trapezoid.bottom_edge->curve() << ") l("
+	   << trapezoid.left_vertex->point() << ") r(" << trapezoid.right_vertex->point() << ')';
+	return os;
+}
 
 #endif

@@ -10,6 +10,13 @@
 #define __UTILS_HPP__
 
 #define DEBUG_PRINT_EN 1
+
+#define info(args)                                                                                                     \
+	do {                                                                                                               \
+		std::cout << args;                                                                                             \
+	} while (false)
+#define infoln(args) info(args << std::endl)
+
 #define debug(args)                                                                                                    \
 	do {                                                                                                               \
 		if (DEBUG_PRINT_EN)                                                                                            \
@@ -47,6 +54,13 @@ static Kernel::FT sqrt(Kernel::FT x) {
 template <typename _Vector> static _Vector normalize(_Vector v) {
 	Kernel::FT norm = sqrt(v.squared_length());
 	return norm > 1e-30 ? v / norm : v;
+}
+
+/* This function should be used only for debug uses */
+static int direction_to_angles(const Direction &dir) {
+	double x = dir.dx().exact().convert_to<double>();
+	double y = dir.dy().exact().convert_to<double>();
+	return (int)(atan2(y, x) * 180 / M_PI);
 }
 
 static bool is_free(Face face) { return !face->is_unbounded(); }

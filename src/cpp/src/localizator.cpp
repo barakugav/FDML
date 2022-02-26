@@ -2,6 +2,7 @@
 #include "utils.hpp"
 
 void Localizator::init(const std::vector<Point> &points) {
+	infoln("[Localizator] init...");
 	trapezoids.clear();
 	sorted_by_max.clear();
 	rtree.clear();
@@ -14,7 +15,7 @@ void Localizator::init(const std::vector<Point> &points) {
 	for (const auto &trapezoid : trapezoids_v)
 		(trapezoids[trapezoid.get_id()] = trapezoid).calc_min_max_openings();
 
-	debugln("Trapezoids openings:");
+	debugln("[Localizator] Trapezoids openings:");
 	for (auto &t : trapezoids)
 		debugln("\tT" << t.second.get_id() << " [" << t.second.opening_min << ", " << t.second.opening_max << "]");
 
@@ -24,7 +25,7 @@ void Localizator::init(const std::vector<Point> &points) {
 	sort(sorted_by_max.begin(), sorted_by_max.end(), [this](const auto &t1, const auto &t2) {
 		return trapezoids.at(t1).opening_max < trapezoids.at(t2).opening_max;
 	});
-	debugln("sorted_by_max:");
+	debugln("[Localizator] sorted_by_max:");
 	for (const auto &t_id : sorted_by_max) {
 		const Trapezoid &trapezoid = trapezoids.at(t_id);
 		debugln("\tT" << trapezoid.get_id() << " [" << trapezoid.opening_min << ", " << trapezoid.opening_max << "]");
@@ -42,28 +43,33 @@ void Localizator::init(const std::vector<Point> &points) {
 
 void Localizator::query(const Kernel::FT &d, std::vector<Polygon> &res) const {
 	/* Single measurement query. Perform binary search on the sorted array for output sensitive running time */
+	infoln("[Localizator] Single measurement query (d = " << d << "):");
 	auto it =
 		std::lower_bound(sorted_by_max.begin(), sorted_by_max.end(), d, [this](const auto &trapezoid, const auto &d) {
 			return trapezoids.at(trapezoid).opening_max < d;
 		});
 
-	debugln("Single measurement query (d = " << d << "):");
+	std::vector<Polygon> res_local;
 	for (; it != sorted_by_max.end(); ++it) {
 		const auto &trapezoid = trapezoids.at(*it);
 		debugln("\tT" << trapezoid.get_id() << " [" << trapezoid.opening_min << ", " << trapezoid.opening_max << "]");
-		trapezoid.calc_result_m1(d, res);
+		trapezoid.calc_result_m1(d, res_local);
 	}
+	infoln("[Localizator] result consist of " << res_local.size() << " polygons.");
+
+	for (auto &p : res_local)
+		res.push_back(std::move(p));
 }
 
 void Localizator::query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement &res) const {
 	/* Double measurement query. Use the interval tree for output sensitive running time */
+	infoln("[Localizator] Double measurement query (d1 = " << d1 << ", d2 = " << d2 << "):");
 	const Kernel::FT d = d1 + d2;
 	TrapezoidRTreePoint a(d), b(d);
 	TrapezoidRTreeSegment query_interval(a, b);
 	std::vector<TrapezoidRTreeValue> res_vals;
 	rtree.query(boost::geometry::index::intersects(query_interval), std::back_inserter(res_vals));
 
-	debugln("Two measurements query (d1 = " << d1 << ", d2 = " << d2 << "):");
 	for (const TrapezoidRTreeValue &rtree_val : res_vals) {
 		const auto &trapezoid = trapezoids.at(rtree_val.second);
 		debugln("\tT" << trapezoid.get_id() << " [" << trapezoid.opening_min << ", " << trapezoid.opening_max << "]");
