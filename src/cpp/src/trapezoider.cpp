@@ -685,7 +685,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		trapezoids.erase(empty_trapezoid);
 }
 
-void Trapezoider::calc_trapezoids(const Polygon &scene, std::vector<Trapezoid> &res) {
+void Trapezoider::calc_trapezoids(const Polygon &scene) {
 	infoln("[Trapezoider] Calculating trapezoids...");
 	trapezoids.clear();
 	vertices_data.clear();
@@ -707,7 +707,20 @@ void Trapezoider::calc_trapezoids(const Polygon &scene, std::vector<Trapezoid> &
 	for (const auto &p : trapezoids)
 		debugln("\t" << p.second);
 	infoln("[Trapezoider] " << trapezoids.size() << " trapezoid found successfully");
-
-	for (const auto &p : trapezoids)
-		res.push_back(p.second);
 }
+
+std::map<Trapezoid::ID, Trapezoid>::iterator Trapezoider::get_trapezoid(Trapezoid::ID id) {
+	return trapezoids.find(id);
+}
+
+std::map<Trapezoid::ID, Trapezoid>::const_iterator Trapezoider::get_trapezoid(Trapezoid::ID id) const {
+	return trapezoids.find(id);
+}
+
+std::map<Trapezoid::ID, Trapezoid>::iterator Trapezoider::trapezoids_begin() { return trapezoids.begin(); }
+
+std::map<Trapezoid::ID, Trapezoid>::iterator Trapezoider::trapezoids_end() { return trapezoids.end(); }
+
+std::map<Trapezoid::ID, Trapezoid>::const_iterator Trapezoider::trapezoids_begin() const { return trapezoids.begin(); }
+
+std::map<Trapezoid::ID, Trapezoid>::const_iterator Trapezoider::trapezoids_end() const { return trapezoids.end(); }

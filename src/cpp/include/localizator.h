@@ -18,10 +18,8 @@ class Localizator {
 	typedef std::pair<TrapezoidRTreeSegment, Trapezoid::ID> TrapezoidRTreeValue;
 	typedef boost::geometry::index::rtree<TrapezoidRTreeValue, TrapezoidRTreeParams> TrapezoidRTree;
 
-	/* Trapezoider object used to calculate all trapezoids of the room */
+	/* Trapezoider object used to calculate and store all trapezoids of the room */
 	Trapezoider trapezoider;
-	/* Map containing all the trapezoids of the room */
-	std::map<Trapezoid::ID, Trapezoid> trapezoids;
 	/* Trapezoids sorted by their max opening. Used for output sensitive calculation of single measurement queries */
 	std::vector<Trapezoid::ID> sorted_by_max;
 	/* Trapezoids in an interval tree, each interval is the min and max opening of a trapezoid. Used for output

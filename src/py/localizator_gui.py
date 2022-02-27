@@ -171,9 +171,9 @@ class LocalizatorGUI:
 
     def _writer(self, *args):
         if self.writer:
-            print(args, file=self.writer)
+            print(*args, file=self.writer)
         else:
-            print(args)
+            print(*args)
 
     def clear_res_polygons_gui(self):
         for gui_polygon in self.res_polygons_gui:
