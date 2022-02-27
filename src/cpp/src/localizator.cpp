@@ -1,7 +1,7 @@
 #include "localizator.h"
 #include "utils.hpp"
 
-void Localizator::init(const std::vector<Point> &points) {
+void Localizator::init(const Polygon &scene) {
 	infoln("[Localizator] init...");
 	trapezoids.clear();
 	sorted_by_max.clear();
@@ -9,7 +9,7 @@ void Localizator::init(const std::vector<Point> &points) {
 
 	/* Calculate all trapezoids */
 	std::vector<Trapezoid> trapezoids_v;
-	trapezoider.calc_trapezoids(points, trapezoids_v);
+	trapezoider.calc_trapezoids(scene, trapezoids_v);
 
 	/* Fill trapezoids data structure and calculate min and max opening */
 	for (const auto &trapezoid : trapezoids_v)

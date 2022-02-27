@@ -48,10 +48,10 @@ void LocalizatorDaemon::load_scene(const std::string &scene_filename) {
 		if (localizator)
 			localizator.reset();
 
-		std::vector<Point> points;
-		parse_scene_from_json(scene_filename, points);
+		Polygon scene;
+		parse_scene_from_json(scene_filename, scene);
 		localizator = std::make_unique<Localizator>();
-		localizator->init(points);
+		localizator->init(scene);
 
 	} catch (const std::exception &e) {
 		if (localizator)
@@ -167,26 +167,19 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv) {
 
 void LocalizatorDaemon::check_state() const {
 	if (!localizator)
-		throw std::runtime_error("Localizator wan't initiated");
+		throw std::runtime_error("Localizator wan't initialized");
 }
 
+#define DEBUG_MAIN false
+
 int main(int argc, const char *argv[]) {
-	if (false) {
+	if (DEBUG_MAIN) {
 		LocalizatorDaemon daemon(".cmdfile", ".ackfile");
-		// daemon.load_scene("C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\scene01.json");
-		// daemon.query(1.0, "C:\\projects\\university\\algorithmic_robotics_and_motion_planning\\project\\res.json");
-		// daemon.load_scene("scenes/scene01.json");
-		// daemon.load_scene("scenes/scene02.json");
-		// daemon.load_scene("scenes/scene03.json");
-		// daemon.load_scene("scenes/scene04.json");
-		// daemon.load_scene("scenes/scene05.json");
-		// daemon.load_scene("scenes/scene06.json");
 		daemon.load_scene("scenes/scene07.json");
 		daemon.query(0.3, "res.json");
 		debugln("done successfully");
 		return 0;
 	}
-
 	try {
 		std::string cmd_filename, ack_filename;
 		boost::program_options::options_description desc{"Options"};

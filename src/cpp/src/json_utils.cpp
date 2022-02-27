@@ -158,9 +158,11 @@ template <typename JsonObj> static void validate_size(const JsonObj &obj, unsign
 		ERR("Unexpected number of elements in \"" << obj_name << "\" Json object: " << obj.size() << " != " << size);
 }
 
-void parse_scene_from_json(const std::string &filename, std::vector<Point> &points) {
+void parse_scene_from_json(const std::string &filename, Polygon &scene) {
 	debugln("[JsonUtils] parsing scene from file: " << filename);
 	const auto j = parse_file(filename);
+
+	scene = Polygon();
 
 	const auto &obj = get_object(j, "top_level");
 	validate_size(obj, 1, "top_level");
@@ -177,7 +179,7 @@ void parse_scene_from_json(const std::string &filename, std::vector<Point> &poin
 
 				double x = get_double(point[0], "x");
 				double y = get_double(point[1], "y");
-				points.push_back(Point(x, y));
+				scene.push_back(Point(x, y));
 			}
 		} else
 			ERR("Unknown Json tag: " << obstacles_key);

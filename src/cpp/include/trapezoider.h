@@ -36,10 +36,10 @@ class Trapezoider {
 	/**
 	 * @brief Calculates all the trapezoids that exists in the given room
 	 *
-	 * @param points list of points representing a simple polygon room
+	 * @param scene simple polygon scene
 	 * @param trapezoids output vector for the calculated trapezoids
 	 */
-	void calc_trapezoids(const std::vector<Point> &points, std::vector<Trapezoid> &trapezoids);
+	void calc_trapezoids(const Polygon &scene, std::vector<Trapezoid> &trapezoids);
 
   private:
 	Trapezoid::ID create_trapezoid(const Halfedge &top_edge, const Halfedge &bottom_edge, const Vertex &left_vertex,

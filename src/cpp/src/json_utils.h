@@ -8,9 +8,9 @@
  * @brief Parse a scene from a JSON file
  *
  * @param filename path to scene file
- * @param points output points read from the file
+ * @param scene output polygon for the parsed scene
  */
-void parse_scene_from_json(const std::string &filename, std::vector<Point> &points);
+void parse_scene_from_json(const std::string &filename, Polygon &scene);
 
 /**
  * @brief Write polygons into a JSON file

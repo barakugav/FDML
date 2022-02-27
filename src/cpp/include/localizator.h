@@ -34,9 +34,9 @@ class Localizator {
 	/**
 	 * @brief Init the localizator with a simple polygon room
 	 *
-	 * @param points list of points representing a polygon room
+	 * @param scene simple polygon scene
 	 */
-	void init(const std::vector<Point> &points);
+	void init(const Polygon &scene);
 
 	/**
 	 * @brief Calculate all the points in the room a sensor might be given a single measurement

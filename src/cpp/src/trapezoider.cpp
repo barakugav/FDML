@@ -242,36 +242,11 @@ class Less_edge : public CGAL::cpp98::binary_function<Halfedge, Halfedge, bool> 
 /* Create an arrangement out of a list of points. The accepted arrangements are only the ones which represent a
  * simple polygon with no holes - each vertex has a degree of 2, there are only 2 faces (one bounded, one
  * unbounded), each edge has each of the two faces on each side. */
-static void create_arrangement(Arrangement &arr, const std::vector<Point> &points) {
-	if (points.size() < 3)
-		throw std::invalid_argument("too few points for polygon");
+static void create_arrangement(Arrangement &arr, const Polygon &scene) {
+	if (scene.size() < 3 || !scene.is_simple())
+		throw std::invalid_argument("input scene is not a simple polygon");
 
-	/* create segments from points */
-	std::vector<Segment> segments;
-	for (unsigned int i = 0; i < points.size(); i++) {
-		unsigned int j = i != points.size() - 1 ? i + 1 : 0;
-		segments.push_back({points[i], points[j]});
-	}
-
-	/* validate no intersection */
-	for (unsigned int i = 0; i < segments.size(); i++) {
-		auto &segment = segments[i];
-		if (segment.start() == segment.end())
-			throw std::invalid_argument("zero length segment");
-		for (unsigned int j = 0; j < segments.size(); j++) {
-			if (CGAL::do_intersect(segment, segments[j])) {
-				unsigned int i1 = i != 0 ? i - 1 : segments.size() - 1;
-				unsigned int i2 = i != segments.size() - 1 ? i + 1 : 0;
-				if (j != i1 && j != i && j != i2) {
-					std::ostringstream oss;
-					oss << "segments intersect: " << segment << " " << segments[j];
-					throw std::invalid_argument(oss.str());
-				}
-			}
-		}
-	}
-
-	insert(arr, segments.begin(), segments.end());
+	insert(arr, scene.edges_begin(), scene.edges_end());
 
 	/* validate all vertices have a degree of 2 */
 	for (auto v = arr.vertices_begin(); v != arr.vertices_end(); ++v)
@@ -710,7 +685,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		trapezoids.erase(empty_trapezoid);
 }
 
-void Trapezoider::calc_trapezoids(const std::vector<Point> &points, std::vector<Trapezoid> &res) {
+void Trapezoider::calc_trapezoids(const Polygon &scene, std::vector<Trapezoid> &res) {
 	infoln("[Trapezoider] Calculating trapezoids...");
 	trapezoids.clear();
 	vertices_data.clear();
@@ -718,7 +693,7 @@ void Trapezoider::calc_trapezoids(const std::vector<Point> &points, std::vector<
 
 	/* arr.clear() has a bug. This function should only be used once for a Trapezoider object */
 	arr.clear();
-	create_arrangement(arr, points);
+	create_arrangement(arr, scene);
 
 	/* init vertices associated data structure */
 	for (auto v = arr.vertices_begin(); v != arr.vertices_end(); ++v)
