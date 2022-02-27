@@ -1,15 +1,14 @@
 
 ====== Setup ======
 	=== CPP Linux ===
-		== dependencies: (TODO CGAL, boost package, gmp, gcc, ect.)
+		== dependencies: (boost package, gmp, gcc, ect.)
+			install CGAL (https://doc.cgal.org/latest/Manual/usage.html)
 			mkdir -i lib/; cd lib; wget -O boost_1_78_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.78.0/boost_1_78_0.tar.gz/download; tar xzvf boost_1_78_0.tar.gz; rm boost_1_78_0.tar.gz; cd ../
 		== compilation setup:
 			mkdir -p build/linux/debug/; cd build/linux/debug/; cmake -DCMAKE_BUILD_TYPE=Debug ../../../; cd ../../../
 			mkdir -p build/linux/release/; cd build/linux/release/; cmake -DCMAKE_BUILD_TYPE=Release ../../../; cd ../../../
 		== compilation:
 			make -C build/linux/release
-		== execution: ( TODO )
-			build/release/robo_local_daemon
 
 	=== CPP Windows ===
 		== dependencies:
@@ -30,13 +29,20 @@
 				specify the Generator (e.g., Visual Studio 16 2019),
 				specify the Optional Platform: win32
 				select Specify toolchain file for cross compilation (the file vcpkg.cmake within the directory where you have installed vcpkg, e.g. C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake).
-		== compilation:
+		== compilation: (requires Visual Studio, see https://doc.cgal.org/latest/Manual/windows.html)
 			cd build/win/
 			open robo_local_daemon.sln with Visual Studio
 			Build -> Build Solution
 
+	=== Python === (may requires more packages, easy to install)
+		install pip install PyQt5
+		install pip install numpy
+
+	== execution:
+		python src/py/localizator_gui.py
+
+
+
+
 	== CMakeLists creation (internal):
 		cd src/cpp; /usr/bin/cgal_create_CMakeLists -s robo_local_daemon; cd ../../
-
-	=== Python ===
-		install pip install PyQt5

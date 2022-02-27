@@ -131,11 +131,3 @@ class Localizator:
             finally:
                 if os.path.isfile(outfile):
                     os.remove(outfile)
-
-
-# TODO remove
-if __name__ == "__main__":
-    localizator = Localizator(os.path.join(os.getcwd(), ".localizator"))
-    localizator.run("scene01.json")
-    localizator.query1(6)
-    localizator.stop()
