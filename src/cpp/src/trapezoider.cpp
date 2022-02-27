@@ -145,8 +145,6 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 						 v->point().hy() > vertices[i - 1]->point().hy();
 		vertex_above[v] = std::make_pair(has_above, has_above ? vertices[i + 1] : /* dummy */ v);
 		vertex_below[v] = std::make_pair(has_below, has_below ? vertices[i - 1] : /* dummy */ v);
-		debugln("KK (" << v->point() << ") " << has_above << has_below << " (" << vertex_above[v].second->point()
-					   << ") (" << vertex_below[v].second->point() << ")");
 	}
 	auto get_above_vertex = [&vertex_above](const Vertex &v, Vertex &above) {
 		const auto &p = vertex_above[v];
@@ -180,7 +178,7 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 			if (!CGAL::assign(up_vertex, above_obj) && !get_above_vertex(p, up_vertex))
 				break;
 			/* there is a vertex above, search for an edge from it to the negative x direction */
-			if (find_edge_relative_to_angle(up_vertex, Direction(0, 1), HalfPlaneSide::Right, MinMax::Max, edge)) {
+			if (find_edge_relative_to_angle(up_vertex, Direction(0, 1), HalfPlaneSide::Right, MinMax::Min, edge)) {
 				v_data.edge_above = direct_above_edge(edge);
 				v_data.is_edge_above = true;
 				break;
@@ -441,6 +439,19 @@ static bool is_same_direction(Direction d1, Direction d2) {
 	return calc_half_plane_side(d1, d2) == HalfPlaneSide::None && d1.vector() * d2.vector() > 0;
 }
 
+/* Calculate which of an edge endpoint is "left" and "right" relative to some direction */
+static void calc_edge_left_right_vertices(const Halfedge &edge, const Direction &dir, Point &left, Point &right) {
+	Point p1 = edge->source()->point(), p2 = edge->target()->point();
+	Point mid_top((p1.hx() + p2.hx()) / 2, (p1.hy() + p2.hy()) / 2);
+	if (calc_half_plane_side(dir, Direction(p1.hx() - mid_top.hx(), p1.hy() - mid_top.hy())) == HalfPlaneSide::Left) {
+		left = p1;
+		right = p2;
+	} else {
+		left = p2;
+		right = p1;
+	}
+}
+
 /* perfrom a parallel rotational sweep to calculate all trapezoids of all angles. Assume the data structres have
  * been filled with trapezoids that exists in the regular vertical decomposition direction */
 void Trapezoider::calc_trapezoids_with_rotational_sweep() {
@@ -482,11 +493,30 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		debugln("\t(" << event.v1->point() << ") (" << event.v2->point()
 					  << ") angle= " << direction_to_angles(event.get_ray()));
 
+	/* init rays */
+	Direction init_ray_direction(0, 1);
+	for (auto &p : vertices_data) {
+		VertexData &v_data = p.second;
+		const auto vp = p.first->point();
+		const auto init_ray = Kernel::Ray_2(vp, init_ray_direction);
+		for (auto uit = arr.vertices_begin(); uit != arr.vertices_end(); ++uit) {
+			foreach_vertex_edge(uit, [&vp, &init_ray, &v_data](const auto &edge) {
+				if (cmp(edge->source()->point(), edge->target()->point()) < 0)
+					return; /* consider only one of the edge and its twin */
+				if (edge->source()->point().hx() == vp.hx() || edge->target()->point().hx() == vp.hx())
+					return; /* avoid edges the ray itersect at an endpoint */
+				if (do_intersect(init_ray, Segment(edge->source()->point(), edge->target()->point())))
+					v_data.ray_edges.insert(edge);
+			});
+		}
+	}
+
 	/* Perform rotational sweep by handling all events in the sorted order */
 	for (Event &event : events) {
-		assert(vertices_data.find(event.v1) != vertices_data.end());
+		VertexData &v1_data = vertices_data.at(event.v1);
+		VertexData &v2_data = vertices_data.at(event.v2);
 		const auto ray = event.get_ray();
-		auto &ray_edges = vertices_data.find(event.v1)->second.ray_edges;
+		auto &ray_edges = v1_data.ray_edges;
 		bool closest_edge_orig_valid;
 		Halfedge closest_edge_orig;
 		if (closest_edge_orig_valid = ray_edges.size() > 0)
@@ -513,8 +543,6 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 
 		/* Create and terminate trapezoids due to the event */
 		auto current_angle = ray;
-		VertexData &v1_data = vertices_data.find(event.v1)->second;
-		VertexData &v2_data = vertices_data.find(event.v2)->second;
 		Halfedge v1v2_edge;
 		if (get_edge(event.v1, event.v2, v1v2_edge)) {
 
@@ -584,6 +612,11 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 			auto closest_edge = *ray_edges.begin();
 			if (closest_edge_orig_valid && closest_edge_orig == closest_edge)
 				continue; /* Closest edge didn't changed */
+
+			Point closest_left, closest_right;
+			calc_edge_left_right_vertices(closest_edge, ray, closest_left, closest_right);
+			if (closest_edge->source()->point() != closest_right)
+				closest_edge = closest_edge->twin();
 			if (!is_free(closest_edge->face()))
 				continue; // The ray is in non free area of the room
 

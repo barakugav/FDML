@@ -233,7 +233,7 @@ void Trapezoid::calc_min_max_openings() {
 	assert(has_bigger_opening(lower));
 	assert(!has_bigger_opening(upper));
 
-	const Kernel::FT binary_search_precision = 0.01;
+	const Kernel::FT binary_search_precision = 0.1;
 	while (upper - lower > binary_search_precision) {
 		Kernel::FT mid = (upper + lower) / 2;
 		if (has_bigger_opening(mid))
