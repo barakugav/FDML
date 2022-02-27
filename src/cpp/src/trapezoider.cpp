@@ -19,13 +19,6 @@ class Event {
 	}
 };
 
-/* return an edge or it's twin, always such source.x <= target.x && (source.x != tagert.x && source.y <= target.y) */
-static Halfedge direct_edge(const Halfedge &edge) {
-	if (edge->curve().target().hx() != edge->curve().source().hx())
-		return edge->curve().target().hx() >= edge->curve().source().hx() ? edge : edge->twin();
-	return edge->curve().target().hy() >= edge->curve().source().hy() ? edge : edge->twin();
-}
-
 /* perform an operation on all edges coming out of a vertex */
 template <typename OP> static void foreach_vertex_edge(const Vertex &v, const OP &op) {
 	auto edge = v->incident_halfedges();
@@ -118,6 +111,14 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 	sort(vertices.begin(), vertices.end(),
 		 [](const Vertex &v1, const Vertex &v2) { return cmp(v1->point(), v2->point()) < 0; });
 
+	/* This assume the DCEL implementation stores the LEFT face of an edge as edge->face() */
+	auto direct_above_edge = [](const Halfedge &edge) {
+		return edge->target()->point().hx() <= edge->source()->point().hx() ? edge : edge->twin();
+	};
+	auto direct_below_edge = [](const Halfedge &edge) {
+		return edge->target()->point().hx() >= edge->source()->point().hx() ? edge : edge->twin();
+	};
+
 	/* for each vertex, findout the edge above it. If there is a vertex above it, take the edge that goes out of it
 	 * towards the negative x direction or if there is no such edge, the edge above it recursively */
 	for (auto &v : vertices) {
@@ -127,7 +128,7 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 		for (Vertex p = v, up_vertex;; p = up_vertex) {
 			auto &above_obj = above_orig[p];
 			if (CGAL::assign(edge, above_obj)) {
-				v_data.edge_above = direct_edge(edge);
+				v_data.edge_above = direct_above_edge(edge);
 				v_data.is_edge_above = true;
 				break;
 			}
@@ -137,7 +138,7 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 		for (Vertex p = v, below_vertex;; p = below_vertex) {
 			auto &below_obj = below_orig[p];
 			if (CGAL::assign(edge, below_obj)) {
-				v_data.edge_below = direct_edge(edge);
+				v_data.edge_below = direct_below_edge(edge);
 				v_data.is_edge_below = true;
 				break;
 			}
