@@ -73,8 +73,23 @@ static bool find_edge_relative_to_angle(const Vertex &v, const Direction &angle,
 }
 
 /* same as the generic function, but always relative to y-axis and the left side */
-static bool find_vertex_left_edge_with(const Vertex &v, enum MinMax min_max, Halfedge &res) {
+static bool find_edge_left_from_vertex(const Vertex &v, enum MinMax min_max, Halfedge &res) {
 	return find_edge_relative_to_angle(v, Direction(0, 1), HalfPlaneSide::Left, min_max, res);
+}
+
+static bool find_edge_vertical(const Vertex &v, enum CGAL::Sign dir, Halfedge &res) {
+	bool found = false;
+	foreach_vertex_edge(v, [&v, dir, &found, &res](const Halfedge &edge) {
+		assert(edge->source() == v);
+		if (v->point().hx() != edge->target()->point().hx())
+			return;
+		if ((dir == CGAL::NEGATIVE && edge->target()->point().hy() < v->point().hy()) ||
+			(dir == CGAL::POSITIVE && edge->target()->point().hy() > v->point().hy())) {
+			res = edge;
+			found = true;
+		}
+	});
+	return found;
 }
 
 class DecompVertexData {
@@ -119,31 +134,77 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 		return edge->target()->point().hx() >= edge->source()->point().hx() ? edge : edge->twin();
 	};
 
+	/* CGAL decomposition doesn't seems to compute the above and below vertices correctly, we do it manually */
+	std::map<Vertex, std::pair<bool, Vertex>> vertex_above;
+	std::map<Vertex, std::pair<bool, Vertex>> vertex_below;
+	for (unsigned int i = 0; i < vertices.size(); i++) {
+		const auto &v = vertices[i];
+		bool has_above = i < (vertices.size() - 1) && v->point().hx() == vertices[i + 1]->point().hx() &&
+						 v->point().hy() < vertices[i + 1]->point().hy();
+		bool has_below = i > 0 && v->point().hx() == vertices[i - 1]->point().hx() &&
+						 v->point().hy() > vertices[i - 1]->point().hy();
+		vertex_above[v] = std::make_pair(has_above, has_above ? vertices[i + 1] : /* dummy */ v);
+		vertex_below[v] = std::make_pair(has_below, has_below ? vertices[i - 1] : /* dummy */ v);
+		debugln("KK (" << v->point() << ") " << has_above << has_below << " (" << vertex_above[v].second->point()
+					   << ") (" << vertex_below[v].second->point() << ")");
+	}
+	auto get_above_vertex = [&vertex_above](const Vertex &v, Vertex &above) {
+		const auto &p = vertex_above[v];
+		if (!p.first)
+			return false;
+		above = p.second;
+		return true;
+	};
+	auto get_below_vertex = [&vertex_below](const Vertex &v, Vertex &below) {
+		const auto &p = vertex_below[v];
+		if (!p.first)
+			return false;
+		below = p.second;
+		return true;
+	};
+
 	/* for each vertex, findout the edge above it. If there is a vertex above it, take the edge that goes out of it
 	 * towards the negative x direction or if there is no such edge, the edge above it recursively */
 	for (auto &v : vertices) {
 		DecompVertexData v_data;
 		Halfedge edge;
-		bool is_edge;
 		for (Vertex p = v, up_vertex;; p = up_vertex) {
 			auto &above_obj = above_orig[p];
+			/* if the above object is an edge, we are done */
 			if (CGAL::assign(edge, above_obj)) {
 				v_data.edge_above = direct_above_edge(edge);
 				v_data.is_edge_above = true;
 				break;
 			}
-			if (!CGAL::assign(up_vertex, above_obj))
+			/* if there is no vertex above, we reached the end of the room, done */
+			if (!CGAL::assign(up_vertex, above_obj) && !get_above_vertex(p, up_vertex))
 				break;
+			/* there is a vertex above, search for an edge from it to the negative x direction */
+			if (find_edge_relative_to_angle(up_vertex, Direction(0, 1), HalfPlaneSide::Right, MinMax::Max, edge)) {
+				v_data.edge_above = direct_above_edge(edge);
+				v_data.is_edge_above = true;
+				break;
+			}
+			/* continue searching up */
 		}
 		for (Vertex p = v, below_vertex;; p = below_vertex) {
 			auto &below_obj = below_orig[p];
+			/* if the below object is an edge, we are done */
 			if (CGAL::assign(edge, below_obj)) {
 				v_data.edge_below = direct_below_edge(edge);
 				v_data.is_edge_below = true;
 				break;
 			}
-			if (!CGAL::assign(below_vertex, below_obj))
+			/* if there is no vertex below, we reached the end of the room, done */
+			if (!CGAL::assign(below_vertex, below_obj) && !get_below_vertex(p, below_vertex))
 				break;
+			/* there is a vertex below, search for an edge from it to the negative x direction */
+			if (find_edge_left_from_vertex(below_vertex, MinMax::Min, edge)) {
+				v_data.edge_below = direct_below_edge(edge);
+				v_data.is_edge_below = true;
+				break;
+			}
+			/* continue searching down */
 		}
 		decomp[v] = v_data;
 	}
@@ -168,12 +229,21 @@ class Less_edge : public CGAL::cpp98::binary_function<Halfedge, Halfedge, bool> 
   public:
 	Less_edge() {}
 	Less_edge(const Arrangement::Geometry_traits_2 *traits) : geom_traits(traits) {}
-	bool operator()(Halfedge e1, Halfedge e2) const { return !undirected_eq(e1, e2) && &(*e1) < &(*e2); }
+	bool operator()(const Halfedge &e1, const Halfedge &e2) const {
+		const auto e1_ = cmp(e1->source()->point(), e1->target()->point()) <= 0 ? e1 : e1->twin();
+		const auto e2_ = cmp(e2->source()->point(), e2->target()->point()) <= 0 ? e2 : e2->twin();
+		int c;
+		if ((c = cmp(e1_->source()->point(), e2_->source()->point())) != 0)
+			return c < 0;
+		if ((c = cmp(e1_->target()->point(), e2_->target()->point())) != 0)
+			return c < 0;
+		return 0;
+	}
 };
 
-/* Create an arrangement out of a list of points. The accepted arrangements are only the ones which represent a simple
- * polygon with no holes - each vertex has a degree of 2, there are only 2 faces (one bounded, one unbounded), each edge
- * has each of the two faces on each side. */
+/* Create an arrangement out of a list of points. The accepted arrangements are only the ones which represent a
+ * simple polygon with no holes - each vertex has a degree of 2, there are only 2 faces (one bounded, one
+ * unbounded), each edge has each of the two faces on each side. */
 static void create_arrangement(Arrangement &arr, const std::vector<Point> &points) {
 	if (points.size() < 3)
 		throw std::invalid_argument("too few points for polygon");
@@ -289,6 +359,13 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 	std::map<Vertex, DecompVertexData> decomp;
 	vertical_decomposition(arr, vertices, decomp);
 
+	/* sort vertices. unusual sort, prefer smaller x bigger y */
+	sort(vertices.begin(), vertices.end(), [](const Vertex &v1, const Vertex &v2) {
+		if (v1->point().hx() != v2->point().hx())
+			return v1->point().hx() < v2->point().hx();
+		return v1->point().hy() > v2->point().hy();
+	});
+
 	/* for each edge, stores the vertex that it's ray is hitting the edge */
 	std::map<Halfedge, Vertex, Less_edge> most_right_vertex(Less_edge(arr.geometry_traits()));
 	for (const auto &v : vertices) {
@@ -297,22 +374,23 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 
 		if ((v_decomp_data.is_edge_above && is_free(v_decomp_data.edge_above->face())) &&
 			(v_decomp_data.is_edge_below && is_free(v_decomp_data.edge_below->face())) &&
-			!find_vertex_left_edge_with(v, MinMax::Min, top_edge)) {
+			!find_edge_left_from_vertex(v, MinMax::Min, top_edge)) {
 
 			/* Reflex (more than 180 degrees) vertex */
 			debugln("[Trapezoider] New trapezoid: reflex (" << v->point() << ')');
-			auto left_v = most_right_vertex[v_decomp_data.edge_above];
+			auto left_v = most_right_vertex.at(v_decomp_data.edge_above);
 			auto id = create_trapezoid(v_decomp_data.edge_above, v_decomp_data.edge_below, left_v, v);
 			most_right_vertex[trapezoids.at(id).top_edge] = v;
 
 		} else if ((!v_decomp_data.is_edge_above || !is_free(v_decomp_data.edge_above->face())) &&
 				   (!v_decomp_data.is_edge_below || !is_free(v_decomp_data.edge_below->face())) &&
-				   find_vertex_left_edge_with(v, MinMax::Min, top_edge) &&
-				   find_vertex_left_edge_with(v, MinMax::Max, bottom_edge)) {
+				   (find_edge_vertical(v, CGAL::POSITIVE, top_edge) ||
+					find_edge_left_from_vertex(v, MinMax::Min, top_edge)) &&
+				   find_edge_left_from_vertex(v, MinMax::Max, bottom_edge)) {
 
 			/* v is a vertex of a triangle trapezoid */
 			debugln("[Trapezoider] New trapezoid: triangle (" << v->point() << ')');
-			auto left_v = most_right_vertex[top_edge];
+			auto left_v = most_right_vertex.at(top_edge);
 			create_trapezoid(top_edge, bottom_edge, left_v, v);
 
 		} else {
@@ -320,10 +398,11 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 
 				// Edge above the vertex
 				debugln("[Trapezoider] New trapezoid: up (" << v->point() << ')');
-				if (!find_vertex_left_edge_with(v, MinMax::Min, bottom_edge))
+				if (!find_edge_vertical(v, CGAL::POSITIVE, bottom_edge) &&
+					!find_edge_left_from_vertex(v, MinMax::Min, bottom_edge))
 					throw std::logic_error("failed to find bottom edge for up trapezoid");
 
-				auto left_v = most_right_vertex[v_decomp_data.edge_above];
+				auto left_v = most_right_vertex.at(v_decomp_data.edge_above);
 				auto id = create_trapezoid(v_decomp_data.edge_above, bottom_edge, left_v, v);
 				most_right_vertex[trapezoids.at(id).top_edge] = v;
 			}
@@ -331,10 +410,10 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 
 				// Edge below the vertex
 				debugln("[Trapezoider] New trapezoid: down (" << v->point() << ')');
-				if (!find_vertex_left_edge_with(v, MinMax::Max, top_edge))
+				if (!find_edge_left_from_vertex(v, MinMax::Max, top_edge))
 					throw std::logic_error("failed to find top edge for down trapezoid");
 
-				auto left_v = most_right_vertex[top_edge];
+				auto left_v = most_right_vertex.at(top_edge);
 				create_trapezoid(top_edge, v_decomp_data.edge_below, left_v, v);
 			}
 		}
@@ -362,8 +441,8 @@ static bool is_same_direction(Direction d1, Direction d2) {
 	return calc_half_plane_side(d1, d2) == HalfPlaneSide::None && d1.vector() * d2.vector() > 0;
 }
 
-/* perfrom a parallel rotational sweep to calculate all trapezoids of all angles. Assume the data structres have been
- * filled with trapezoids that exists in the regular vertical decomposition direction */
+/* perfrom a parallel rotational sweep to calculate all trapezoids of all angles. Assume the data structres have
+ * been filled with trapezoids that exists in the regular vertical decomposition direction */
 void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 	infoln("[Trapezoider] Performing parallel rotational sweep (PRS)");
 	/* Calculate all events */
@@ -554,9 +633,10 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		}
 	}
 
-	/* We started with regular vertical decomposition, and the trapezoids calculated from the beginning lack the start
-	 * angle. In addition, near the end of the rotational sweep, we created some trapezoids we considered new, but they
-	 * are actually a duplication of the original starting trapezoids. We union them and remove the later ones. */
+	/* We started with regular vertical decomposition, and the trapezoids calculated from the beginning lack the
+	 * start angle. In addition, near the end of the rotational sweep, we created some trapezoids we considered new,
+	 * but they are actually a duplication of the original starting trapezoids. We union them and remove the later
+	 * ones. */
 	debugln("[Trapezoider] PRS merge unfinished trapezoids:");
 	std::map<std::pair<Vertex, Vertex>, Trapezoid::ID> no_begin_ts;
 	std::map<std::pair<Vertex, Vertex>, Trapezoid::ID> no_end_ts;
