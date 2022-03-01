@@ -20,8 +20,8 @@ template <typename _Direction> static _Direction rotate(const _Direction &d, dou
 /* Calculate which of an edge endpoint is "left" and "right" relative to some direction */
 static void calc_edge_left_right_vertices(const Halfedge &edge, const Direction &dir, Point &left, Point &right) {
 	Point p1 = edge->source()->point(), p2 = edge->target()->point();
-	Point mid_top((p1.hx() + p2.hx()) / 2, (p1.hy() + p2.hy()) / 2);
-	if (calc_half_plane_side(dir, Direction(p1.hx() - mid_top.hx(), p1.hy() - mid_top.hy())) == HalfPlaneSide::Left) {
+	Point mid_top((p1.x() + p2.x()) / 2, (p1.y() + p2.y()) / 2);
+	if (calc_half_plane_side(dir, Direction(p1.x() - mid_top.x(), p1.y() - mid_top.y())) == HalfPlaneSide::Left) {
 		left = p1;
 		right = p2;
 	} else {
@@ -32,7 +32,7 @@ static void calc_edge_left_right_vertices(const Halfedge &edge, const Direction 
 
 Polygon Trapezoid::get_bounds_2d() const {
 	auto v_begin = normalize(angle_begin.vector()), v_end = normalize(angle_end.vector());
-	double angle_between = std::acos((v_begin * v_end).exact().convert_to<double>());
+	double angle_between = std::acos(CGAL::to_double(v_begin * v_end));
 	assert(angle_between != 0);
 	double a_mid = angle_between / 2;
 	auto v_mid = rotate(v_begin, a_mid).direction();
@@ -81,7 +81,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 	Direction a_begin = -angle_begin, a_end = -angle_end;
 	assert(calc_half_plane_side(a_begin, a_end) == HalfPlaneSide::Left);
 	auto s = top_edge->source()->point(), t = top_edge->target()->point();
-	Direction top_edge_direction(t.hx() - s.hx(), t.hy() - s.hy());
+	Direction top_edge_direction(t.x() - s.x(), t.y() - s.y());
 	assert(is_free(top_edge->face()));
 
 	/* Calculate the trapezoid bounds. Will be used to intersect each result entry. */
@@ -109,7 +109,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 		debugln("\tangle interval [" << i_begin << ", " << i_end << ']');
 		auto top_edge_line = top_edge->curve().line();
 		auto v_begin = normalize(i_begin.vector()), v_end = normalize(i_end.vector());
-		double angle_between = std::acos((v_begin * v_end).exact().convert_to<double>());
+		double angle_between = std::acos(CGAL::to_double(v_begin * v_end));
 		assert(angle_between != 0);
 		debugln("\tv_begin(" << v_begin << ") v_end(" << v_end << ')');
 

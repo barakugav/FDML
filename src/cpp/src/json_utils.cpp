@@ -270,9 +270,7 @@ void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::str
 	for (const Polygon &polygon : polygons) {
 		std::vector<boost::json::array> point_objs;
 		for (auto it = polygon.vertices_begin(); it != polygon.vertices_end(); ++it) {
-			double x = it->hx().exact().convert_to<double>();
-			double y = it->hy().exact().convert_to<double>();
-			std::vector<double> point{x, y};
+			std::vector<double> point{CGAL::to_double(it->x()), CGAL::to_double(it->y())};
 			point_objs.push_back(boost::json::array(point.begin(), point.end()));
 		}
 		boost::json::array polygon_obj(point_objs.begin(), point_objs.end());

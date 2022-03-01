@@ -15,7 +15,7 @@ class Event {
 
 	Direction get_ray() const {
 		const Point &p1 = v1->point(), &p2 = v2->point();
-		return Direction(p2.hx() - p1.hx(), p2.hy() - p1.hy());
+		return Direction(p2.x() - p1.x(), p2.y() - p1.y());
 	}
 };
 
@@ -55,7 +55,7 @@ static bool find_edge_relative_to_angle(const Vertex &v, const Direction &angle,
 		auto calc_edge_angle = [&v](const auto &e) {
 			Point target = (e->source() == v ? e->target() : e->source())->point();
 			Point vp = v->point();
-			return Direction(target.hx() - vp.hx(), target.hy() - vp.hy());
+			return Direction(target.x() - vp.x(), target.y() - vp.y());
 		};
 		auto e_angle = calc_edge_angle(edge);
 
@@ -81,10 +81,10 @@ static bool find_edge_vertical(const Vertex &v, enum CGAL::Sign dir, Halfedge &r
 	bool found = false;
 	foreach_vertex_edge(v, [&v, dir, &found, &res](const Halfedge &edge) {
 		assert(edge->source() == v);
-		if (v->point().hx() != edge->target()->point().hx())
+		if (v->point().x() != edge->target()->point().x())
 			return;
-		if ((dir == CGAL::NEGATIVE && edge->target()->point().hy() < v->point().hy()) ||
-			(dir == CGAL::POSITIVE && edge->target()->point().hy() > v->point().hy())) {
+		if ((dir == CGAL::NEGATIVE && edge->target()->point().y() < v->point().y()) ||
+			(dir == CGAL::POSITIVE && edge->target()->point().y() > v->point().y())) {
 			res = edge;
 			found = true;
 		}
@@ -124,14 +124,14 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 
 	/* sort vertices firstly by x and than by y */
 	sort(vertices.begin(), vertices.end(),
-		 [](const Vertex &v1, const Vertex &v2) { return cmp(v1->point(), v2->point()) < 0; });
+		 [](const Vertex &v1, const Vertex &v2) { return v1->point() < v2->point(); });
 
 	/* This assume the DCEL implementation stores the LEFT face of an edge as edge->face() */
 	auto direct_above_edge = [](const Halfedge &edge) {
-		return edge->target()->point().hx() <= edge->source()->point().hx() ? edge : edge->twin();
+		return edge->target()->point().x() <= edge->source()->point().x() ? edge : edge->twin();
 	};
 	auto direct_below_edge = [](const Halfedge &edge) {
-		return edge->target()->point().hx() >= edge->source()->point().hx() ? edge : edge->twin();
+		return edge->target()->point().x() >= edge->source()->point().x() ? edge : edge->twin();
 	};
 
 	/* CGAL decomposition doesn't seems to compute the above and below vertices correctly, we do it manually */
@@ -139,10 +139,10 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 	std::map<Vertex, std::pair<bool, Vertex>> vertex_below;
 	for (unsigned int i = 0; i < vertices.size(); i++) {
 		const auto &v = vertices[i];
-		bool has_above = i < (vertices.size() - 1) && v->point().hx() == vertices[i + 1]->point().hx() &&
-						 v->point().hy() < vertices[i + 1]->point().hy();
-		bool has_below = i > 0 && v->point().hx() == vertices[i - 1]->point().hx() &&
-						 v->point().hy() > vertices[i - 1]->point().hy();
+		bool has_above = i < (vertices.size() - 1) && v->point().x() == vertices[i + 1]->point().x() &&
+						 v->point().y() < vertices[i + 1]->point().y();
+		bool has_below =
+			i > 0 && v->point().x() == vertices[i - 1]->point().x() && v->point().y() > vertices[i - 1]->point().y();
 		vertex_above[v] = std::make_pair(has_above, has_above ? vertices[i + 1] : /* dummy */ v);
 		vertex_below[v] = std::make_pair(has_below, has_below ? vertices[i - 1] : /* dummy */ v);
 	}
@@ -228,14 +228,14 @@ class Less_edge : public CGAL::cpp98::binary_function<Halfedge, Halfedge, bool> 
 	Less_edge() {}
 	Less_edge(const Arrangement::Geometry_traits_2 *traits) : geom_traits(traits) {}
 	bool operator()(const Halfedge &e1, const Halfedge &e2) const {
-		const auto e1_ = cmp(e1->source()->point(), e1->target()->point()) <= 0 ? e1 : e1->twin();
-		const auto e2_ = cmp(e2->source()->point(), e2->target()->point()) <= 0 ? e2 : e2->twin();
-		int c;
-		if ((c = cmp(e1_->source()->point(), e2_->source()->point())) != 0)
-			return c < 0;
-		if ((c = cmp(e1_->target()->point(), e2_->target()->point())) != 0)
-			return c < 0;
-		return 0;
+		const auto e1_ = e1->source()->point() <= e1->target()->point() ? e1 : e1->twin();
+		const auto e2_ = e2->source()->point() <= e2->target()->point() ? e2 : e2->twin();
+		CGAL::Comparison_result c;
+		if ((c = CGAL::compare_xy(e1_->source()->point(), e2_->source()->point())) != CGAL::EQUAL)
+			return c == CGAL::SMALLER;
+		if ((c = CGAL::compare_xy(e1_->target()->point(), e2_->target()->point())) != CGAL::EQUAL)
+			return c == CGAL::SMALLER;
+		return false;
 	}
 };
 
@@ -334,9 +334,9 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 
 	/* sort vertices. unusual sort, prefer smaller x bigger y */
 	sort(vertices.begin(), vertices.end(), [](const Vertex &v1, const Vertex &v2) {
-		if (v1->point().hx() != v2->point().hx())
-			return v1->point().hx() < v2->point().hx();
-		return v1->point().hy() > v2->point().hy();
+		if (v1->point().x() != v2->point().x())
+			return v1->point().x() < v2->point().x();
+		return v1->point().y() > v2->point().y();
 	});
 
 	/* for each edge, stores the vertex that it's ray is hitting the edge */
@@ -417,8 +417,8 @@ static bool is_same_direction(Direction d1, Direction d2) {
 /* Calculate which of an edge endpoint is "left" and "right" relative to some direction */
 static void calc_edge_left_right_vertices(const Halfedge &edge, const Direction &dir, Point &left, Point &right) {
 	Point p1 = edge->source()->point(), p2 = edge->target()->point();
-	Point mid_top((p1.hx() + p2.hx()) / 2, (p1.hy() + p2.hy()) / 2);
-	if (calc_half_plane_side(dir, Direction(p1.hx() - mid_top.hx(), p1.hy() - mid_top.hy())) == HalfPlaneSide::Left) {
+	Point mid_top((p1.x() + p2.x()) / 2, (p1.y() + p2.y()) / 2);
+	if (calc_half_plane_side(dir, Direction(p1.x() - mid_top.x(), p1.y() - mid_top.y())) == HalfPlaneSide::Left) {
 		left = p1;
 		right = p2;
 	} else {
@@ -476,9 +476,9 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		const auto init_ray = Kernel::Ray_2(vp, init_ray_direction);
 		for (auto uit = arr.vertices_begin(); uit != arr.vertices_end(); ++uit) {
 			foreach_vertex_edge(uit, [&vp, &init_ray, &v_data](const auto &edge) {
-				if (cmp(edge->source()->point(), edge->target()->point()) < 0)
+				if (edge->source()->point() < edge->target()->point())
 					return; /* consider only one of the edge and its twin */
-				if (edge->source()->point().hx() == vp.hx() || edge->target()->point().hx() == vp.hx())
+				if (edge->source()->point().x() == vp.x() || edge->target()->point().x() == vp.x())
 					return; /* avoid edges the ray itersect at an endpoint */
 				if (do_intersect(init_ray, Segment(edge->source()->point(), edge->target()->point())))
 					v_data.ray_edges.insert(edge);
@@ -504,7 +504,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		std::vector<Halfedge> edges_to_remove;
 		foreach_vertex_edge(event.v2, [ray, &edges_to_insert, &edges_to_remove](const auto &edge) {
 			auto s = edge->source()->point(), t = edge->target()->point();
-			Direction edge_direction(t.hx() - s.hx(), t.hy() - s.hy());
+			Direction edge_direction(t.x() - s.x(), t.y() - s.y());
 
 			if (calc_half_plane_side(ray, edge_direction) == HalfPlaneSide::Left)
 				edges_to_insert.push_back(edge);

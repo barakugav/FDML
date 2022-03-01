@@ -35,8 +35,8 @@ void Localizator::init(const Polygon &scene) {
 	 * with two measurements. */
 	for (auto it = trapezoider.trapezoids_begin(); it != trapezoider.trapezoids_end(); ++it) {
 		const auto &trapezoid = it->second;
-		TrapezoidRTreePoint min(trapezoid.opening_min.exact().convert_to<double>());
-		TrapezoidRTreePoint max(trapezoid.opening_max.exact().convert_to<double>());
+		TrapezoidRTreePoint min(CGAL::to_double(trapezoid.opening_min));
+		TrapezoidRTreePoint max(CGAL::to_double(trapezoid.opening_max));
 		rtree.insert(TrapezoidRTreeValue(TrapezoidRTreeSegment(min, max), it->first));
 	}
 }
