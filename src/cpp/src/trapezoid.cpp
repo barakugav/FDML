@@ -199,49 +199,125 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 	}
 }
 
+static bool is_vertical(const Halfedge &e) { return e->source()->point().x() == e->target()->point().x(); }
+
+static void calc_edge_slope_intersection(const Halfedge &e, Kernel::FT &m, Kernel::FT &b) {
+	auto s = e->source()->point(), t = e->target()->point();
+	assert(t.x() != s.x());
+	m = (t.y() - s.y()) / (t.x() - s.x());
+	b = s.y() - m * s.x();
+}
+
 void Trapezoid::calc_min_max_openings() {
-	/* we would like to calculate the maximum and minimum opening of a trapezoid. there is probably an analytic way of
-	 * doing so, by showing the opening function is convex, but i was unable to do so, so we will calculate the max
-	 * opening by binary search. TODO the minimum opening is currently set to zero, which is fine, as it is used only in
-	 * the interval tree for query2 which we doesn't support yet. */
-	std::vector<Polygon> res;
-	auto has_bigger_opening = [this, &res](const Kernel::FT &d) {
-		calc_result_m1(d, res);
-		bool has_bigger = res.size() > 0;
-		res.clear();
-		return has_bigger;
-	};
+	/* we would like to calculate the maximum and minimum opening of a trapezoid. there is probably an analytic way
+	 * of doing so, by showing the opening function is convex, but i was unable to do so, so we will calculate the
+	 * max opening by binary search. If the top and bottom edges are not vertical, we can perform a binary search on the
+	 * angle, and the maximum/minimum will occur at the x limits of the trapezoid, the and calculation is very
+	 * efficient. If the one of the edges is vertical, our formulas for calculating openings and the trapezoids limit
+	 * breaks down, and we perform a binary search on the actual query result, which is very slow, but it's
+	 * preproccessing so we can accept that. */
 
-	Kernel::FT lower, upper;
-	if (has_bigger_opening(1)) {
-		lower = 1;
-		for (;;) {
-			upper = lower * 2;
-			if (!has_bigger_opening(upper))
-				break;
-			lower = upper;
+	if (!is_vertical(top_edge) && !is_vertical(bottom_edge)) {
+		Kernel::FT m_t, b_t, m_b, b_b;
+		calc_edge_slope_intersection(top_edge, m_t, b_t);
+		calc_edge_slope_intersection(bottom_edge, m_b, b_b);
+
+		auto calc_x_limit = [&m_t, &b_t](double angle, const Point &limiting_v) {
+			double t = std::tan(angle);
+			return (limiting_v.y() - limiting_v.x() * t - b_t) / (m_t - t);
+		};
+		auto calc_opening = [&m_t, &b_t, &m_b, &b_b](const Kernel::FT &x, double angle) {
+			return (x * (m_t - m_b) + b_t - b_b) / (std::sin(angle) - m_b * std::cos(angle));
+		};
+		auto calc_max_opening = [this, &calc_x_limit, &calc_opening](double angle) {
+			Kernel::FT lx_limit = calc_x_limit(angle, left_vertex->point());
+			Kernel::FT rx_limit = calc_x_limit(angle, right_vertex->point());
+			return std::max(calc_opening(lx_limit, angle), calc_opening(rx_limit, angle));
+		};
+		auto calc_min_opening = [this, &calc_x_limit, &calc_opening](double angle) {
+			Kernel::FT lx_limit = calc_x_limit(angle, left_vertex->point());
+			Kernel::FT rx_limit = calc_x_limit(angle, right_vertex->point());
+			return std::min(calc_opening(lx_limit, angle), calc_opening(rx_limit, angle));
+		};
+
+		const double a_begin = std::atan2(CGAL::to_double(angle_begin.dy()), CGAL::to_double(angle_begin.dx()));
+		const double a_end = std::atan2(CGAL::to_double(angle_end.dy()), CGAL::to_double(angle_end.dx()));
+		const double PRECISION = 0.01;
+
+		double a_low = a_begin, a_high = a_end;
+		if (a_low > a_high)
+			a_high += M_PI * 2;
+		while (a_high - a_low > PRECISION) {
+			assert(a_high > a_low);
+			double mid1 = a_low + (a_high - a_low) * 1 / 3;
+			double mid2 = a_low + (a_high - a_low) * 2 / 3;
+			Kernel::FT mid1_max_opening = calc_max_opening(mid1);
+			Kernel::FT mid2_max_opening = calc_max_opening(mid2);
+			if (mid1_max_opening >= mid2_max_opening)
+				a_high = mid2;
+			else
+				a_low = mid1;
 		}
+		opening_max = calc_max_opening((a_high + a_low) / 2);
+
+		a_low = a_begin, a_high = a_end;
+		if (a_low > a_high)
+			a_high += M_PI * 2;
+		while (a_high - a_low > PRECISION) {
+			assert(a_high > a_low);
+			double mid1 = a_low + (a_high - a_low) * 1 / 3;
+			double mid2 = a_low + (a_high - a_low) * 2 / 3;
+			Kernel::FT mid1_min_opening = calc_min_opening(mid1);
+			Kernel::FT mid2_min_opening = calc_min_opening(mid2);
+			if (mid1_min_opening <= mid2_min_opening)
+				a_high = mid2;
+			else
+				a_low = mid1;
+		}
+		opening_min = calc_min_opening((a_high + a_low) / 2);
+
 	} else {
-		upper = 1;
-		for (;;) {
-			lower = upper / 2;
-			if (has_bigger_opening(lower))
-				break;
-			upper = lower;
+		std::vector<Polygon> res;
+		auto has_bigger_opening = [this, &res](const Kernel::FT &d) {
+			calc_result_m1(d, res);
+			bool has_bigger = res.size() > 0;
+			res.clear();
+			return has_bigger;
+		};
+
+		Kernel::FT lower, upper;
+		if (has_bigger_opening(1)) {
+			lower = 1;
+			for (;;) {
+				upper = lower * 2;
+				if (!has_bigger_opening(upper))
+					break;
+				lower = upper;
+			}
+		} else {
+			upper = 1;
+			for (;;) {
+				lower = upper / 2;
+				if (has_bigger_opening(lower))
+					break;
+				upper = lower;
+			}
 		}
-	}
-	assert(has_bigger_opening(lower));
-	assert(!has_bigger_opening(upper));
+		assert(has_bigger_opening(lower));
+		assert(!has_bigger_opening(upper));
 
-	const Kernel::FT binary_search_precision = 0.1;
-	while (upper - lower > binary_search_precision) {
-		Kernel::FT mid = (upper + lower) / 2;
-		if (has_bigger_opening(mid))
-			lower = mid;
-		else
-			upper = mid;
-	}
-	opening_max = upper;
+		const Kernel::FT binary_search_precision = 0.1;
+		while (upper - lower > binary_search_precision) {
+			Kernel::FT mid = (upper + lower) / 2;
+			if (has_bigger_opening(mid))
+				lower = mid;
+			else
+				upper = mid;
+		}
+		opening_max = upper;
 
-	opening_min = 0; // TODO
+		/* TODO the minimum opening is currently set to zero, which is fine, as it is used
+		 * only in the interval tree for query2 which we doesn't support yet. */
+		opening_min = 0; // TODO
+	}
 }
