@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.1...3.15)
 
-project( robo_local_daemon )
+project( fdml )
 
 
 # CGAL and its components
@@ -32,10 +32,10 @@ set( PROJECT_TOP ${CMAKE_CURRENT_SOURCE_DIR} )
 set( LIBS_TOP ${PROJECT_TOP}/lib )
 set( CPP_SRC ${PROJECT_TOP}/src/cpp )
 
-include_directories ( robo_local_daemon PUBLIC ${CPP_SRC}/include/ )
-include_directories ( robo_local_daemon PRIVATE ${CPP_SRC}/src/ )
+include_directories ( fdml_daemon PUBLIC ${CPP_SRC}/include/ )
+include_directories ( fdml_daemon PRIVATE ${CPP_SRC}/src/ )
 
-add_executable( robo_local_daemon
+add_executable( fdml_daemon
   ${CPP_SRC}/src/trapezoid.cpp
   ${CPP_SRC}/src/trapezoider.cpp
   ${CPP_SRC}/src/localizator.cpp
@@ -43,18 +43,18 @@ add_executable( robo_local_daemon
   ${CPP_SRC}/src/localizator_daemon.cpp
 )
 
-add_to_cached_list( CGAL_EXECUTABLE_TARGETS robo_local_daemon )
-target_link_libraries(robo_local_daemon PRIVATE CGAL::CGAL )
+add_to_cached_list( CGAL_EXECUTABLE_TARGETS fdml_daemon )
+target_link_libraries(fdml_daemon PRIVATE CGAL::CGAL )
 
 if ( UNIX )
-  target_link_libraries(robo_local_daemon PRIVATE boost_system )
-  target_link_libraries(robo_local_daemon PRIVATE boost_json )
-  target_link_libraries(robo_local_daemon PRIVATE boost_program_options )
-  include_directories ( robo_local_daemon PRIVATE ${LIBS_TOP}/boost_1_78_0/ )
+  target_link_libraries(fdml_daemon PRIVATE boost_system )
+  target_link_libraries(fdml_daemon PRIVATE boost_json )
+  target_link_libraries(fdml_daemon PRIVATE boost_program_options )
+  include_directories ( fdml_daemon PRIVATE ${LIBS_TOP}/boost_1_78_0/ )
   add_library(boost_json STATIC ${LIBS_TOP}/boost_1_78_0/libs/json/src/src.cpp )
 endif ( UNIX )
 if ( WIN32 )
-  target_link_libraries(robo_local_daemon PRIVATE Boost::system)
-  target_link_libraries(robo_local_daemon PRIVATE Boost::json)
-  target_link_libraries(robo_local_daemon PRIVATE Boost::program_options)
+  target_link_libraries(fdml_daemon PRIVATE Boost::system)
+  target_link_libraries(fdml_daemon PRIVATE Boost::json)
+  target_link_libraries(fdml_daemon PRIVATE Boost::program_options)
 endif ( WIN32 )

@@ -47,7 +47,7 @@ class Localizator:
             self.logfile = open(os.path.join(
                 working_dir, ".logfile"), "a")
 
-            daemon_path = "build/linux/debug/robo_local_daemon" if sys.platform == "linux" or sys.platform == "linux2" else "build/win/Debug/robo_local_daemon.exe"
+            daemon_path = "build/linux/debug/fdml_daemon" if sys.platform == "linux" or sys.platform == "linux2" else "build/win/Debug/fdml_daemon.exe"
 
             cmd = [daemon_path, "--cmdfile",
                    self.cmdfile, "--ackfile", self.ackfile]

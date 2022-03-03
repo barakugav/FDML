@@ -1,6 +1,6 @@
-# Robot Localization with Few Distance Measurements
+# FDML: Few Distance Measurements robot Localization
 
-CPP software for robot localization processing and queries using few (one or two) distance measurements.
+FDML is a CPP software for robot localization processing and queries using few (one or two) distance measurements.
 
 ## Installation
 
@@ -63,7 +63,7 @@ cmake-gui
 
 compilation:
 
-compile using Visual Studio. open /build/Win/robo_local_daemon.sln, "Build -> Build Solution".
+compile using Visual Studio. open /build/Win/fdml_daemon.sln, "Build -> Build Solution".
 
 
 ## Usage
