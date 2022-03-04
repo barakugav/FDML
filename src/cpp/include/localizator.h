@@ -12,6 +12,11 @@
  */
 class Localizator {
   private:
+	struct TrapezoidOpening {
+		Kernel::FT max;
+		Kernel::FT min;
+	};
+
 	typedef boost::geometry::model::point<Kernel::FT, 1, boost::geometry::cs::cartesian> TrapezoidRTreePoint;
 	typedef boost::geometry::model::box<TrapezoidRTreePoint> TrapezoidRTreeSegment;
 	typedef boost::geometry::index::linear<3> TrapezoidRTreeParams;
@@ -20,6 +25,9 @@ class Localizator {
 
 	/* Trapezoider object used to calculate and store all trapezoids of the room */
 	Trapezoider trapezoider;
+	/* Max and min opening per trapezoid */
+	std::vector<TrapezoidOpening> openings;
+
 	/* Trapezoids sorted by their max opening. Used for output sensitive calculation of single measurement queries */
 	std::vector<Trapezoid::ID> sorted_by_max;
 	/* Trapezoids in an interval tree, each interval is the min and max opening of a trapezoid. Used for output

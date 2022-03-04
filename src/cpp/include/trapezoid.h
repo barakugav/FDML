@@ -14,11 +14,7 @@
 class Trapezoid {
   public:
 	typedef unsigned int ID;
-
-  private:
 	Trapezoid::ID id;
-
-  public:
 	Direction angle_begin;
 	Direction angle_end;
 	Halfedge top_edge;
@@ -52,12 +48,15 @@ class Trapezoid {
 	void calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) const;
 
 	/**
-	 * @brief Calculate the minimum and maximum opening of this trapezoid, and fill the object fields
+	 * @brief Calculate the minimum and maximum opening of this trapezoid
 	 *
 	 * This function should be called after all of the trapezoid's defining fields (top edge, bottom edge, left vertex,
 	 * right vertex, start angle, end angle) have been assigned.
+	 *
+	 * @param opening_min output for the minimum opening of the trapezoid
+	 * @param opening_max output for the maximum opening of the trapezoid
 	 */
-	void calc_min_max_openings();
+	void calc_min_max_openings(Kernel::FT &opening_min, Kernel::FT &opening_max) const;
 };
 
 template <class OutputStream> OutputStream &operator<<(OutputStream &os, const Trapezoid &trapezoid) {

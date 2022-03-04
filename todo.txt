@@ -1,0 +1,4 @@
+calc min/max  opening by rotating trapezoid at 3 angles, one of them will not be vertical
+fix timeout and process leak handling
+improve scene designer
+tests

@@ -11,6 +11,12 @@
  */
 class Trapezoider {
   private:
+	typedef std::vector<Trapezoid> TrapezoidContainer;
+
+  public:
+	typedef TrapezoidContainer::const_iterator TrapezoidIterator;
+
+  private:
 	/* Struct containing all the data associated with a vertex during the parallel rotational sweep */
 	struct VertexData {
 		Trapezoid::ID top_left_trapezoid;
@@ -24,12 +30,10 @@ class Trapezoider {
 
 	/* Arrangement of the simple polygon room, built from the input points */
 	Arrangement arr;
-	/* Map of the calculated trapezoids within the room */
-	std::map<Trapezoid::ID, Trapezoid> trapezoids;
+	/* The calculated trapezoids within the room, indexed by their id */
+	TrapezoidContainer trapezoids;
 	/* map containing the data associated with each vertex during the parallel rotational sweep */
 	std::unordered_map<Vertex, VertexData> vertices_data;
-	/* counter for newly created trapezoids */
-	Trapezoid::ID trapezoids_id_counter;
 
   public:
 	Trapezoider() {}
@@ -40,12 +44,10 @@ class Trapezoider {
 	 */
 	void calc_trapezoids(const Polygon &scene);
 
-	std::map<Trapezoid::ID, Trapezoid>::iterator get_trapezoid(Trapezoid::ID id);
-	std::map<Trapezoid::ID, Trapezoid>::const_iterator get_trapezoid(Trapezoid::ID id) const;
-	std::map<Trapezoid::ID, Trapezoid>::iterator trapezoids_begin();
-	std::map<Trapezoid::ID, Trapezoid>::iterator trapezoids_end();
-	std::map<Trapezoid::ID, Trapezoid>::const_iterator trapezoids_begin() const;
-	std::map<Trapezoid::ID, Trapezoid>::const_iterator trapezoids_end() const;
+	TrapezoidIterator trapezoids_begin() const;
+	TrapezoidIterator trapezoids_end() const;
+	size_t number_of_trapezoids() const;
+	TrapezoidIterator get_trapezoid(Trapezoid::ID id) const;
 
   private:
 	Trapezoid::ID create_trapezoid(const Halfedge &top_edge, const Halfedge &bottom_edge, const Vertex &left_vertex,

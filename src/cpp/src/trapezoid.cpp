@@ -208,7 +208,7 @@ static void calc_edge_slope_intersection(const Halfedge &e, Kernel::FT &m, Kerne
 	b = s.y() - m * s.x();
 }
 
-void Trapezoid::calc_min_max_openings() {
+void Trapezoid::calc_min_max_openings(Kernel::FT &opening_min, Kernel::FT &opening_max) const {
 	/* we would like to calculate the maximum and minimum opening of a trapezoid. there is probably an analytic way
 	 * of doing so, by showing the opening function is convex, but i was unable to do so, so we will calculate the
 	 * max opening by binary search. If the top and bottom edges are not vertical, we can perform a binary search on the

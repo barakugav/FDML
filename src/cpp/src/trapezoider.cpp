@@ -275,10 +275,9 @@ static Halfedge direct_edge_free_face(const Halfedge &edge) { return is_free(edg
 Trapezoid::ID Trapezoider::create_trapezoid(const Halfedge &top_edge, const Halfedge &bottom_edge,
 											const Vertex &left_vertex, const Vertex &right_vertex) {
 	/* create the Trapezoid */
-	Trapezoid::ID t_id = ++trapezoids_id_counter;
+	Trapezoid::ID t_id = trapezoids.size();
 	auto top_edge_d = direct_edge_free_face(top_edge), bottom_edge_d = direct_edge_free_face(bottom_edge);
 	Trapezoid trapezoid(t_id, top_edge_d, bottom_edge, left_vertex, right_vertex);
-	trapezoids[t_id] = trapezoid;
 
 	auto &left_v_data = vertices_data[trapezoid.left_vertex];
 	auto &right_v_data = vertices_data[trapezoid.right_vertex];
@@ -298,6 +297,8 @@ Trapezoid::ID Trapezoider::create_trapezoid(const Halfedge &top_edge, const Half
 		right_v_data.top_left_trapezoid = t_id;
 	if (!right_on_bottom || right_on_top)
 		right_v_data.bottom_left_trapezoid = t_id;
+
+	trapezoids.push_back(std::move(trapezoid));
 
 	return t_id;
 }
@@ -394,8 +395,8 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 	}
 
 	debugln("[Trapezoider] After regular vertical decomposition, trapezoids:");
-	for (const auto &t : trapezoids)
-		debugln("\t" << t.second);
+	for (const auto &trapezoid : trapezoids)
+		debugln("\t" << trapezoid);
 }
 
 static bool get_edge(const Vertex &source, const Vertex &target, Halfedge &res) {
@@ -530,6 +531,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 				assert(v2_data.bottom_right_trapezoid != INVALID_TRAPEZOID_ID);
 				Trapezoid &left = trapezoids.at(v2_data.bottom_left_trapezoid);
 				Trapezoid &mid = trapezoids.at(v2_data.bottom_right_trapezoid);
+				/* CAREFUL - don't use these references after create_trapezoid is called, container may change */
 
 				assert(left.right_vertex == event.v2);
 				assert(mid.left_vertex == event.v2);
@@ -540,24 +542,29 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 				finalize_trapezoid(left);
 				mid.angle_end = current_angle;
 				finalize_trapezoid(mid);
+				debugln("\told mid: " << mid);
+				debugln("\told left: " << left);
+
+				auto left_top = left.top_edge, left_bottom = left.bottom_edge;
+				auto left_lvertex = left.left_vertex;
 
 				/* replace neighbor trapezoid with one with updated limiting vertices */
-				debugln("\told left: " << left);
-				auto left_new = create_trapezoid(left.top_edge, left.bottom_edge, left.left_vertex, event.v1);
+				auto left_new = create_trapezoid(left_top, left_bottom, left_lvertex, event.v1);
 				trapezoids.at(left_new).angle_begin = current_angle;
-				debugln("\tnew left: " << trapezoids.at(left_new));
 
 				/* Crate new triangle trapezoid */
-				debugln("\told mid: " << mid);
-				auto mid_new = create_trapezoid(left.top_edge, v1v2_edge, event.v1, event.v2);
+				auto mid_new = create_trapezoid(left_top, v1v2_edge, event.v1, event.v2);
 				trapezoids.at(mid_new).angle_begin = current_angle;
+
 				debugln("\tnew mid: " << trapezoids.at(mid_new));
+				debugln("\tnew left: " << trapezoids.at(left_new));
 
 			} else {
 				assert(v1_data.top_left_trapezoid != INVALID_TRAPEZOID_ID);
 				assert(v1_data.top_right_trapezoid != INVALID_TRAPEZOID_ID);
 				Trapezoid &mid = trapezoids.at(v1_data.top_left_trapezoid);
 				Trapezoid &right = trapezoids.at(v1_data.top_right_trapezoid);
+				/* CAREFUL - don't use these references after create_trapezoid is called, container may change */
 
 				assert(mid.left_vertex == event.v2);
 				assert(mid.right_vertex == event.v1);
@@ -568,18 +575,22 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 				finalize_trapezoid(mid);
 				right.angle_end = current_angle;
 				finalize_trapezoid(right);
+				debugln("\told right: " << right);
+				debugln("\told mid: " << mid);
+
+				auto right_top = right.top_edge, right_bottom = right.bottom_edge;
+				auto right_rvertex = right.right_vertex;
 
 				/* Crate new triangle trapezoid */
-				debugln("\told mid: " << mid);
-				auto mid_new = create_trapezoid(v1v2_edge, right.bottom_edge, event.v1, event.v2);
+				auto mid_new = create_trapezoid(v1v2_edge, right_bottom, event.v1, event.v2);
 				trapezoids.at(mid_new).angle_begin = current_angle;
-				debugln("\tnew mid: " << trapezoids.at(mid_new));
 
 				/* replace neighbor trapezoid with one with updated limiting vertices */
-				debugln("\told right: " << right);
-				auto right_new = create_trapezoid(right.top_edge, right.bottom_edge, event.v2, right.right_vertex);
+				auto right_new = create_trapezoid(right_top, right_bottom, event.v2, right_rvertex);
 				trapezoids.at(right_new).angle_begin = current_angle;
+
 				debugln("\tnew right: " << trapezoids.at(right_new));
+				debugln("\tnew mid: " << trapezoids.at(mid_new));
 			}
 		} else {
 			if (ray_edges.size() == 0)
@@ -604,6 +615,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 			Trapezoid &left = trapezoids.at(v2_data.bottom_left_trapezoid);
 			Trapezoid &mid = trapezoids.at(v1_data.top_left_trapezoid);
 			Trapezoid &right = trapezoids.at(v1_data.top_right_trapezoid);
+			/* CAREFUL - don't use these references after create_trapezoid is called, container may change */
 
 			assert(left.right_vertex == event.v2);
 			assert(mid.left_vertex == event.v2);
@@ -618,26 +630,33 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 			right.angle_end = current_angle;
 			finalize_trapezoid(right);
 
-			/* create new left trapezoid */
-			debugln("\told left: " << left);
-			auto left_new = create_trapezoid(left.top_edge, left.bottom_edge, left.left_vertex, event.v1);
-			trapezoids.at(left_new).angle_begin = current_angle;
-			debugln("\tnew left: " << trapezoids.at(left_new));
-
-			/* create new mid trapezoid */
+			debugln("\told right: " << right);
 			debugln("\told mid: " << mid);
-			Halfedge bottom_edge;
-			if (!find_edge_relative_to_angle(event.v1, current_angle, HalfPlaneSide::Right, MinMax::Max, bottom_edge))
-				bottom_edge = right.bottom_edge;
-			auto mid_new = create_trapezoid(left.top_edge, bottom_edge, event.v1, event.v2);
-			trapezoids.at(mid_new).angle_begin = current_angle;
-			debugln("\tnew mid: " << trapezoids.at(mid_new));
+			debugln("\told left: " << left);
+
+			auto right_top = right.top_edge, right_bottom = right.bottom_edge;
+			auto right_rvertex = right.right_vertex;
+			auto left_top = left.top_edge, left_bottom = left.bottom_edge;
+			auto left_lvertex = left.left_vertex;
 
 			/* create new right trapezoid */
-			debugln("\told right: " << right);
-			auto right_new = create_trapezoid(right.top_edge, right.bottom_edge, event.v2, right.right_vertex);
+			auto right_new = create_trapezoid(right_top, right_bottom, event.v2, right_rvertex);
 			trapezoids.at(right_new).angle_begin = current_angle;
+
+			/* create new mid trapezoid */
+			Halfedge bottom_edge;
+			if (!find_edge_relative_to_angle(event.v1, current_angle, HalfPlaneSide::Right, MinMax::Max, bottom_edge))
+				bottom_edge = right_bottom;
+			auto mid_new = create_trapezoid(left_top, bottom_edge, event.v1, event.v2);
+			trapezoids.at(mid_new).angle_begin = current_angle;
+
+			/* create new left trapezoid */
+			auto left_new = create_trapezoid(left_top, left_bottom, left_lvertex, event.v1);
+			trapezoids.at(left_new).angle_begin = current_angle;
+
 			debugln("\tnew right: " << trapezoids.at(right_new));
+			debugln("\tnew mid: " << trapezoids.at(mid_new));
+			debugln("\tnew left: " << trapezoids.at(left_new));
 		}
 	}
 
@@ -648,8 +667,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 	debugln("[Trapezoider] PRS merge unfinished trapezoids:");
 	std::map<std::pair<Vertex, Vertex>, Trapezoid::ID> no_begin_ts;
 	std::map<std::pair<Vertex, Vertex>, Trapezoid::ID> no_end_ts;
-	for (auto &p : trapezoids) {
-		Trapezoid &trapezoid = p.second;
+	for (const auto &trapezoid : trapezoids) {
 		assert(!(trapezoid.angle_begin == Trapezoid::ANGLE_NONE && trapezoid.angle_end == Trapezoid::ANGLE_NONE));
 		if (trapezoid.angle_begin == Trapezoid::ANGLE_NONE) {
 			assert(no_begin_ts.find({trapezoid.left_vertex, trapezoid.right_vertex}) == no_begin_ts.end());
@@ -660,6 +678,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		}
 	}
 	assert(no_begin_ts.size() == no_end_ts.size());
+	std::set<Trapezoid::ID> to_remove;
 	for (auto &p : no_begin_ts) {
 		const std::pair<Vertex, Vertex> &v = p.first;
 		Trapezoid &trapezoid = trapezoids.at(p.second);
@@ -671,25 +690,31 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		assert(trapezoid.left_vertex == other.left_vertex);
 		assert(trapezoid.right_vertex == other.right_vertex);
 		trapezoid.angle_begin = other.angle_begin;
-		trapezoids.erase(other.get_id());
+		to_remove.insert(other.get_id());
 	}
 
+	trapezoids.erase(std::remove_if(trapezoids.begin(), trapezoids.end(),
+									[&to_remove](const Trapezoid &trapezoid) {
+										return to_remove.find(trapezoid.get_id()) != to_remove.end();
+									}),
+					 trapezoids.end());
+
 	/* Remove degenerated trapezoids, these are trapezoids that start and finish at the same angle */
-	std::vector<Trapezoid::ID> empty_trapezoids;
-	for (const auto &p : trapezoids) {
-		const auto &trapezoid = p.second;
-		if (is_same_direction(trapezoid.angle_begin, trapezoid.angle_end))
-			empty_trapezoids.push_back(p.first);
-	}
-	for (Trapezoid::ID empty_trapezoid : empty_trapezoids)
-		trapezoids.erase(empty_trapezoid);
+	trapezoids.erase(std::remove_if(trapezoids.begin(), trapezoids.end(),
+									[&to_remove](const Trapezoid &trapezoid) {
+										return is_same_direction(trapezoid.angle_begin, trapezoid.angle_end);
+									}),
+					 trapezoids.end());
+
+	/* reassign IDs after erasing and reordering */
+	for (unsigned int i = 0; i < trapezoids.size(); i++)
+		trapezoids[i].id = i;
 }
 
 void Trapezoider::calc_trapezoids(const Polygon &scene) {
 	infoln("[Trapezoider] Calculating trapezoids...");
 	trapezoids.clear();
 	vertices_data.clear();
-	trapezoids_id_counter = 0;
 
 	/* arr.clear() has a bug. This function should only be used once for a Trapezoider object */
 	arr.clear();
@@ -704,23 +729,15 @@ void Trapezoider::calc_trapezoids(const Polygon &scene) {
 	calc_trapezoids_with_rotational_sweep();
 
 	debugln("[Trapezoider] After rotational sweep, trapezoids:");
-	for (const auto &p : trapezoids)
-		debugln("\t" << p.second);
+	for (const auto &trapezoid : trapezoids)
+		debugln("\t" << trapezoid);
 	infoln("[Trapezoider] " << trapezoids.size() << " trapezoid found successfully");
 }
 
-std::map<Trapezoid::ID, Trapezoid>::iterator Trapezoider::get_trapezoid(Trapezoid::ID id) {
-	return trapezoids.find(id);
-}
+Trapezoider::TrapezoidIterator Trapezoider::trapezoids_begin() const { return trapezoids.begin(); }
 
-std::map<Trapezoid::ID, Trapezoid>::const_iterator Trapezoider::get_trapezoid(Trapezoid::ID id) const {
-	return trapezoids.find(id);
-}
+Trapezoider::TrapezoidIterator Trapezoider::trapezoids_end() const { return trapezoids.end(); }
 
-std::map<Trapezoid::ID, Trapezoid>::iterator Trapezoider::trapezoids_begin() { return trapezoids.begin(); }
+size_t Trapezoider::number_of_trapezoids() const { return trapezoids.size(); }
 
-std::map<Trapezoid::ID, Trapezoid>::iterator Trapezoider::trapezoids_end() { return trapezoids.end(); }
-
-std::map<Trapezoid::ID, Trapezoid>::const_iterator Trapezoider::trapezoids_begin() const { return trapezoids.begin(); }
-
-std::map<Trapezoid::ID, Trapezoid>::const_iterator Trapezoider::trapezoids_end() const { return trapezoids.end(); }
+Trapezoider::TrapezoidIterator Trapezoider::get_trapezoid(Trapezoid::ID id) const { return trapezoids.begin() + id; }
