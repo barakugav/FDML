@@ -2,8 +2,10 @@
 #include <boost/geometry.hpp>
 #include <trapezoider.h>
 
-#ifndef __LOCALIZATOR_H__
-#define __LOCALIZATOR_H__
+#ifndef __FDML_LOCALIZATOR_H__
+#define __FDML_LOCALIZATOR_H__
+
+namespace FDML {
 
 /**
  * @brief The localizator class is used to preproccess a simple polygon room, and to query the possible positions a
@@ -55,5 +57,7 @@ class Localizator {
 	// TODO change output type
 	void query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement &res) const;
 };
+
+} // namespace FDML
 
 #endif

@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <thread>
 
+namespace FDML {
+
 static bool file_exists(const std::string &filename) {
 	std::ifstream f(filename.c_str());
 	return f.good();
@@ -167,11 +169,13 @@ void LocalizatorDaemon::check_state() const {
 		throw std::runtime_error("Localizator wan't initialized");
 }
 
+} // namespace FDML
+
 #define DEBUG_MAIN false
 
 int main(int argc, const char *argv[]) {
 	if (DEBUG_MAIN) {
-		LocalizatorDaemon daemon(".cmdfile", ".ackfile");
+		FDML::LocalizatorDaemon daemon(".cmdfile", ".ackfile");
 		daemon.load_scene("scenes/scene07.json");
 		daemon.query(0.3, "res.json");
 		debugln("done successfully");
@@ -194,7 +198,7 @@ int main(int argc, const char *argv[]) {
 		else if (!vm.count("cmdfile") || !vm.count("ackfile"))
 			std::cout << "The following flags are required: --cmdfile --ackfile" << '\n';
 		else {
-			LocalizatorDaemon daemon(cmd_filename, ack_filename);
+			FDML::LocalizatorDaemon daemon(cmd_filename, ack_filename);
 			daemon.run();
 		}
 		return 0;

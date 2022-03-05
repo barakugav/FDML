@@ -5,6 +5,8 @@
 #include "utils.hpp"
 #include <CGAL/enum.h>
 
+namespace FDML {
+
 const Direction Trapezoid::ANGLE_NONE(0, 0);
 
 Trapezoid::Trapezoid(Trapezoid::ID id, Halfedge top_edge, Halfedge bottom_edge, Vertex left_vertex, Vertex right_vertex)
@@ -292,3 +294,5 @@ void Trapezoid::calc_min_max_openings(Kernel::FT &opening_min, Kernel::FT &openi
 		}
 	}
 }
+
+} // namespace FDML

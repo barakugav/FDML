@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iostream>
 
+namespace FDML {
+
 static boost::json::value parse_file(std::string filename) {
 	std::ifstream fin(filename, std::ifstream::binary);
 	char buf[4096];
@@ -186,3 +188,5 @@ void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::str
 	json_format_pretty(outfile, top_lvl_obj2);
 	outfile.close();
 }
+
+} // namespace FDML

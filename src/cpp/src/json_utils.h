@@ -1,8 +1,10 @@
 #include "defs.h"
 #include <vector>
 
-#ifndef __JSON_UTILS_H__
-#define __JSON_UTILS_H__
+#ifndef __FDML_JSON_UTILS_H__
+#define __FDML_JSON_UTILS_H__
+
+namespace FDML {
 
 /**
  * @brief Parse a scene from a JSON file
@@ -19,5 +21,7 @@ void parse_scene_from_json(const std::string &filename, Polygon &scene);
  * @param filename output filename
  */
 void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::string &filename);
+
+} // namespace FDML
 
 #endif

@@ -1,8 +1,10 @@
 #include "defs.h"
 #include <CGAL/Visibility_2/visibility_utils.h>
 
-#ifndef __CLOSER_EDGE_HPP__
-#define __CLOSER_EDGE_HPP__
+#ifndef __FDML_CLOSER_EDGE_HPP__
+#define __FDML_CLOSER_EDGE_HPP__
+
+namespace FDML {
 
 /**
  * @brief "Less" object used in a map during a rotational sweep to keep track of the closer edges intersection an
@@ -141,5 +143,7 @@ class Closer_edge : public CGAL::cpp98::binary_function<Halfedge, Halfedge, bool
 		return false;
 	}
 };
+
+} // namespace FDML
 
 #endif

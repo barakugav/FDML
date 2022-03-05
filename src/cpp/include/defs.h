@@ -2,8 +2,10 @@
 #include <CGAL/Arrangement_2.h>
 #include <CGAL/Polygon_2.h>
 
-#ifndef __DEFS_H__
-#define __DEFS_H__
+#ifndef __FDML_DEFS_H__
+#define __FDML_DEFS_H__
+
+namespace FDML {
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
 typedef CGAL::Segment_2<Kernel> Segment;
@@ -16,5 +18,7 @@ typedef CGAL::Polygon_2<Kernel> Polygon;
 typedef Arrangement::Vertex_const_handle Vertex;
 typedef Arrangement::Halfedge_const_handle Halfedge;
 typedef Arrangement::Face_const_handle Face;
+
+} // namespace FDML
 
 #endif

@@ -1,8 +1,15 @@
+#ifndef M_PI
+// windows
+#define _USE_MATH_DEFINES
+#include <cmath>
+#endif
 #include "defs.h"
-#include "utils.hpp"
+#include <math.h>
 
-#ifndef __TRAPEZOID_H__
-#define __TRAPEZOID_H__
+#ifndef __FDML_TRAPEZOID_H__
+#define __FDML_TRAPEZOID_H__
+
+namespace FDML {
 
 /**
  * The Trapezoid class represent a 3D cell in the (x,y,theta) configuration space. A trapezoid is defined by it's top
@@ -57,13 +64,20 @@ class Trapezoid {
 };
 
 template <class OutputStream> OutputStream &operator<<(OutputStream &os, const Trapezoid &trapezoid) {
+	auto dir_to_angles = [](const Direction &dir) {
+		double x = CGAL::to_double(dir.dx());
+		double y = CGAL::to_double(dir.dy());
+		return (int)(std::atan2(y, x) * 180 / M_PI);
+	};
 	os << 'T' << trapezoid.get_id();
-	int angle_begin = trapezoid.angle_begin != Trapezoid::ANGLE_NONE ? direction_to_angles(trapezoid.angle_begin) : 0;
-	int angle_end = trapezoid.angle_end != Trapezoid::ANGLE_NONE ? direction_to_angles(trapezoid.angle_end) : 0;
+	int angle_begin = trapezoid.angle_begin != Trapezoid::ANGLE_NONE ? dir_to_angles(trapezoid.angle_begin) : 0;
+	int angle_end = trapezoid.angle_end != Trapezoid::ANGLE_NONE ? dir_to_angles(trapezoid.angle_end) : 0;
 	os << " (" << angle_begin << ", " << angle_end << ')';
 	os << " t(" << trapezoid.top_edge->curve() << ") b(" << trapezoid.bottom_edge->curve() << ") l("
 	   << trapezoid.left_vertex->point() << ") r(" << trapezoid.right_vertex->point() << ')';
 	return os;
 }
+
+} // namespace FDML
 
 #endif

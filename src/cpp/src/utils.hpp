@@ -10,8 +10,10 @@
 #include "CGAL/enum.h"
 #include "CGAL/number_utils.h"
 
-#ifndef __UTILS_HPP__
-#define __UTILS_HPP__
+#ifndef __FDML_UTILS_HPP__
+#define __FDML_UTILS_HPP__
+
+namespace FDML {
 
 #define DEBUG_PRINT_EN 1
 
@@ -55,5 +57,7 @@ inline int direction_to_angles(const Direction &dir) {
 }
 
 inline bool is_free(Face face) { return !face->is_unbounded(); }
+
+} // namespace FDML
 
 #endif

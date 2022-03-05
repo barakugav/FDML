@@ -2,6 +2,8 @@
 #include "utils.hpp"
 #include <CGAL/Arr_vertical_decomposition_2.h>
 
+namespace FDML {
+
 /* An event that should be handled during a parallel rotational sweep. The event is composed as two vertices that align
  * on the same line for some angle. */
 class Event {
@@ -741,3 +743,5 @@ Trapezoider::TrapezoidIterator Trapezoider::trapezoids_end() const { return trap
 size_t Trapezoider::number_of_trapezoids() const { return trapezoids.size(); }
 
 Trapezoider::TrapezoidIterator Trapezoider::get_trapezoid(Trapezoid::ID id) const { return trapezoids.begin() + id; }
+
+} // namespace FDML

@@ -1,7 +1,9 @@
 #include "localizator.h"
 
-#ifndef __LOCALIZATOR_DAEMON_H__
-#define __LOCALIZATOR_DAEMON_H__
+#ifndef __FDML_LOCALIZATOR_DAEMON_H__
+#define __FDML_LOCALIZATOR_DAEMON_H__
+
+namespace FDML {
 
 /**
  * @brief Wrapper daemon for the Localizator class. Provide files communication with another proccess.
@@ -65,5 +67,7 @@ class LocalizatorDaemon {
 	/* Checks that a scene was actually loaded before handling a query command */
 	void check_state() const;
 };
+
+} // namespace FDML
 
 #endif

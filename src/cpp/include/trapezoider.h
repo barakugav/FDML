@@ -2,8 +2,10 @@
 #include "defs.h"
 #include "trapezoid.h"
 
-#ifndef __TRAPEZOIDER_H__
-#define __TRAPEZOIDER_H__
+#ifndef __FDML_TRAPEZOIDER_H__
+#define __FDML_TRAPEZOIDER_H__
+
+namespace FDML {
 
 /**
  * @brief The Trapezoider class is an object used to calculate all trapezoids within a given polygon simple room. It
@@ -56,5 +58,7 @@ class Trapezoider {
 	void init_trapezoids_with_regular_vertical_decomposition();
 	void calc_trapezoids_with_rotational_sweep();
 };
+
+} // namespace FDML
 
 #endif

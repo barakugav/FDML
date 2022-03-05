@@ -1,6 +1,8 @@
 #include "localizator.h"
 #include "utils.hpp"
 
+namespace FDML {
+
 void Localizator::init(const Polygon &scene) {
 	infoln("[Localizator] init...");
 	sorted_by_max.clear();
@@ -79,3 +81,5 @@ void Localizator::query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement 
 	}
 	UNUSED(res);
 }
+
+} // namespace FDML
