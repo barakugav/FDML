@@ -731,7 +731,7 @@ void Trapezoider::calc_trapezoids(const Polygon &scene) {
 	debugln("[Trapezoider] After rotational sweep, trapezoids:");
 	for (const auto &trapezoid : trapezoids)
 		debugln("\t" << trapezoid);
-	infoln("[Trapezoider] " << trapezoids.size() << " trapezoid found successfully");
+	infoln("[Trapezoider] " << trapezoids.size() << " trapezoids found successfully");
 }
 
 Trapezoider::TrapezoidIterator Trapezoider::trapezoids_begin() const { return trapezoids.begin(); }

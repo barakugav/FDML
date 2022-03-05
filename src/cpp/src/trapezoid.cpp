@@ -3,6 +3,7 @@
 #include "CGAL/Boolean_set_operations_2/Gps_polygon_validation.h"
 #include "CGAL/Polygon_with_holes_2.h"
 #include "utils.hpp"
+#include <CGAL/enum.h>
 
 const Direction Trapezoid::ANGLE_NONE(0, 0);
 
@@ -15,6 +16,14 @@ Trapezoid::ID Trapezoid::get_id() const { return id; }
 /* rotate a direction by a given angle (radians) */
 template <typename _Direction> static _Direction rotate(const _Direction &d, double r) {
 	return d.transform(Kernel::Aff_transformation_2(CGAL::Rotation(), std::sin(r), std::cos(r)));
+}
+
+static Direction get_mid_angle(Direction angle_begin, Direction angle_end) {
+	auto v_begin = normalize(angle_begin.vector()), v_end = normalize(angle_end.vector());
+	double angle_between = std::acos(CGAL::to_double(v_begin * v_end));
+	assert(angle_between != 0);
+	double a_mid = angle_between / 2;
+	return rotate(v_begin, a_mid).direction();
 }
 
 /* Calculate which of an edge endpoint is "left" and "right" relative to some direction */
@@ -31,11 +40,7 @@ static void calc_edge_left_right_vertices(const Halfedge &edge, const Direction 
 }
 
 Polygon Trapezoid::get_bounds_2d() const {
-	auto v_begin = normalize(angle_begin.vector()), v_end = normalize(angle_end.vector());
-	double angle_between = std::acos(CGAL::to_double(v_begin * v_end));
-	assert(angle_between != 0);
-	double a_mid = angle_between / 2;
-	auto v_mid = rotate(v_begin, a_mid).direction();
+	auto v_mid = get_mid_angle(angle_begin, angle_end);
 
 	/* Calculate left and right vertices of the top edge relative to the trapezoid's direction */
 	Point t1 = top_edge->source()->point(), t2 = top_edge->target()->point();
@@ -43,7 +48,6 @@ Polygon Trapezoid::get_bounds_2d() const {
 	calc_edge_left_right_vertices(top_edge, v_mid, top_left, top_right);
 
 	/* Calculate left and right vertices of the bottom edge relative to the trapezoid's direction */
-	Point b1 = bottom_edge->source()->point(), b2 = bottom_edge->target()->point();
 	Point bottom_left, bottom_right;
 	calc_edge_left_right_vertices(bottom_edge, v_mid, bottom_left, bottom_right);
 
@@ -199,125 +203,92 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 	}
 }
 
-static bool is_vertical(const Halfedge &e) { return e->source()->point().x() == e->target()->point().x(); }
-
-static void calc_edge_slope_intersection(const Halfedge &e, Kernel::FT &m, Kernel::FT &b) {
-	auto s = e->source()->point(), t = e->target()->point();
-	assert(t.x() != s.x());
-	m = (t.y() - s.y()) / (t.x() - s.x());
-	b = s.y() - m * s.x();
-}
-
 void Trapezoid::calc_min_max_openings(Kernel::FT &opening_min, Kernel::FT &opening_max) const {
-	/* we would like to calculate the maximum and minimum opening of a trapezoid. there is probably an analytic way
-	 * of doing so, by showing the opening function is convex, but i was unable to do so, so we will calculate the
-	 * max opening by binary search. If the top and bottom edges are not vertical, we can perform a binary search on the
-	 * angle, and the maximum/minimum will occur at the x limits of the trapezoid, the and calculation is very
-	 * efficient. If the one of the edges is vertical, our formulas for calculating openings and the trapezoids limit
-	 * breaks down, and we perform a binary search on the actual query result, which is very slow, but it's
-	 * preproccessing so we can accept that. */
+	/* for any fixed angle, the opening function is a affine function, and therefore monotonically increasing or
+	 * decreasing as a function x. Therefore, to calculate the minimum or the maximum of the opening function we only
+	 * need to consider the values at the end of the x valid interval of the functions, these are the x values defined
+	 * by the left and right limiting vertices. */
 
-	if (!is_vertical(top_edge) && !is_vertical(bottom_edge)) {
-		Kernel::FT m_t, b_t, m_b, b_b;
-		calc_edge_slope_intersection(top_edge, m_t, b_t);
-		calc_edge_slope_intersection(bottom_edge, m_b, b_b);
+	auto calc_arc_opening = [this](const Point &vertex, const Direction &angle) {
+		Line bottom_line = bottom_edge->curve().line();
+		if (bottom_line.has_on(vertex))
+			return (Kernel::FT)0;
+		Line opening_line = Line(vertex, angle);
+		Point inter = intersection(bottom_line, opening_line);
+		Kernel::FT xd = vertex.x() - inter.x(), xy = vertex.y() - inter.y();
+		return CGAL::approximate_sqrt(xd * xd + xy * xy);
+	};
+	auto calc_conchoid_opening = [this](const Point &vertex, const Direction &angle) {
+		Line top_line = top_edge->curve().line();
+		Line bottom_line = bottom_edge->curve().line();
+		Line opening_line = Line(vertex, angle);
+		Point inter1 = top_line.has_on(vertex) ? vertex : intersection(top_line, opening_line);
+		Point inter2 = bottom_line.has_on(vertex) ? vertex : intersection(bottom_line, opening_line);
+		Kernel::FT xd = inter1.x() - inter2.x(), xy = inter1.y() - inter2.y();
+		return CGAL::approximate_sqrt(xd * xd + xy * xy);
+	};
+	auto angle_between = [](double low, double high) {
+		double r = high - low;
+		return low < high ? r : r + 2 * M_PI;
+	};
+	auto dir_to_angle = [](const Direction &dir) {
+		return std::atan2(CGAL::to_double(dir.dy()), CGAL::to_double(dir.dx()));
+	};
+	for (unsigned int side = 0; side < 2; side++) {
+		Point limit_vertex = (side == 0 ? left_vertex : right_vertex)->point();
+		Kernel::FT max, min;
 
-		auto calc_x_limit = [&m_t, &b_t](double angle, const Point &limiting_v) {
-			double t = std::tan(angle);
-			return (limiting_v.y() - limiting_v.x() * t - b_t) / (m_t - t);
-		};
-		auto calc_opening = [&m_t, &b_t, &m_b, &b_b](const Kernel::FT &x, double angle) {
-			return (x * (m_t - m_b) + b_t - b_b) / (std::sin(angle) - m_b * std::cos(angle));
-		};
-		auto calc_max_opening = [this, &calc_x_limit, &calc_opening](double angle) {
-			Kernel::FT lx_limit = calc_x_limit(angle, left_vertex->point());
-			Kernel::FT rx_limit = calc_x_limit(angle, right_vertex->point());
-			return std::max(calc_opening(lx_limit, angle), calc_opening(rx_limit, angle));
-		};
-		auto calc_min_opening = [this, &calc_x_limit, &calc_opening](double angle) {
-			Kernel::FT lx_limit = calc_x_limit(angle, left_vertex->point());
-			Kernel::FT rx_limit = calc_x_limit(angle, right_vertex->point());
-			return std::min(calc_opening(lx_limit, angle), calc_opening(rx_limit, angle));
-		};
+		if (top_edge->curve().line().has_on(limit_vertex)) {
+			/* Arc */
+			/* for an arc curve of a limiting vertex, the minimum is always achieved at the angle perpendicular to the
+			 * bottom edge, but it may not be included in the trapezoid angle interval, and we consider the interval
+			 * limits as well. The maximum will always be one of the angle interval limits. */
+			Kernel::FT m1 = calc_arc_opening(limit_vertex, -angle_begin);
+			Kernel::FT m2 = calc_arc_opening(limit_vertex, -angle_end);
+			max = CGAL::max(m1, m2);
 
-		const double a_begin = std::atan2(CGAL::to_double(angle_begin.dy()), CGAL::to_double(angle_begin.dx()));
-		const double a_end = std::atan2(CGAL::to_double(angle_end.dy()), CGAL::to_double(angle_end.dx()));
-		const double PRECISION = 0.01;
-
-		double a_low = a_begin, a_high = a_end;
-		if (a_low > a_high)
-			a_high += M_PI * 2;
-		while (a_high - a_low > PRECISION) {
-			assert(a_high > a_low);
-			double mid1 = a_low + (a_high - a_low) * 1 / 3;
-			double mid2 = a_low + (a_high - a_low) * 2 / 3;
-			Kernel::FT mid1_max_opening = calc_max_opening(mid1);
-			Kernel::FT mid2_max_opening = calc_max_opening(mid2);
-			if (mid1_max_opening >= mid2_max_opening)
-				a_high = mid2;
+			Point bottom_left, bottom_right;
+			calc_edge_left_right_vertices(bottom_edge, get_mid_angle(angle_begin, angle_end), bottom_left,
+										  bottom_right);
+			Direction perp = Direction(bottom_right.x() - bottom_left.x(), bottom_right.y() - bottom_left.y())
+								 .perpendicular(CGAL::LEFT_TURN);
+			if (perp.counterclockwise_in_between(angle_begin, angle_end))
+				min = calc_arc_opening(limit_vertex, -perp);
 			else
-				a_low = mid1;
-		}
-		opening_max = calc_max_opening((a_high + a_low) / 2);
+				min = CGAL::min(m1, m2);
 
-		a_low = a_begin, a_high = a_end;
-		if (a_low > a_high)
-			a_high += M_PI * 2;
-		while (a_high - a_low > PRECISION) {
-			assert(a_high > a_low);
-			double mid1 = a_low + (a_high - a_low) * 1 / 3;
-			double mid2 = a_low + (a_high - a_low) * 2 / 3;
-			Kernel::FT mid1_min_opening = calc_min_opening(mid1);
-			Kernel::FT mid2_min_opening = calc_min_opening(mid2);
-			if (mid1_min_opening <= mid2_min_opening)
-				a_high = mid2;
-			else
-				a_low = mid1;
-		}
-		opening_min = calc_min_opening((a_high + a_low) / 2);
-
-	} else {
-		std::vector<Polygon> res;
-		auto has_bigger_opening = [this, &res](const Kernel::FT &d) {
-			calc_result_m1(d, res);
-			bool has_bigger = res.size() > 0;
-			res.clear();
-			return has_bigger;
-		};
-
-		Kernel::FT lower, upper;
-		if (has_bigger_opening(1)) {
-			lower = 1;
-			for (;;) {
-				upper = lower * 2;
-				if (!has_bigger_opening(upper))
-					break;
-				lower = upper;
-			}
 		} else {
-			upper = 1;
-			for (;;) {
-				lower = upper / 2;
-				if (has_bigger_opening(lower))
-					break;
-				upper = lower;
+			/* Conchoid */
+			/* for a conchoid curve of a limiting vertex, i failed to calculate analytically the minimum point, and
+			 * therefore forced to search numerically on the convex function. The maximum will always be one of the
+			 * angle interval limits. */
+			Kernel::FT m1 = calc_conchoid_opening(limit_vertex, -angle_begin);
+			Kernel::FT m2 = calc_conchoid_opening(limit_vertex, -angle_end);
+			min = CGAL::min(m1, m2);
+			max = CGAL::max(m1, m2);
+
+			double a_low = dir_to_angle(angle_begin), a_high = dir_to_angle(angle_end);
+			const double PRECISION = 0.01;
+			while (std::abs(a_high - a_low) > PRECISION) {
+				double a = angle_between(a_low, a_high);
+				double mid1 = a * 1 / 3, mid2 = a * 2 / 3;
+				Kernel::FT mid1_min_opening = calc_conchoid_opening(limit_vertex, rotate(angle_begin, mid1));
+				Kernel::FT mid2_min_opening = calc_conchoid_opening(limit_vertex, rotate(angle_begin, mid2));
+				if (mid1_min_opening <= mid2_min_opening)
+					a_high = a_low + mid2;
+				else
+					a_low = a_low + mid1;
 			}
+			double a = angle_between(a_low, a_high) / 2;
+			min = CGAL::min(min, calc_conchoid_opening(limit_vertex, rotate(angle_begin, a)));
 		}
-		assert(has_bigger_opening(lower));
-		assert(!has_bigger_opening(upper));
 
-		const Kernel::FT binary_search_precision = 0.1;
-		while (upper - lower > binary_search_precision) {
-			Kernel::FT mid = (upper + lower) / 2;
-			if (has_bigger_opening(mid))
-				lower = mid;
-			else
-				upper = mid;
+		if (side == 0) {
+			opening_min = min;
+			opening_max = max;
+		} else {
+			opening_min = CGAL::min(opening_min, min);
+			opening_max = CGAL::max(opening_max, max);
 		}
-		opening_max = upper;
-
-		/* TODO the minimum opening is currently set to zero, which is fine, as it is used
-		 * only in the interval tree for query2 which we doesn't support yet. */
-		opening_min = 0; // TODO
 	}
 }
