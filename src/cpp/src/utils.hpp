@@ -29,13 +29,15 @@
 #define debugln(args) debug(args << std::endl)
 #define debug_line() debug(__FILE__ << ":" << __LINE__ << std::endl)
 
+#define UNUSED(var) (void)var
+
 enum HalfPlaneSide {
 	None, // exactly on plane
 	Left,
 	Right,
 };
 
-static enum HalfPlaneSide calc_half_plane_side(const Direction &angle, const Direction &p) {
+inline enum HalfPlaneSide calc_half_plane_side(const Direction &angle, const Direction &p) {
 	CGAL::Sign s = CGAL::sign_of_determinant_of_vectors<Kernel::FT>(angle.vector(), p.vector());
 	return s == CGAL::NEGATIVE ? HalfPlaneSide::Right : s == CGAL::POSITIVE ? HalfPlaneSide::Left : HalfPlaneSide::None;
 }
@@ -46,12 +48,12 @@ template <typename _Vector> static _Vector normalize(_Vector v) {
 }
 
 /* This function should be used only for debug uses */
-static int direction_to_angles(const Direction &dir) {
+inline int direction_to_angles(const Direction &dir) {
 	double x = CGAL::to_double(dir.dx());
 	double y = CGAL::to_double(dir.dy());
 	return (int)(std::atan2(y, x) * 180 / M_PI);
 }
 
-static bool is_free(Face face) { return !face->is_unbounded(); }
+inline bool is_free(Face face) { return !face->is_unbounded(); }
 
 #endif

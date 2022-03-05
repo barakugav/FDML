@@ -77,4 +77,5 @@ void Localizator::query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement 
 		debugln("\tT" << rtree_val.second << " [" << opening.min << ", " << opening.max << "]");
 		// TODO
 	}
+	UNUSED(res);
 }

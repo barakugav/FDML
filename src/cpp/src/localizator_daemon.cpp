@@ -7,12 +7,8 @@
 #include <thread>
 
 static bool file_exists(const std::string &filename) {
-	if (FILE *file = fopen(filename.c_str(), "r")) {
-		fclose(file);
-		return true;
-	} else {
-		return false;
-	}
+	std::ifstream f(filename.c_str());
+	return f.good();
 }
 
 static void remove_whitespace(std::string &s) {
@@ -74,6 +70,7 @@ void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) 
 	infoln("[LocalizatorDaemon] Query2: " << d1 << " " << d2);
 	check_state();
 	throw std::runtime_error("not supported"); // TODO
+	UNUSED(outfile);
 }
 
 void LocalizatorDaemon::run() {

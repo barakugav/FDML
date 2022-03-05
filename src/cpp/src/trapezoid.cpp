@@ -9,7 +9,7 @@ const Direction Trapezoid::ANGLE_NONE(0, 0);
 
 Trapezoid::Trapezoid(Trapezoid::ID id, Halfedge top_edge, Halfedge bottom_edge, Vertex left_vertex, Vertex right_vertex)
 	: id(id), top_edge(top_edge), bottom_edge(bottom_edge), left_vertex(left_vertex), right_vertex(right_vertex),
-	  angle_begin(Trapezoid::ANGLE_NONE), angle_end(Trapezoid::ANGLE_NONE), opening_max(0), opening_min(0) {}
+	  angle_begin(Trapezoid::ANGLE_NONE), angle_end(Trapezoid::ANGLE_NONE) {}
 
 Trapezoid::ID Trapezoid::get_id() const { return id; }
 
@@ -103,9 +103,9 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 	debugln("\ttop edge (" << top_edge->curve() << ") bottom edge (" << bottom_edge->curve() << ')');
 
 	/* calculate result for each angle interval */
-	for (unsigned int i = 0; i < 2; i++) {
-		auto &angle_interval = angle_intervals[i];
-		bool before_mid = i == 0;
+	for (unsigned int internal_idx = 0; internal_idx < 2; internal_idx++) {
+		auto &angle_interval = angle_intervals[internal_idx];
+		bool before_mid = internal_idx == 0;
 		auto i_begin = angle_interval[0], i_end = angle_interval[1];
 		if (i_begin == i_end)
 			continue; /* ignore if the angle interval is empty */

@@ -15,18 +15,15 @@ class Trapezoid {
   public:
 	typedef unsigned int ID;
 	Trapezoid::ID id;
-	Direction angle_begin;
-	Direction angle_end;
 	Halfedge top_edge;
 	Halfedge bottom_edge;
 	Vertex left_vertex;
 	Vertex right_vertex;
-	Kernel::FT opening_max;
-	Kernel::FT opening_min;
+	Direction angle_begin;
+	Direction angle_end;
 
 	static const Direction ANGLE_NONE;
 
-	Trapezoid() = default;
 	Trapezoid(Trapezoid::ID id, Halfedge top_edge, Halfedge bottom_edge, Vertex left_vertex, Vertex right_vertex);
 	Trapezoid(const Trapezoid &) = default;
 	Trapezoid::ID get_id() const;

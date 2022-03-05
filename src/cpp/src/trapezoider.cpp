@@ -211,7 +211,7 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 /* return true if two edges are equal, ignoring direction */
 static bool undirected_eq(const Halfedge &e1, const Halfedge &e2) { return e1 == e2 || e1 == e2->twin(); }
 
-#define INVALID_TRAPEZOID_ID -1
+#define INVALID_TRAPEZOID_ID 0xffffffff
 
 Trapezoider::VertexData::VertexData(Point &v, const Arrangement::Geometry_traits_2 *geom_traits) {
 	top_left_trapezoid = top_right_trapezoid = INVALID_TRAPEZOID_ID;
@@ -277,7 +277,7 @@ Trapezoid::ID Trapezoider::create_trapezoid(const Halfedge &top_edge, const Half
 	/* create the Trapezoid */
 	Trapezoid::ID t_id = trapezoids.size();
 	auto top_edge_d = direct_edge_free_face(top_edge), bottom_edge_d = direct_edge_free_face(bottom_edge);
-	Trapezoid trapezoid(t_id, top_edge_d, bottom_edge, left_vertex, right_vertex);
+	Trapezoid trapezoid(t_id, top_edge_d, bottom_edge_d, left_vertex, right_vertex);
 
 	auto &left_v_data = vertices_data[trapezoid.left_vertex];
 	auto &right_v_data = vertices_data[trapezoid.right_vertex];
@@ -493,9 +493,9 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		VertexData &v2_data = vertices_data.at(event.v2);
 		const auto ray = event.get_ray();
 		auto &ray_edges = v1_data.ray_edges;
-		bool closest_edge_orig_valid;
+		bool closest_edge_orig_valid = ray_edges.size() > 0;
 		Halfedge closest_edge_orig;
-		if (closest_edge_orig_valid = ray_edges.size() > 0)
+		if (closest_edge_orig_valid)
 			closest_edge_orig = *ray_edges.begin();
 
 		debugln("[Trapezoider] PRS handle event (" << event.v1->point() << ") (" << event.v2->point() << ')');
