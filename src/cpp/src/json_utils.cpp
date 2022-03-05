@@ -81,7 +81,7 @@ void parse_scene_from_json(const std::string &filename, Polygon &scene) {
 
 				double x = get_double(point[0], "x");
 				double y = get_double(point[1], "y");
-				scene.push_back(Point(x, y));
+				scene.push_back({x, y});
 			}
 		} else
 			ERR("Unknown Json tag: " << obstacles_key);

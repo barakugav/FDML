@@ -33,17 +33,6 @@ namespace FDML {
 
 #define UNUSED(var) (void)var
 
-enum HalfPlaneSide {
-	None, // exactly on plane
-	Left,
-	Right,
-};
-
-inline enum HalfPlaneSide calc_half_plane_side(const Direction &angle, const Direction &p) {
-	CGAL::Sign s = CGAL::sign_of_determinant_of_vectors<Kernel::FT>(angle.vector(), p.vector());
-	return s == CGAL::NEGATIVE ? HalfPlaneSide::Right : s == CGAL::POSITIVE ? HalfPlaneSide::Left : HalfPlaneSide::None;
-}
-
 template <typename _Vector> static _Vector normalize(_Vector v) {
 	Kernel::FT norm = CGAL::approximate_sqrt(v.squared_length());
 	return norm > 1e-30 ? v / norm : v;

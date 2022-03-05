@@ -31,8 +31,7 @@ static Direction get_mid_angle(Direction angle_begin, Direction angle_end) {
 /* Calculate which of an edge endpoint is "left" and "right" relative to some direction */
 static void calc_edge_left_right_vertices(const Halfedge &edge, const Direction &dir, Point &left, Point &right) {
 	Point p1 = edge->source()->point(), p2 = edge->target()->point();
-	Point mid_top((p1.x() + p2.x()) / 2, (p1.y() + p2.y()) / 2);
-	if (calc_half_plane_side(dir, Direction(p1.x() - mid_top.x(), p1.y() - mid_top.y())) == HalfPlaneSide::Left) {
+	if (Line({0, 0}, dir).oriented_side({(p1.x() - p2.x()) / 2, (p1.y() - p2.y()) / 2}) == CGAL::ON_POSITIVE_SIDE) {
 		left = p1;
 		right = p2;
 	} else {
@@ -85,7 +84,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 	debugln("[Trapezoid] calculating single measurement result...");
 	/* oriante angles relative to the top edge */
 	Direction a_begin = -angle_begin, a_end = -angle_end;
-	assert(calc_half_plane_side(a_begin, a_end) == HalfPlaneSide::Left);
+	assert(Line({0, 0}, a_begin).oriented_side({a_end.dx(), a_end.dy()}) == CGAL::ON_POSITIVE_SIDE);
 	auto s = top_edge->source()->point(), t = top_edge->target()->point();
 	Direction top_edge_direction(t.x() - s.x(), t.y() - s.y());
 	assert(is_free(top_edge->face()));
@@ -97,8 +96,9 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 	/* calculate the mid angle, which is perpendicular to the top edge, and use it to split the trapezoid angle
 	 * interval into 2 to ensure simple polygon output for each result entry. */
 	Direction mid_angle = top_edge_direction.perpendicular(CGAL::LEFT_TURN);
-	bool begin_before_mid = calc_half_plane_side(mid_angle, a_begin) == HalfPlaneSide::Right;
-	bool end_after_mid = calc_half_plane_side(mid_angle, a_end) == HalfPlaneSide::Left;
+	bool begin_before_mid =
+		Line({0, 0}, mid_angle).oriented_side({a_begin.dx(), a_begin.dy()}) == CGAL::ON_NEGATIVE_SIDE;
+	bool end_after_mid = Line({0, 0}, mid_angle).oriented_side({a_end.dx(), a_end.dy()}) == CGAL::ON_POSITIVE_SIDE;
 	Direction angle_intervals[2][2] = {{begin_before_mid ? a_begin : mid_angle, end_after_mid ? mid_angle : a_end},
 									   {begin_before_mid ? mid_angle : a_begin, end_after_mid ? a_end : mid_angle}};
 

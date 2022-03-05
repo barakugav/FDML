@@ -49,7 +49,7 @@ enum MinMax {
  * @param res output result
  * @return true if found, else false
  */
-static bool find_edge_relative_to_angle(const Vertex &v, const Direction &angle, enum HalfPlaneSide side,
+static bool find_edge_relative_to_angle(const Vertex &v, const Direction &angle, CGAL::Oriented_side side,
 										enum MinMax min_max, Halfedge &res) {
 	bool found = false;
 	Halfedge best;
@@ -57,13 +57,13 @@ static bool find_edge_relative_to_angle(const Vertex &v, const Direction &angle,
 		auto calc_edge_angle = [&v](const auto &e) {
 			Point target = (e->source() == v ? e->target() : e->source())->point();
 			Point vp = v->point();
-			return Direction(target.x() - vp.x(), target.y() - vp.y());
+			return Point(target.x() - vp.x(), target.y() - vp.y());
 		};
 		auto e_angle = calc_edge_angle(edge);
 
-		if (side == calc_half_plane_side(angle, e_angle)) {
-			auto min_max_side = min_max == MinMax::Max ? HalfPlaneSide::Left : HalfPlaneSide::Right;
-			if (!found || calc_half_plane_side(calc_edge_angle(best), e_angle) == min_max_side) {
+		if (side == Line({0, 0}, angle).oriented_side(e_angle)) {
+			auto min_max_side = min_max == MinMax::Max ? CGAL::ON_POSITIVE_SIDE : CGAL::ON_NEGATIVE_SIDE;
+			if (!found || Line({0, 0}, calc_edge_angle(best)).oriented_side(e_angle) == min_max_side) {
 				best = edge;
 				found = true;
 			}
@@ -76,7 +76,7 @@ static bool find_edge_relative_to_angle(const Vertex &v, const Direction &angle,
 
 /* same as the generic function, but always relative to y-axis and the left side */
 static bool find_edge_left_from_vertex(const Vertex &v, enum MinMax min_max, Halfedge &res) {
-	return find_edge_relative_to_angle(v, Direction(0, 1), HalfPlaneSide::Left, min_max, res);
+	return find_edge_relative_to_angle(v, Direction(0, 1), CGAL::ON_POSITIVE_SIDE, min_max, res);
 }
 
 static bool find_edge_vertical(const Vertex &v, enum CGAL::Sign dir, Halfedge &res) {
@@ -180,7 +180,7 @@ static void vertical_decomposition(const Arrangement &arr, std::vector<Vertex> &
 			if (!CGAL::assign(up_vertex, above_obj) && !get_above_vertex(p, up_vertex))
 				break;
 			/* there is a vertex above, search for an edge from it to the negative x direction */
-			if (find_edge_relative_to_angle(up_vertex, Direction(0, 1), HalfPlaneSide::Right, MinMax::Min, edge)) {
+			if (find_edge_relative_to_angle(up_vertex, Direction(0, 1), CGAL::ON_NEGATIVE_SIDE, MinMax::Min, edge)) {
 				v_data.edge_above = direct_above_edge(edge);
 				v_data.is_edge_above = true;
 				break;
@@ -414,14 +414,14 @@ static bool get_edge(const Vertex &source, const Vertex &target, Halfedge &res) 
 }
 
 static bool is_same_direction(Direction d1, Direction d2) {
-	return calc_half_plane_side(d1, d2) == HalfPlaneSide::None && d1.vector() * d2.vector() > 0;
+	return Line({0, 0}, d1).oriented_side({d2.dx(), d2.dy()}) == CGAL::ON_ORIENTED_BOUNDARY &&
+		   d1.vector() * d2.vector() > 0;
 }
 
 /* Calculate which of an edge endpoint is "left" and "right" relative to some direction */
 static void calc_edge_left_right_vertices(const Halfedge &edge, const Direction &dir, Point &left, Point &right) {
 	Point p1 = edge->source()->point(), p2 = edge->target()->point();
-	Point mid_top((p1.x() + p2.x()) / 2, (p1.y() + p2.y()) / 2);
-	if (calc_half_plane_side(dir, Direction(p1.x() - mid_top.x(), p1.y() - mid_top.y())) == HalfPlaneSide::Left) {
+	if (Line({0, 0}, dir).oriented_side({(p1.x() - p2.x()) / 2, (p1.y() - p2.y()) / 2}) == CGAL::ON_POSITIVE_SIDE) {
 		left = p1;
 		right = p2;
 	} else {
@@ -452,18 +452,21 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 			/* Both are exactly on the same angle, consider further vertices first */
 			return a1.dx() * a1.dx() + a1.dy() * a1.dy() > a2.dx() * a2.dx() + a2.dy() * a2.dy();
 
-		Direction y_axis(0, 1);
-		HalfPlaneSide a1_side = calc_half_plane_side(y_axis, a1);
-		HalfPlaneSide a2_side = calc_half_plane_side(y_axis, a2);
+		Line y_axis({0, 0}, Point(0, 1));
+		CGAL::Oriented_side a1_side = y_axis.oriented_side({a1.dx(), a1.dy()});
+		CGAL::Oriented_side a2_side = y_axis.oriented_side({a2.dx(), a2.dy()});
 
-		if (a1_side == HalfPlaneSide::None)
-			return a2_side == HalfPlaneSide::Right || (a1.dy() >= 0 && (a2_side == HalfPlaneSide::Left || a2.dy() < 0));
-		if (a2_side == HalfPlaneSide::None)
-			return a1_side == HalfPlaneSide::Left && a2.dy() < 0;
-		if (a1_side == HalfPlaneSide::Left)
-			return a2_side == HalfPlaneSide::Right || calc_half_plane_side(a2, a1) == HalfPlaneSide::Right;
-		// a1_side == HalfPlaneSide::Right
-		return a2_side == HalfPlaneSide::Right && calc_half_plane_side(a2, a1) == HalfPlaneSide::Right;
+		if (a1_side == CGAL::ON_ORIENTED_BOUNDARY)
+			return a2_side == CGAL::ON_NEGATIVE_SIDE ||
+				   (a1.dy() >= 0 && (a2_side == CGAL::ON_POSITIVE_SIDE || a2.dy() < 0));
+		if (a2_side == CGAL::ON_ORIENTED_BOUNDARY)
+			return a1_side == CGAL::ON_POSITIVE_SIDE && a2.dy() < 0;
+		if (a1_side == CGAL::ON_POSITIVE_SIDE)
+			return a2_side == CGAL::ON_NEGATIVE_SIDE ||
+				   Line({0, 0}, a2).oriented_side({a1.dx(), a1.dy()}) == CGAL::ON_NEGATIVE_SIDE;
+		// a1_side == CGAL::ON_NEGATIVE_SIDE
+		return a2_side == CGAL::ON_NEGATIVE_SIDE &&
+			   Line({0, 0}, a2).oriented_side({a1.dx(), a1.dy()}) == CGAL::ON_NEGATIVE_SIDE;
 	});
 
 	debugln("[Trapezoider] PRS events:");
@@ -507,9 +510,9 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		std::vector<Halfedge> edges_to_remove;
 		foreach_vertex_edge(event.v2, [ray, &edges_to_insert, &edges_to_remove](const auto &edge) {
 			auto s = edge->source()->point(), t = edge->target()->point();
-			Direction edge_direction(t.x() - s.x(), t.y() - s.y());
+			Point edge_direction(t.x() - s.x(), t.y() - s.y());
 
-			if (calc_half_plane_side(ray, edge_direction) == HalfPlaneSide::Left)
+			if (Line({0, 0}, ray).oriented_side(edge_direction) == CGAL::ON_POSITIVE_SIDE)
 				edges_to_insert.push_back(edge);
 			else
 				edges_to_remove.push_back(edge);
@@ -647,7 +650,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 
 			/* create new mid trapezoid */
 			Halfedge bottom_edge;
-			if (!find_edge_relative_to_angle(event.v1, current_angle, HalfPlaneSide::Right, MinMax::Max, bottom_edge))
+			if (!find_edge_relative_to_angle(event.v1, current_angle, CGAL::ON_NEGATIVE_SIDE, MinMax::Max, bottom_edge))
 				bottom_edge = right_bottom;
 			auto mid_new = create_trapezoid(left_top, bottom_edge, event.v1, event.v2);
 			trapezoids.at(mid_new).angle_begin = current_angle;
