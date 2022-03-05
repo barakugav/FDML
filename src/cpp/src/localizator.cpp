@@ -14,9 +14,9 @@ void Localizator::init(const Polygon &scene) {
 	/* Fill trapezoids data structure and calculate min and max opening */
 	for (unsigned int i = 0; i < trapezoider.number_of_trapezoids(); i++) {
 		const auto &trapezoid = *trapezoider.get_trapezoid(i);
-		struct TrapezoidOpening opening;
-		trapezoid.calc_min_max_openings(opening.min, opening.max);
-		openings.push_back(std::move(opening));
+		Kernel::FT min, max;
+		trapezoid.calc_min_max_openings(min, max);
+		openings.push_back({min.exact(), max.exact()});
 	}
 
 	debugln("[Localizator] Trapezoids openings:");

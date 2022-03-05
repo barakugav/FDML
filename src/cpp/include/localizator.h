@@ -15,8 +15,8 @@ namespace FDML {
 class Localizator {
   private:
 	struct TrapezoidOpening {
-		Kernel::FT max;
 		Kernel::FT min;
+		Kernel::FT max;
 	};
 
 	typedef boost::geometry::model::point<Kernel::FT, 1, boost::geometry::cs::cartesian> TrapezoidRTreePoint;

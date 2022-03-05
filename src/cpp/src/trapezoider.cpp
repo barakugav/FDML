@@ -733,6 +733,12 @@ void Trapezoider::calc_trapezoids(const Polygon &scene) {
 	init_trapezoids_with_regular_vertical_decomposition();
 	calc_trapezoids_with_rotational_sweep();
 
+	/* Fix exact numbers and avoid lazy evaluation */
+	for (auto &trapezoid : trapezoids) {
+		trapezoid.angle_begin = Direction(trapezoid.angle_begin.dx().exact(), trapezoid.angle_begin.dy().exact());
+		trapezoid.angle_end = Direction(trapezoid.angle_end.dx().exact(), trapezoid.angle_end.dy().exact());
+	}
+
 	debugln("[Trapezoider] After rotational sweep, trapezoids:");
 	for (const auto &trapezoid : trapezoids)
 		debugln("\t" << trapezoid);
