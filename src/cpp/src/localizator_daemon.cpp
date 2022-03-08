@@ -169,18 +169,7 @@ void LocalizatorDaemon::check_state() const {
 		throw std::runtime_error("Localizator wan't initialized");
 }
 
-} // namespace FDML
-
-#define DEBUG_MAIN false
-
-int main(int argc, const char *argv[]) {
-	if (DEBUG_MAIN) {
-		FDML::LocalizatorDaemon daemon(".cmdfile", ".ackfile");
-		daemon.load_scene("scenes/scene07.json");
-		daemon.query(0.3, "res.json");
-		debugln("done successfully");
-		return 0;
-	}
+int LocalizatorDaemon::daemon_main(int argc, const char *argv[]) {
 	try {
 		std::string cmd_filename, ack_filename;
 		boost::program_options::options_description desc{"Options"};
@@ -208,3 +197,5 @@ int main(int argc, const char *argv[]) {
 		return -1;
 	}
 }
+
+} // namespace FDML

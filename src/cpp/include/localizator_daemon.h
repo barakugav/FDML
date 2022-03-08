@@ -63,6 +63,17 @@ class LocalizatorDaemon {
 	 */
 	int exec_cmd(const std::vector<std::string> &argv);
 
+	/**
+	 * @brief main function for daemon
+	 *
+	 * this function doesn't return unless some error occur
+	 *
+	 * @param argc number of arguments
+	 * @param argv arguments
+	 * @return int 0 on success, else on error
+	 */
+	static int daemon_main(int argc, const char *argv[]);
+
   private:
 	/* Checks that a scene was actually loaded before handling a query command */
 	void check_state() const;

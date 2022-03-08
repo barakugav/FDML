@@ -34,6 +34,7 @@ add_executable( fdml_daemon
   ${CPP_SRC}/src/localizator.cpp
   ${CPP_SRC}/src/json_utils.cpp
   ${CPP_SRC}/src/localizator_daemon.cpp
+  ${CPP_SRC}/bin/fdml_daemon.cpp
 )
 include_directories ( fdml_daemon PUBLIC ${CPP_SRC}/include/ )
 include_directories ( fdml_daemon PRIVATE ${CPP_SRC}/src/ )
