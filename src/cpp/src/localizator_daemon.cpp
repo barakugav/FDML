@@ -71,8 +71,10 @@ void LocalizatorDaemon::query(double d, const std::string &outfile) const {
 void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) const {
 	infoln("[LocalizatorDaemon] Query2: " << d1 << " " << d2);
 	check_state();
-	throw std::runtime_error("not supported"); // TODO
-	UNUSED(outfile);
+
+	std::vector<Segment> segments;
+	localizator->query(d1, d2, segments);
+	write_segments_to_json(segments, outfile);
 }
 
 void LocalizatorDaemon::run() {
@@ -151,11 +153,8 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv) {
 			if (!vm.count("d1") || !vm.count("d2") || !vm.count("out")) {
 				std::cerr << "The following flags are required: --d1 --d2 --out" << '\n';
 				return -1;
-			} else {
-				// query(d1, d2, out_filename);
-				std::cerr << "query with two measurements is not supported yet" << '\n';
-				return -3;
-			}
+			} else
+				query(d1, d2, out_filename);
 		}
 		return 0;
 	} catch (const std::exception &ex) {

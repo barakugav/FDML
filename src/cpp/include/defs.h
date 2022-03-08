@@ -12,6 +12,7 @@ typedef CGAL::Segment_2<Kernel> Segment;
 typedef Kernel::Point_2 Point;
 typedef Kernel::Line_2 Line;
 typedef Kernel::Direction_2 Direction;
+typedef Kernel::Vector_2 Vector;
 typedef CGAL::Arr_segment_traits_2<Kernel> Traits;
 typedef CGAL::Arrangement_2<Traits> Arrangement;
 typedef CGAL::Polygon_2<Kernel> Polygon;

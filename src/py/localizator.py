@@ -10,8 +10,16 @@ import numpy as np
 import threading
 import atexit
 
+DEBUG_EN = True
+DAEMON_PATH_LINUX = "build/linux/%s/fdml_daemon" % (
+    "debug" if DEBUG_EN else "release")
+DAEMON_PATH_WINDOWS = "build/win/%s/fdml_daemon.exe" % (
+    "Debug" if DEBUG_EN else "Release")
+DAEMON_PATH = DAEMON_PATH_LINUX if sys.platform == "linux" or sys.platform == "linux2" else DAEMON_PATH_WINDOWS
+
 daemons = set()
 daemons_lock = threading.Lock()
+
 
 def kill_all_daemons():
     with daemons_lock:
@@ -19,7 +27,9 @@ def kill_all_daemons():
             deamon.kill()
         daemons.clear()
 
+
 atexit.register(kill_all_daemons)
+
 
 class Localizator:
     def __init__(self, working_dir):
@@ -47,9 +57,7 @@ class Localizator:
             self.logfile = open(os.path.join(
                 working_dir, ".logfile"), "a")
 
-            daemon_path = "build/linux/debug/fdml_daemon" if sys.platform == "linux" or sys.platform == "linux2" else "build/win/Debug/fdml_daemon.exe"
-
-            cmd = [daemon_path, "--cmdfile",
+            cmd = [DAEMON_PATH, "--cmdfile",
                    self.cmdfile, "--ackfile", self.ackfile]
             self.daemon = subprocess.Popen(
                 cmd, stdout=self.logfile,  stderr=self.logfile)
@@ -91,43 +99,29 @@ class Localizator:
         self.querynum += 1
         return os.path.join(self._working_dir(), ".outfile{}".format(self.querynum))
 
+    def _exec_cmd_and_read_res(self, cmd, outfile):
+        try:
+            self._exec_cmd(cmd)
+            try:
+                with open(outfile, "r") as outf:
+                    return json.load(outf)
+            except Exception as e:
+                print("Failed to read result file", outfile)
+                raise e
+        finally:
+            if os.path.isfile(outfile):
+                os.remove(outfile)
+
     def query1(self, d):
         with self.lock:
             outfile = self._next_outfile()
-            try:
-                self._exec_cmd(
-                    "--cmd query1 --d {} --out {}".format(d, outfile))
-                try:
-                    with open(outfile, "r") as outf:
-                        data = json.load(outf)
-                    polygons = []
-                    polygons_json = data["polygons"]
-                    for polygon in polygons_json:
-                        polygons.append(np.array(polygon))
-                    return polygons
-
-                except Exception as e:
-                    print("Failed to read result file", outfile)
-                    raise e
-            finally:
-                if os.path.isfile(outfile):
-                    os.remove(outfile)
+            data = self._exec_cmd_and_read_res(
+                "--cmd query1 --d {} --out {}".format(d, outfile), outfile)
+            return [np.array(polygon) for polygon in data["polygons"]]
 
     def query2(self, d1, d2):
         with self.lock:
             outfile = self._next_outfile()
-            try:
-                self._exec_cmd(
-                    "--cmd query2 --d1 {} --d2 {} --out {}".format(d1, d2, outfile), outfile)
-                try:
-                    with open(outfile, "r") as outf:
-                        data = json.load(outf)
-                    # TODO
-                    raise ValueError("not supported yet")
-
-                except Exception as e:
-                    print("Failed to read result file", outfile)
-                    raise e
-            finally:
-                if os.path.isfile(outfile):
-                    os.remove(outfile)
+            data = self._exec_cmd_and_read_res(
+                "--cmd query2 --d1 {} --d2 {} --out {}".format(d1, d2, outfile), outfile)
+            return data["segments"]

@@ -65,7 +65,7 @@ void Localizator::query(const Kernel::FT &d, std::vector<Polygon> &res) const {
 		res.push_back(std::move(p));
 }
 
-void Localizator::query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement &res) const {
+void Localizator::query(const Kernel::FT &d1, const Kernel::FT &d2, std::vector<Segment> &res) const {
 	/* Double measurement query. Use the interval tree for output sensitive running time */
 	infoln("[Localizator] Double measurement query (d1 = " << d1 << ", d2 = " << d2 << "):");
 	const Kernel::FT d = d1 + d2;
@@ -75,11 +75,11 @@ void Localizator::query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement 
 	rtree.query(boost::geometry::index::intersects(query_interval), std::back_inserter(res_vals));
 
 	for (const TrapezoidRTreeValue &rtree_val : res_vals) {
+		const auto &trapezoid = *trapezoider.get_trapezoid(rtree_val.second);
 		const auto &opening = openings.at(rtree_val.second);
 		debugln("\tT" << rtree_val.second << " [" << opening.min << ", " << opening.max << "]");
-		// TODO
+		trapezoid.calc_result_m2(d1, d2, res);
 	}
-	UNUSED(res);
 }
 
 } // namespace FDML

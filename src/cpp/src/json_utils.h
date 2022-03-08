@@ -22,6 +22,14 @@ void parse_scene_from_json(const std::string &filename, Polygon &scene);
  */
 void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::string &filename);
 
+/**
+ * @brief Write segments into a JSON file
+ *
+ * @param segments list of segments
+ * @param filename output file
+ */
+void write_segments_to_json(const std::vector<Segment> &segments, const std::string &filename);
+
 } // namespace FDML
 
 #endif

@@ -47,15 +47,22 @@ class Localizator {
 	void init(const Polygon &scene);
 
 	/**
-	 * @brief Calculate all the points in the room a sensor might be given a single measurement
+	 * @brief Calculate all the points in the room a sensor might be after it measure d at some wall
 	 *
 	 * @param d the single measurement value
-	 * @param res collections of polygons representing all the possible points in the room a sensor might be in
+	 * @param res collections of polygons representing all the possible points in the room a sensor might be at
 	 */
 	void query(const Kernel::FT &d, std::vector<Polygon> &res) const;
 
-	// TODO change output type
-	void query(const Kernel::FT &d1, const Kernel::FT &d2, Arrangement &res) const;
+	/**
+	 * @brief Calculate all the points in the room a sensor might be after it measured d1 in a single direction and d2
+	 * at the opposite direction.
+	 *
+	 * @param d1 the first measurement value
+	 * @param d2 the second measurement value
+	 * @param res collection of segments representing all the possible points in the room a sensor might be at
+	 */
+	void query(const Kernel::FT &d1, const Kernel::FT &d2, std::vector<Segment> &res) const;
 };
 
 } // namespace FDML

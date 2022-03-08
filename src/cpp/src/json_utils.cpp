@@ -166,21 +166,45 @@ template <typename Out> void json_format_pretty(Out &os, boost::json::value cons
 		os << "\n";
 }
 
+static boost::json::array point2json(const Point &p) {
+	std::vector<double> point{CGAL::to_double(p.x()), CGAL::to_double(p.y())};
+	return boost::json::array(point.begin(), point.end());
+}
+
 void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::string &filename) {
 	debugln("[JsonUtils] writing polygons into: " << filename);
 	std::vector<boost::json::array> polygon_objs;
 	for (const Polygon &polygon : polygons) {
 		std::vector<boost::json::array> point_objs;
-		for (auto it = polygon.vertices_begin(); it != polygon.vertices_end(); ++it) {
-			std::vector<double> point{CGAL::to_double(it->x()), CGAL::to_double(it->y())};
-			point_objs.push_back(boost::json::array(point.begin(), point.end()));
-		}
+		for (auto it = polygon.vertices_begin(); it != polygon.vertices_end(); ++it)
+			point_objs.push_back(point2json(*it));
 		boost::json::array polygon_obj(point_objs.begin(), point_objs.end());
 		polygon_objs.push_back(polygon_obj);
 	}
 	auto polygons_obj = std::make_pair("polygons", boost::json::array(polygon_objs.begin(), polygon_objs.end()));
 	std::vector<std::pair<std::string, boost::json::value>> top_lvl_fields;
 	top_lvl_fields.push_back(polygons_obj);
+	boost::json::object top_lvl_obj(top_lvl_fields.begin(), top_lvl_fields.end());
+	boost::json::value top_lvl_obj2(top_lvl_obj);
+
+	std::ofstream outfile(filename);
+	json_format_pretty(outfile, top_lvl_obj2);
+	outfile.close();
+}
+
+void write_segments_to_json(const std::vector<Segment> &segments, const std::string &filename) {
+	debugln("[JsonUtils] writing segments into: " << filename);
+	std::vector<boost::json::array> segments_objs;
+	for (const Segment &segment : segments) {
+		std::vector<boost::json::array> point_objs;
+		point_objs.push_back(point2json(segment.source()));
+		point_objs.push_back(point2json(segment.target()));
+		boost::json::array segment_obj(point_objs.begin(), point_objs.end());
+		segments_objs.push_back(segment_obj);
+	}
+	auto segments_obj = std::make_pair("segments", boost::json::array(segments_objs.begin(), segments_objs.end()));
+	std::vector<std::pair<std::string, boost::json::value>> top_lvl_fields;
+	top_lvl_fields.push_back(segments_obj);
 	boost::json::object top_lvl_obj(top_lvl_fields.begin(), top_lvl_fields.end());
 	boost::json::value top_lvl_obj2(top_lvl_obj);
 

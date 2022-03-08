@@ -151,6 +151,33 @@ class LocalizatorGUIComponent(GUI):
                                            QtWidgets.QSizePolicy.Minimum)
         self.actions_panel_layout.addItem(spacerItem, 10, 0, 2, 1)
 
+        # == Two measurement query ==
+        # label
+        self.m2_label = QtWidgets.QLabel(self.central_widget)
+        self.m2_label.setFont(font)
+        self.m2_label.setObjectName("m2_label")
+        self.actions_panel_layout.addWidget(self.m2_label, 13, 0, 1, 1)
+        # d1 input test
+        self.m2_d1_intxt = QtWidgets.QLineEdit(self.central_widget)
+        self.m2_d1_intxt.setFont(font)
+        self.m2_d1_intxt.setObjectName("m2_d1_intxt")
+        self.actions_panel_layout.addWidget(self.m2_d1_intxt, 14, 0, 1, 1)
+        # d2 input test
+        self.m2_d2_intxt = QtWidgets.QLineEdit(self.central_widget)
+        self.m2_d2_intxt.setFont(font)
+        self.m2_d2_intxt.setObjectName("m2_d2_intxt")
+        self.actions_panel_layout.addWidget(self.m2_d2_intxt, 15, 0, 1, 1)
+        # compute button
+        self.m2_compute_button = QtWidgets.QPushButton(self.central_widget)
+        self.m2_compute_button.setFont(font)
+        self.m2_compute_button.setObjectName("m2_compute_button")
+        self.actions_panel_layout.addWidget(
+            self.m2_compute_button, 16, 0, 1, 1)
+
+        spacerItem = QtWidgets.QSpacerItem(200, 0, QtWidgets.QSizePolicy.MinimumExpanding,
+                                           QtWidgets.QSizePolicy.Minimum)
+        self.actions_panel_layout.addItem(spacerItem, 17, 0, 2, 1)
+
         self.central_layout.addLayout(self.actions_panel_layout, 3, 1, 1, 1)
 
         self.labels['scene'] = self.scene_label
@@ -167,6 +194,13 @@ class LocalizatorGUIComponent(GUI):
         self.set_label('m1_label', "Single measurement value (d)")
         self.set_button_text('m1_compute', "Compute Single measurement")
 
+        self.labels['m2_label'] = self.m2_label
+        self.lineEdits['m2_d1'] = self.m2_d1_intxt
+        self.lineEdits['m2_d2'] = self.m2_d2_intxt
+        self.pushButtons['m2_compute'] = self.m2_compute_button
+        self.set_label('m2_label', "Double measurement values (d1, d2)")
+        self.set_button_text('m2_compute', "Compute Double measurement")
+
 
 class LocalizatorGUI:
     def __init__(self):
@@ -176,9 +210,11 @@ class LocalizatorGUI:
         self._localizator_worker = None
         self._localizator_worker_lock = threading.Lock()
         self._localizator_query1_res = None
+        self._localizator_query2_res = None
         self._gui_comp = None
         self._polygon_scene = None
         self._displayed_polygons = []
+        self._displayed_segments = []
 
     def _print(self, *args):
         if self._writer:
@@ -255,10 +291,49 @@ class LocalizatorGUI:
         with self._localizator_worker_lock:
             self._localizator_worker = None
 
+    def _query2(self):
+        self._clear_displayed_result()
+
+        d1 = self._gui_comp.get_field('m2_d1')
+        d2 = self._gui_comp.get_field('m2_d2')
+        try:
+            d1, d2 = float(d1), float(d2)
+        except:
+            d1, d2 = -1, -1
+        if d1 <= 0 or d2 <= 0:
+            self._print("invalid d1 d2 values")
+            return
+
+        with self._localizator_worker_lock:
+            if self._localizator_worker is not None:
+                self._print("last command is still in proccessing...")
+                return
+            self._localizator_worker = Worker(self._localizator_query2, d1, d2)
+            self._localizator_worker.signals.finished.connect(
+                self._localizator_query2_done)
+        self.threadpool.start(self._localizator_worker)
+
+    def _localizator_query2(self, d1, d2, is_running):
+        self._print("Localizator query with d1 =", d1, "d2 =", d2)
+        self._localizator_query2_res = self._localizator.query2(d1, d2)
+
+    def _localizator_query2_done(self, is_running):
+        self._print("Localizator query is complete")
+        for segment in self._localizator_query2_res:
+            line_color = QtGui.QColor(0, 0, 255, 100)
+            gui_segment = self._gui_comp.add_segment(
+                segment[0][0], segment[0][1], segment[1][0], segment[1][1], line_color)
+            self._displayed_segments.append(gui_segment)
+        with self._localizator_worker_lock:
+            self._localizator_worker = None
+
     def _clear_displayed_result(self):
         for gui_polygon in self._displayed_polygons:
             self._gui_comp.scene.removeItem(gui_polygon.polygon)
         self._displayed_polygons.clear()
+        for gui_segment in self._displayed_segments:
+            self._gui_comp.scene.removeItem(gui_segment.line)
+        self._displayed_segments.clear()
 
     def _open_scene_dialog(self):
         dlg = QFileDialog()
@@ -272,6 +347,7 @@ class LocalizatorGUI:
         self._gui_comp.set_logic('scene_open_dialog', self._open_scene_dialog)
         self._gui_comp.set_logic('scene_load', self._load_scene)
         self._gui_comp.set_logic('m1_compute', self._query1)
+        self._gui_comp.set_logic('m2_compute', self._query2)
         self._writer = Writer(self._gui_comp.logger)
 
     def run(self, args=[]):

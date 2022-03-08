@@ -44,7 +44,6 @@ Polygon Trapezoid::get_bounds_2d() const {
 	auto v_mid = get_mid_angle(angle_begin, angle_end);
 
 	/* Calculate left and right vertices of the top edge relative to the trapezoid's direction */
-	Point t1 = top_edge->source()->point(), t2 = top_edge->target()->point();
 	Point top_left, top_right;
 	calc_edge_left_right_vertices(top_edge, v_mid, top_left, top_right);
 
@@ -75,18 +74,25 @@ static Point intersection(const Line &l1, const Line &l2) {
 }
 
 /* We use a polygon approximation to repsent the complex curves of the result. These defines determine the percision of
- * the approximation. Both approximation of the arc and conchoid is done by discretizing the angle. The defines below
- * define how many discrete step will be used in a 2*PI angle, relative approximation will be used for other angles. */
+ * the approximation. All approximations are done by discretizing the angle. The defines below define how many discrete
+ * step will be used in a 2*PI angle, relative approximation will be used for other angles. */
 #define ARC_APPX_POINTS_NUM 360
 #define CONCHOID_APPX_POINTS_NUM 360
+#define ELLIPSE_APPX_POINTS_NUM 360
+
+static Direction edge_direction(const Halfedge &edge) {
+	auto s = edge->source()->point(), t = edge->target()->point();
+	return Direction(t.x() - s.x(), t.y() - s.y());
+}
 
 void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) const {
+	if (d <= 0)
+		throw std::invalid_argument("distance measurement must be positive.");
 	debugln("[Trapezoid] calculating single measurement result...");
 	/* oriante angles relative to the top edge */
 	Direction a_begin = -angle_begin, a_end = -angle_end;
 	assert(Line({0, 0}, a_begin).oriented_side({a_end.dx(), a_end.dy()}) == CGAL::ON_POSITIVE_SIDE);
-	auto s = top_edge->source()->point(), t = top_edge->target()->point();
-	Direction top_edge_direction(t.x() - s.x(), t.y() - s.y());
+	Direction top_edge_direction = edge_direction(top_edge);
 	assert(is_free(top_edge->face()));
 
 	/* Calculate the trapezoid bounds. Will be used to intersect each result entry. */
@@ -136,8 +142,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 				/* approximate all points of the curve by used angle steps */
 				points.push_back(begin);
 				for (unsigned int i = 1; i < appx_num; i++) {
-					double a = i * angle_between / appx_num;
-					Direction dir = rotate(i_begin, a);
+					Direction dir = rotate(i_begin, i * angle_between / appx_num);
 					points.push_back(Point(vertex + normalize(dir.vector()) * d));
 				}
 				points.push_back(end);
@@ -154,8 +159,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 				/* approximate all points of the curve by used angle steps */
 				points.push_back(begin);
 				for (unsigned int i = 1; i < appx_num; i++) {
-					double a = i * angle_between / appx_num;
-					Direction dir = rotate(i_begin, a);
+					Direction dir = rotate(i_begin, i * angle_between / appx_num);
 					points.push_back(intersection(top_edge_line, Line(vertex, dir)) + normalize(dir.vector()) * d);
 				}
 				points.push_back(end);
@@ -205,6 +209,96 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 	}
 }
 
+static double atan2(const Kernel::FT &y, const Kernel::FT &x) {
+	return std::atan2(CGAL::to_double(y), CGAL::to_double(x));
+}
+
+void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::vector<Segment> &res) const {
+	if (d1 <= 0 || d2 <= 0)
+		throw std::invalid_argument("distance measurements must be positive.");
+	debugln("[Trapezoid] calculating double measurement result...");
+	Line top_line = top_edge->curve().line();
+	Line bottom_line = bottom_edge->curve().line();
+
+	if (CGAL::do_intersect(top_line, bottom_line)) { /* top and bottom edges are not parallel */
+		Point inter_point = intersection(top_line, bottom_line);
+		/* angle range between angle_begin and angle_end */
+		double angle_range =
+			std::acos(CGAL::to_double(normalize(angle_begin.vector()) * normalize(angle_end.vector())));
+		assert(angle_range != 0);
+		Direction top_line_dir = -edge_direction(top_edge), bottom_line_dir = edge_direction(bottom_edge);
+		double bottom_line_angle = atan2(bottom_line_dir.dy(), bottom_line_dir.dx());
+		double a_begin = atan2(angle_begin.dy(), angle_begin.dx());
+		/* angle between top and bottom edges */
+		double angle_between =
+			std::acos(CGAL::to_double(normalize(bottom_line_dir.vector()) * normalize(top_line_dir.vector())));
+
+		/* calc the direction from the intersection point to the middle of top edge. use with k */
+		auto top_s = top_edge->source()->point(), top_t = top_edge->target()->point();
+		auto k_dir = normalize(
+			Vector((top_s.x() + top_t.x()) / 2 - inter_point.x(), (top_s.y() + top_t.y()) / 2 - inter_point.y()));
+
+		Point prev;
+		bool prev_valid = false;
+		unsigned int appx_num = (unsigned int)((std::abs(angle_range) / (M_PI * 2)) * ELLIPSE_APPX_POINTS_NUM);
+		for (unsigned int i = 0; i <= appx_num; i++) {
+			double a = i * angle_range / appx_num;
+			Direction dir = rotate(angle_begin, a);
+			double t = a_begin + a - bottom_line_angle;
+			/* distance of measure point in top edge from intersection point */
+			Kernel::FT k = (d1 + d2) * std::sin(t) / std::sin(angle_between);
+			auto k_squared = k * k;
+
+			Kernel::FT k_limits_squared[2];
+			const auto LEFT = 0, RIGHT = 1;
+			for (auto side : {LEFT, RIGHT}) {
+				auto vertex = (side == LEFT ? left_vertex : right_vertex)->point();
+				auto measure_point = top_line.has_on(vertex) ? vertex : intersection(top_line, Line(vertex, dir));
+				k_limits_squared[side] = CGAL::squared_distance(inter_point, measure_point);
+			}
+			if (k_limits_squared[0] > k_limits_squared[1])
+				std::swap(k_limits_squared[0], k_limits_squared[1]);
+			if (!(k_limits_squared[0] <= k_squared && k_squared <= k_limits_squared[1])) {
+				prev_valid = false;
+				continue;
+			}
+
+			auto measure_point = inter_point + k_dir * k;
+			Point res_point = measure_point + normalize((-dir).vector()) * d1;
+			if (Line(bottom_edge->source()->point(), bottom_line_dir).oriented_side(res_point) ==
+				CGAL::ON_NEGATIVE_SIDE) {
+				prev_valid = false;
+				continue;
+			}
+
+			if (prev_valid)
+				res.push_back({prev, res_point});
+			prev = res_point;
+			prev_valid = true;
+		}
+
+	} else { /* top and bottom are parallel */
+		auto lines_dis = CGAL::approximate_sqrt(CGAL::squared_distance(top_line, bottom_line));
+		Direction bottom_line_dir = edge_direction(bottom_edge);
+		double local_angle = std::asin(CGAL::to_double(lines_dis / (d1 + d2)));
+		for (double angle : {local_angle, M_PI - local_angle}) {
+			assert(0 <= angle && angle <= M_PI);
+			auto dir = rotate(bottom_line_dir, angle);
+			if (!dir.counterclockwise_in_between(angle_begin, angle_end))
+				continue;
+
+			Point points[2];
+			const auto LEFT = 0, RIGHT = 1;
+			for (auto side : {LEFT, RIGHT}) {
+				auto vertex = (side == LEFT ? left_vertex : right_vertex)->point();
+				auto measure_point = top_line.has_on(vertex) ? vertex : intersection(top_line, Line(vertex, dir));
+				points[side] = measure_point + normalize((-dir).vector()) * d1;
+			}
+			res.push_back({points[0], points[1]});
+		}
+	}
+}
+
 void Trapezoid::calc_min_max_openings(Kernel::FT &opening_min, Kernel::FT &opening_max) const {
 	/* for any fixed angle, the opening function is a affine function, and therefore monotonically increasing or
 	 * decreasing as a function x. Therefore, to calculate the minimum or the maximum of the opening function we only
@@ -233,9 +327,7 @@ void Trapezoid::calc_min_max_openings(Kernel::FT &opening_min, Kernel::FT &openi
 		double r = high - low;
 		return low < high ? r : r + 2 * M_PI;
 	};
-	auto dir_to_angle = [](const Direction &dir) {
-		return std::atan2(CGAL::to_double(dir.dy()), CGAL::to_double(dir.dx()));
-	};
+	auto dir_to_angle = [](const Direction &dir) { return atan2(dir.dy(), dir.dx()); };
 	for (unsigned int side = 0; side < 2; side++) {
 		Point limit_vertex = (side == 0 ? left_vertex : right_vertex)->point();
 		Kernel::FT max, min;

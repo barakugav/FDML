@@ -52,6 +52,16 @@ class Trapezoid {
 	void calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) const;
 
 	/**
+	 * @brief Calculates all the points a sensor might be within the trapezoid measering distance 'd1' at top edge and
+	 * 'd2' at the bottom edge
+	 *
+	 * @param d1 the measurement value to the top edge
+	 * @param d2 the measurement value to the bottom edge
+	 * @param res output result
+	 */
+	void calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::vector<Segment> &res) const;
+
+	/**
 	 * @brief Calculate the minimum and maximum opening of this trapezoid
 	 *
 	 * This function should be called after all of the trapezoid's defining fields (top edge, bottom edge, left vertex,
