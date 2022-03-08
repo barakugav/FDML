@@ -40,7 +40,7 @@ LocalizatorDaemon::LocalizatorDaemon(const std::string &cmd_filename, const std:
 	: cmd_filename(cmd_filename), ack_filename(ack_filename), localizator(nullptr) {}
 
 void LocalizatorDaemon::load_scene(const std::string &scene_filename) {
-	infoln("[LocalizatorDaemon] Init with scene: " << scene_filename);
+	fdml_infoln("[LocalizatorDaemon] Init with scene: " << scene_filename);
 
 	try {
 		if (localizator)
@@ -60,7 +60,7 @@ void LocalizatorDaemon::load_scene(const std::string &scene_filename) {
 }
 
 void LocalizatorDaemon::query(double d, const std::string &outfile) const {
-	infoln("[LocalizatorDaemon] Query1: " << d);
+	fdml_infoln("[LocalizatorDaemon] Query1: " << d);
 	check_state();
 
 	std::vector<Polygon> polygons;
@@ -69,7 +69,7 @@ void LocalizatorDaemon::query(double d, const std::string &outfile) const {
 }
 
 void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) const {
-	infoln("[LocalizatorDaemon] Query2: " << d1 << " " << d2);
+	fdml_infoln("[LocalizatorDaemon] Query2: " << d1 << " " << d2);
 	check_state();
 
 	std::vector<Segment> segments;
@@ -78,7 +78,7 @@ void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) 
 }
 
 void LocalizatorDaemon::run() {
-	infoln("[LocalizatorDaemon] Daemon is running. Waiting for next command...");
+	fdml_infoln("[LocalizatorDaemon] Daemon is running. Waiting for next command...");
 	while (true) {
 		if (!file_exists(ack_filename) && file_exists(cmd_filename)) {
 			std::vector<std::string> argv;
@@ -88,18 +88,18 @@ void LocalizatorDaemon::run() {
 			std::ofstream ackfile(ack_filename);
 			ackfile << err;
 			ackfile.close();
-			infoln("[LocalizatorDaemon] Command proccessed. Waiting for next command...");
+			fdml_infoln("[LocalizatorDaemon] Command proccessed. Waiting for next command...");
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(100)); /* 0.1 sec */
-		debug(".");
+		fdml_debug(".");
 	}
 }
 
 int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv) {
-	debug("[LocalizatorDaemon] executing command:");
+	fdml_debug("[LocalizatorDaemon] executing command:");
 	for (const auto &arg : argv)
-		debug(' ' << arg);
-	debugln("");
+		fdml_debug(' ' << arg);
+	fdml_debugln("");
 
 	try {
 		const unsigned int MAX_ARGS_NUM = 16;

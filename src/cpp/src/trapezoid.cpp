@@ -76,9 +76,9 @@ static Point intersection(const Line &l1, const Line &l2) {
 /* We use a polygon approximation to repsent the complex curves of the result. These defines determine the percision of
  * the approximation. All approximations are done by discretizing the angle. The defines below define how many discrete
  * step will be used in a 2*PI angle, relative approximation will be used for other angles. */
-#define ARC_APPX_POINTS_NUM 360
-#define CONCHOID_APPX_POINTS_NUM 360
-#define ELLIPSE_APPX_POINTS_NUM 360
+static const unsigned int ARC_APPX_POINTS_NUM = 360;
+static const unsigned int CONCHOID_APPX_POINTS_NUM = 360;
+static const unsigned int ELLIPSE_APPX_POINTS_NUM = 360;
 
 static Direction edge_direction(const Halfedge &edge) {
 	auto s = edge->source()->point(), t = edge->target()->point();
@@ -88,7 +88,7 @@ static Direction edge_direction(const Halfedge &edge) {
 void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) const {
 	if (d <= 0)
 		throw std::invalid_argument("distance measurement must be positive.");
-	debugln("[Trapezoid] calculating single measurement result...");
+	fdml_debugln("[Trapezoid] calculating single measurement result...");
 	/* oriante angles relative to the top edge */
 	Direction a_begin = -angle_begin, a_end = -angle_end;
 	assert(Line({0, 0}, a_begin).oriented_side({a_end.dx(), a_end.dy()}) == CGAL::ON_POSITIVE_SIDE);
@@ -97,7 +97,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 
 	/* Calculate the trapezoid bounds. Will be used to intersect each result entry. */
 	const Polygon trapezoid_bounds = get_bounds_2d();
-	debugln("\ttrapezoid bounds (" << trapezoid_bounds << ')');
+	fdml_debugln("\ttrapezoid bounds (" << trapezoid_bounds << ')');
 
 	/* calculate the mid angle, which is perpendicular to the top edge, and use it to split the trapezoid angle
 	 * interval into 2 to ensure simple polygon output for each result entry. */
@@ -108,7 +108,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 	Direction angle_intervals[2][2] = {{begin_before_mid ? a_begin : mid_angle, end_after_mid ? mid_angle : a_end},
 									   {begin_before_mid ? mid_angle : a_begin, end_after_mid ? a_end : mid_angle}};
 
-	debugln("\ttop edge (" << top_edge->curve() << ") bottom edge (" << bottom_edge->curve() << ')');
+	fdml_debugln("\ttop edge (" << top_edge->curve() << ") bottom edge (" << bottom_edge->curve() << ')');
 
 	/* calculate result for each angle interval */
 	for (unsigned int internal_idx = 0; internal_idx < 2; internal_idx++) {
@@ -118,12 +118,12 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 		if (i_begin == i_end)
 			continue; /* ignore if the angle interval is empty */
 
-		debugln("\tangle interval [" << i_begin << ", " << i_end << ']');
+		fdml_debugln("\tangle interval [" << i_begin << ", " << i_end << ']');
 		auto top_edge_line = top_edge->curve().line();
 		auto v_begin = normalize(i_begin.vector()), v_end = normalize(i_end.vector());
 		double angle_between = std::acos(CGAL::to_double(v_begin * v_end));
 		assert(angle_between != 0);
-		debugln("\tv_begin(" << v_begin << ") v_end(" << v_end << ')');
+		fdml_debugln("\tv_begin(" << v_begin << ") v_end(" << v_end << ')');
 
 		/* calculate the points representing the curves in both sides of the trapezoid */
 		std::vector<Point> left_points, right_points;
@@ -134,7 +134,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 
 			if (top_edge_line.has_on(vertex)) {
 				/* Arc curve */
-				debugln("\tcurve " << (side == LEFT ? "left" : "right") << " is arc");
+				fdml_debugln("\tcurve " << (side == LEFT ? "left" : "right") << " is arc");
 				Point begin = vertex + v_begin * d;
 				Point end = vertex + v_end * d;
 				unsigned int appx_num = (unsigned int)((std::abs(angle_between) / (M_PI * 2)) * ARC_APPX_POINTS_NUM);
@@ -146,11 +146,11 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 					points.push_back(Point(vertex + normalize(dir.vector()) * d));
 				}
 				points.push_back(end);
-				debugln("\t\tO(" << vertex << ") r(" << d << ") B(" << begin << ") E(" << end << ')');
+				fdml_debugln("\t\tO(" << vertex << ") r(" << d << ") B(" << begin << ") E(" << end << ')');
 
 			} else {
 				/* Conchoid curve */
-				debugln("\tcurve " << (side == LEFT ? "left" : "right") << " is conchoid");
+				fdml_debugln("\tcurve " << (side == LEFT ? "left" : "right") << " is conchoid");
 				Point begin = intersection(top_edge_line, Line(vertex, i_begin)) + v_begin * d;
 				Point end = intersection(top_edge_line, Line(vertex, i_end)) + v_end * d;
 				unsigned int appx_num =
@@ -164,13 +164,13 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 				}
 				points.push_back(end);
 
-				debugln("\t\tO(" << vertex << ") r(" << d << ") B(" << begin << ") E(" << end << ')');
+				fdml_debugln("\t\tO(" << vertex << ") r(" << d << ") B(" << begin << ") E(" << end << ')');
 			}
 
-			debug("\t\tcurve points:");
+			fdml_debug("\t\tcurve points:");
 			for (auto &p : left_points)
-				debug(" (" << p << ')');
-			debugln("");
+				fdml_debug(" (" << p << ')');
+			fdml_debugln("");
 		}
 
 		/* construct a simple polygon from the two approximated curves */
@@ -200,11 +200,11 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 		/* intersect the result polygon with the trapezoids bound and add the result to the output */
 		std::vector<CGAL::Polygon_with_holes_2<Kernel>> res_bounded;
 		CGAL::intersection(trapezoid_bounds, res_unbounded, std::back_inserter(res_bounded));
-		debugln("\ttrapezoid result:");
+		fdml_debugln("\ttrapezoid result:");
 		for (const auto &res_cell : res_bounded) {
 			assert(res_cell.number_of_holes() == 0);
 			res.push_back(res_cell.outer_boundary());
-			debugln("\t\t" << res_cell.outer_boundary());
+			fdml_debugln("\t\t" << res_cell.outer_boundary());
 		}
 	}
 }
@@ -216,7 +216,7 @@ static double atan2(const Kernel::FT &y, const Kernel::FT &x) {
 void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::vector<Segment> &res) const {
 	if (d1 <= 0 || d2 <= 0)
 		throw std::invalid_argument("distance measurements must be positive.");
-	debugln("[Trapezoid] calculating double measurement result...");
+	fdml_debugln("[Trapezoid] calculating double measurement result...");
 	Line top_line = top_edge->curve().line();
 	Line bottom_line = bottom_edge->curve().line();
 

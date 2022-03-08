@@ -61,7 +61,7 @@ template <typename JsonObj> static void validate_size(const JsonObj &obj, unsign
 }
 
 void parse_scene_from_json(const std::string &filename, Polygon &scene) {
-	debugln("[JsonUtils] parsing scene from file: " << filename);
+	fdml_debugln("[JsonUtils] parsing scene from file: " << filename);
 	const auto j = parse_file(filename);
 
 	scene = Polygon();
@@ -172,7 +172,7 @@ static boost::json::array point2json(const Point &p) {
 }
 
 void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::string &filename) {
-	debugln("[JsonUtils] writing polygons into: " << filename);
+	fdml_debugln("[JsonUtils] writing polygons into: " << filename);
 	std::vector<boost::json::array> polygon_objs;
 	for (const Polygon &polygon : polygons) {
 		std::vector<boost::json::array> point_objs;
@@ -193,7 +193,7 @@ void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::str
 }
 
 void write_segments_to_json(const std::vector<Segment> &segments, const std::string &filename) {
-	debugln("[JsonUtils] writing segments into: " << filename);
+	fdml_debugln("[JsonUtils] writing segments into: " << filename);
 	std::vector<boost::json::array> segments_objs;
 	for (const Segment &segment : segments) {
 		std::vector<boost::json::array> point_objs;

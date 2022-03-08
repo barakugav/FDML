@@ -15,23 +15,23 @@
 
 namespace FDML {
 
-#define DEBUG_PRINT_EN 1
+static const bool DEBUG_PRINT_EN = true;
 
-#define info(args)                                                                                                     \
+#define fdml_info(args)                                                                                                \
 	do {                                                                                                               \
 		std::cout << args;                                                                                             \
 	} while (false)
-#define infoln(args) info(args << std::endl)
+#define fdml_infoln(args) fdml_info(args << std::endl)
 
-#define debug(args)                                                                                                    \
+#define fdml_debug(args)                                                                                               \
 	do {                                                                                                               \
 		if (DEBUG_PRINT_EN)                                                                                            \
 			std::cout << args;                                                                                         \
 	} while (false)
-#define debugln(args) debug(args << std::endl)
-#define debug_line() debug(__FILE__ << ":" << __LINE__ << std::endl)
+#define fdml_debugln(args) fdml_debug(args << std::endl)
+#define fdml_debug_line() fdml_debug(__FILE__ << ":" << __LINE__ << std::endl)
 
-#define UNUSED(var) (void)var
+#define FDML_UNUSED(var) (void)var
 
 template <typename _Vector> static _Vector normalize(_Vector v) {
 	Kernel::FT norm = CGAL::approximate_sqrt(v.squared_length());
