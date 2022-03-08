@@ -9,25 +9,24 @@ from PyQt5.QtWidgets import QFileDialog
 import localizator
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gui/"))
-from gui import GUI
-from logger import Logger, Writer
 from Worker import Worker
+from logger import Logger, Writer
+from gui import GUI
 
 
-class Polygons_scene():
+class PolygonsScene():
     def __init__(self, gui, writer):
-        self.writer = writer
-        self.gui = gui
-        self.obstacles = []
-        self.gui_obstacles = []
-        self.path = []
+        self._writer = writer
+        self._gui = gui
+        self._obstacles = []
+        self._gui_obstacles = []
 
     def draw_scene(self):
-        self.gui.clear_scene()
-        for obstacle in self.obstacles:
-            self.gui_obstacles = []
-            self.gui_obstacles.append(
-                self.gui.add_polygon(obstacle, QtCore.Qt.darkGray))
+        self._gui.clear_scene()
+        for obstacle in self._obstacles:
+            self._gui_obstacles = []
+            self._gui_obstacles.append(
+                self._gui.add_polygon(obstacle, QtCore.Qt.darkGray))
 
     @staticmethod
     def read_scene(filename):
@@ -39,237 +38,251 @@ class Polygons_scene():
         return obstacles
 
     def load_scene(self, filename):
-        self.obstacles = []
-        self.path = []
+        self._obstacles = []
         try:
-            self.obstacles = Polygons_scene.read_scene(filename)
+            self._obstacles = PolygonsScene.read_scene(filename)
             success = True
         except Exception as e:
-            print('load_scene:', e, file=self.writer)
+            print('load_scene:', e, file=self._writer)
             success = False
-        self.gui.empty_queue()
+        self._gui.empty_queue()
         self.draw_scene()
-        print("Loaded scene from", filename, file=self.writer)
+        print("Loaded scene from", filename, file=self._writer)
         return success
 
 
 class LocalizatorGUIComponent(GUI):
     def __init__(self):
         super().__init__()
+        self.set_program_name("Robot Localization")
         self.redraw()
 
-    def setupUi(self):
-        MainWindow = self.mainWindow
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(self.width, self.height)
-        MainWindow.setStyleSheet("QMainWindow { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
-                                 "#centralwidget { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
-                                 "QLabel { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }")
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName("gridLayout")
-        self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
-        self.graphicsView.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(
+    def setup_ui(self):
+        main_window = self.mainWindow
+        main_window.setObjectName("main_window")
+        main_window.resize(self.width, self.height)
+        main_window.setStyleSheet("QMainWindow { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
+                                  "#central_widget { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
+                                  "QLabel { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }")
+        self.central_widget = QtWidgets.QWidget(main_window)
+        self.central_widget.setObjectName("central_widget")
+        self.central_layout = QtWidgets.QGridLayout(self.central_widget)
+        self.central_layout.setObjectName("central_layout")
+        self.graphics_view = QtWidgets.QGraphicsView(self.central_widget)
+        self.graphics_view.setEnabled(True)
+        size_policy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.graphicsView.sizePolicy().hasHeightForWidth())
-        self.graphicsView.setSizePolicy(sizePolicy)
-        self.graphicsView.setObjectName("graphicsView")
-        self.gridLayout.addWidget(self.graphicsView, 3, 2, 1, 1)
-        self.gridLayout_0 = QtWidgets.QGridLayout()
-        self.gridLayout_0.setObjectName("gridLayout_0")
-        self.pushButton_compute = QtWidgets.QPushButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.pushButton_compute.setFont(font)
-        self.pushButton_compute.setObjectName("pushButton_compute")
-        self.gridLayout_0.addWidget(self.pushButton_compute, 15, 0, 1, 1)
-        self.lineEdit_scene = QtWidgets.QLineEdit(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.lineEdit_scene.setFont(font)
-        self.lineEdit_scene.setObjectName("lineEdit_scene")
-        self.gridLayout_0.addWidget(self.lineEdit_scene, 4, 0, 1, 1)
-        self.toolButton_searchScene = QtWidgets.QToolButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.toolButton_searchScene.setFont(font)
-        self.toolButton_searchScene.setObjectName("toolButton_searchScene")
-        self.gridLayout_0.addWidget(self.toolButton_searchScene, 4, 1, 1, 1)
-        self.label_scene = QtWidgets.QLabel(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.label_scene.setFont(font)
-        self.label_scene.setObjectName("label_scene")
-        self.gridLayout_0.addWidget(self.label_scene, 3, 0, 1, 1)
-        self.pushButton_scene = QtWidgets.QPushButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.pushButton_scene.setFont(font)
-        self.pushButton_scene.setObjectName("pushButton_scene")
-        self.gridLayout_0.addWidget(self.pushButton_scene, 5, 0, 1, 1)
-        spacerItem = QtWidgets.QSpacerItem(300, 0, QtWidgets.QSizePolicy.MinimumExpanding,
-                                           QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout_0.addItem(spacerItem, 22, 0, 3, 1)
-        self.label_d = QtWidgets.QLabel(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.label_d.setFont(font)
-        self.label_d.setObjectName("label_d")
-        self.gridLayout_0.addWidget(self.label_d, 8, 0, 1, 1)
-        self.lineEdit_d = QtWidgets.QLineEdit(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.lineEdit_d.setFont(font)
-        self.lineEdit_d.setObjectName("lineEdit_d")
-        self.gridLayout_0.addWidget(self.lineEdit_d, 10, 0, 1, 1)
-        self.gridLayout.addLayout(self.gridLayout_0, 3, 1, 1, 1)
-        self.textEdit = Logger(self.centralwidget)
-        self.textEdit.setObjectName("textEdit")
-        self.gridLayout.addWidget(self.textEdit, 3, 0, 1, 1)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        size_policy.setHorizontalStretch(1)
+        size_policy.setVerticalStretch(0)
+        size_policy.setHeightForWidth(
+            self.graphics_view.sizePolicy().hasHeightForWidth())
+        self.graphics_view.setSizePolicy(size_policy)
+        self.graphics_view.setObjectName("graphics_view")
+        self.central_layout.addWidget(self.graphics_view, 3, 2, 1, 1)
+
+        # actions panel
+        self._setup_ui_actions_panel()
+
+        # logger
+        self.logger = Logger(self.central_widget)
+        self.logger.setObjectName("logger")
+        self.central_layout.addWidget(self.logger, 3, 0, 1, 1)
+
+        main_window.setCentralWidget(self.central_widget)
+
+        # TODO maybe remove
+        self.statusbar = QtWidgets.QStatusBar(main_window)
         self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+        main_window.setStatusBar(self.statusbar)
 
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(main_window)
 
-        self.lineEdits['scene'] = self.lineEdit_scene
-        self.lineEdits['d'] = self.lineEdit_d
-        self.pushButtons['scene'] = self.pushButton_scene
-        self.pushButtons['compute'] = self.pushButton_compute
-        self.pushButtons['searchScene'] = self.toolButton_searchScene
-        self.labels['scene'] = self.label_scene
-        self.labels['d'] = self.label_d
+    def _setup_ui_actions_panel(self):
+        self.actions_panel_layout = QtWidgets.QGridLayout()
+        self.actions_panel_layout.setObjectName("actions_panel_layout")
+        font = QtGui.QFont()
+        font.setPointSize(12)
 
+        # == Scene loading ==
+        # scene label
+        self.scene_label = QtWidgets.QLabel(self.central_widget)
+        self.scene_label.setFont(font)
+        self.scene_label.setObjectName("scene_label")
+        self.actions_panel_layout.addWidget(self.scene_label, 1, 0, 1, 1)
+        # scene input text
+        self.scene_intxt = QtWidgets.QLineEdit(self.central_widget)
+        self.scene_intxt.setFont(font)
+        self.scene_intxt.setObjectName("scene_intxt")
+        self.actions_panel_layout.addWidget(self.scene_intxt, 2, 0, 1, 1)
+        # scene dialog button
+        self.scene_dialog_button = QtWidgets.QToolButton(self.central_widget)
+        self.scene_dialog_button.setFont(font)
+        self.scene_dialog_button.setObjectName("scene_dialog_button")
+        self.actions_panel_layout.addWidget(
+            self.scene_dialog_button, 2, 1, 1, 1)
+        # scene load button
+        self.scene_load_button = QtWidgets.QPushButton(self.central_widget)
+        self.scene_load_button.setFont(font)
+        self.scene_load_button.setObjectName("scene_load_button")
+        self.actions_panel_layout.addWidget(self.scene_load_button, 3, 0, 1, 1)
 
-def get_file_dialog():
-    dlg = QFileDialog()
-    dlg.setFileMode(QFileDialog.AnyFile)
-    dlg.setDirectory('')
-    if dlg.exec_():
-        filenames = dlg.selectedFiles()
-        return filenames[0]
+        spacerItem = QtWidgets.QSpacerItem(200, 0, QtWidgets.QSizePolicy.MinimumExpanding,
+                                           QtWidgets.QSizePolicy.Minimum)
+        self.actions_panel_layout.addItem(spacerItem, 4, 0, 2, 1)
+
+        # == Single measurement query ==
+        # label
+        self.m1_label = QtWidgets.QLabel(self.central_widget)
+        self.m1_label.setFont(font)
+        self.m1_label.setObjectName("m1_label")
+        self.actions_panel_layout.addWidget(self.m1_label, 7, 0, 1, 1)
+        # d input text
+        self.m1_d_intxt = QtWidgets.QLineEdit(self.central_widget)
+        self.m1_d_intxt.setFont(font)
+        self.m1_d_intxt.setObjectName("m1_d_intxt")
+        self.actions_panel_layout.addWidget(self.m1_d_intxt, 8, 0, 1, 1)
+        # compute button
+        self.m1_compute_button = QtWidgets.QPushButton(self.central_widget)
+        self.m1_compute_button.setFont(font)
+        self.m1_compute_button.setObjectName("m1_compute_button")
+        self.actions_panel_layout.addWidget(self.m1_compute_button, 9, 0, 1, 1)
+
+        spacerItem = QtWidgets.QSpacerItem(200, 0, QtWidgets.QSizePolicy.MinimumExpanding,
+                                           QtWidgets.QSizePolicy.Minimum)
+        self.actions_panel_layout.addItem(spacerItem, 10, 0, 2, 1)
+
+        self.central_layout.addLayout(self.actions_panel_layout, 3, 1, 1, 1)
+
+        self.labels['scene'] = self.scene_label
+        self.lineEdits['scene'] = self.scene_intxt
+        self.pushButtons['scene_open_dialog'] = self.scene_dialog_button
+        self.pushButtons['scene_load'] = self.scene_load_button
+        self.set_label('scene', "Scene File (.json):")
+        self.set_button_text('scene_open_dialog', "..")
+        self.set_button_text('scene_load', "Load Scene")
+
+        self.labels['m1_label'] = self.m1_label
+        self.lineEdits['m1_d'] = self.m1_d_intxt
+        self.pushButtons['m1_compute'] = self.m1_compute_button
+        self.set_label('m1_label', "Single measurement value (d)")
+        self.set_button_text('m1_compute', "Compute Single measurement")
 
 
 class LocalizatorGUI:
     def __init__(self):
-        self.writer = None
-        self.loaded_scene = None
-        self.localizator = localizator.Localizator(
+        self._writer = None
+        self._localizator = localizator.Localizator(
             os.path.join(os.getcwd(), ".localizator"))
-        self.localizator_worker = None
-        self.localizator_worker_lock = threading.Lock()
-        self.localizator_query1_res = None
-        self.gui_comp = None
-        self.polygon_scene = None
-        self.res_polygons_gui = []
+        self._localizator_worker = None
+        self._localizator_worker_lock = threading.Lock()
+        self._localizator_query1_res = None
+        self._gui_comp = None
+        self._polygon_scene = None
+        self._displayed_polygons = []
 
-    def _writer(self, *args):
-        if self.writer:
-            print(*args, file=self.writer)
+    def _print(self, *args):
+        if self._writer:
+            print(*args, file=self._writer)
         else:
             print(*args)
 
-    def clear_res_polygons_gui(self):
-        for gui_polygon in self.res_polygons_gui:
-            self.gui_comp.scene.removeItem(gui_polygon.polygon)
-        self.res_polygons_gui.clear()
-
-    def set_up_scene(self):
-        with self.localizator_worker_lock:
-            if self.localizator_worker is not None:
-                self._writer("last command is still in proccessing...")
+    def _load_scene(self):
+        with self._localizator_worker_lock:
+            if self._localizator_worker is not None:
+                self._print("last command is still in proccessing...")
                 return
-            self.localizator_worker = {}  # dummy place holder
-        self.localizator.stop()
-        self.clear_res_polygons_gui()
-        self.gui_comp.clear_scene()
-        scene_file = self.gui_comp.get_field('scene')
-        success = self.polygon_scene.load_scene(scene_file)
-        loaded_scene = scene_file if success else None
-        with self.localizator_worker_lock:
-            self.localizator_worker = Worker(
-                self.localizator_init, loaded_scene)
-            self.localizator_worker.signals.finished.connect(
-                self.localizator_init_done)
-        self.threadpool.start(self.localizator_worker)
+            self._localizator_worker = {}  # dummy place holder
 
-    def compute(self):
-        self.clear_res_polygons_gui()
+        self._localizator.stop()
+        self._clear_displayed_result()
+        self._gui_comp.clear_scene()
+        scene_file = self._gui_comp.get_field('scene')
+        success = self._polygon_scene.load_scene(scene_file)
+        if not success:
+            with self._localizator_worker_lock:
+                self._localizator_worker = None
+            return
 
-        d = self.gui_comp.get_field('d')
+        with self._localizator_worker_lock:
+            self._localizator_worker = Worker(
+                self._localizator_init, scene_file)
+            self._localizator_worker.signals.finished.connect(
+                self._localizator_init_done)
+        self.threadpool.start(self._localizator_worker)
+
+    def _localizator_init(self, scene_filename, is_running):
+        self._print("Localizator init...")
+        self._localizator.run(scene_filename)
+
+    def _localizator_init_done(self, is_running):
+        self._print("Localizator init is done")
+        with self._localizator_worker_lock:
+            self._localizator_worker = None
+
+    def _query1(self):
+        self._clear_displayed_result()
+
+        d = self._gui_comp.get_field('m1_d')
         try:
             d = float(d)
         except:
-            print("invalid d value")
+            d = -1
+        if d <= 0:
+            self._print("invalid d value")
             return
 
-        with self.localizator_worker_lock:
-            if self.localizator_worker is not None:
-                self._writer("last command is still in proccessing...")
+        with self._localizator_worker_lock:
+            if self._localizator_worker is not None:
+                self._print("last command is still in proccessing...")
                 return
-            self.localizator_worker = Worker(self.localizator_query1, d)
-            self.localizator_worker.signals.finished.connect(
-                self.localizator_query1_done)
-        self.threadpool.start(self.localizator_worker)
+            self._localizator_worker = Worker(self._localizator_query1, d)
+            self._localizator_worker.signals.finished.connect(
+                self._localizator_query1_done)
+        self.threadpool.start(self._localizator_worker)
 
-    def set_input_file(self):
-        file_path = get_file_dialog()
-        if file_path:
-            self.gui_comp.set_field('scene', file_path)
+    def _localizator_query1(self, d, is_running):
+        self._print("Localizator query with d = ", d)
+        self._localizator_query1_res = self._localizator.query1(d)
 
-    def enable(self):
-        self.gui_comp.set_label('scene', "Scene File (.json):")
-        self.gui_comp.set_logic('scene', self.set_up_scene)
-        self.gui_comp.set_button_text('scene', "Load Scene")
-        self.gui_comp.set_button_text('searchScene', "..")
-        self.gui_comp.set_logic('searchScene', self.set_input_file)
-        self.gui_comp.set_button_text('compute', "Compute")
-        self.gui_comp.set_logic('compute', self.compute)
-        self.gui_comp.set_label('d', "measurement size (d)")
-
-    def localizator_init(self, scene_filename, is_running):
-        self._writer("Localizator init...")
-        self.localizator.run(scene_filename)
-
-    def localizator_init_done(self, is_running):
-        self._writer("Localizator init is done")
-        with self.localizator_worker_lock:
-            self.localizator_worker = None
-
-    def localizator_query1(self, d, is_running):
-        self._writer("Localizator query with d = ", d)
-        self.localizator_query1_res = self.localizator.query1(float(d))
-
-    def localizator_query1_done(self, is_running):
-        self._writer("Localizator query is complete")
-        for polygon in self.localizator_query1_res:
+    def _localizator_query1_done(self, is_running):
+        self._print("Localizator query is complete")
+        for polygon in self._localizator_query1_res:
             fill_color = QtGui.QColor(0, 0, 255, 100)
             line_color = QtCore.Qt.transparent
-            gui_polygon = self.gui_comp.add_polygon(
+            gui_polygon = self._gui_comp.add_polygon(
                 polygon, fill_color, line_color)
-            self.res_polygons_gui.append(gui_polygon)
-        with self.localizator_worker_lock:
-            self.localizator_worker = None
+            self._displayed_polygons.append(gui_polygon)
+        with self._localizator_worker_lock:
+            self._localizator_worker = None
+
+    def _clear_displayed_result(self):
+        for gui_polygon in self._displayed_polygons:
+            self._gui_comp.scene.removeItem(gui_polygon.polygon)
+        self._displayed_polygons.clear()
+
+    def _open_scene_dialog(self):
+        dlg = QFileDialog()
+        dlg.setFileMode(QFileDialog.AnyFile)
+        dlg.setDirectory('')
+        if dlg.exec_():
+            file_path = dlg.selectedFiles()[0]
+            self._gui_comp.set_field('scene', file_path)
+
+    def _setup_gui_logic(self):
+        self._gui_comp.set_logic('scene_open_dialog', self._open_scene_dialog)
+        self._gui_comp.set_logic('scene_load', self._load_scene)
+        self._gui_comp.set_logic('m1_compute', self._query1)
+        self._writer = Writer(self._gui_comp.logger)
 
     def run(self, args=[]):
         app = QtWidgets.QApplication(args)
-        self.gui_comp = LocalizatorGUIComponent()
-        self.gui_comp.set_program_name("Robot Localization")
-        self.writer = Writer(self.gui_comp.textEdit)
-
-        self.enable()
-        self.gui_comp.mainWindow.signal_drop.connect(
-            lambda path: self.gui_comp.set_field('scene', path))
+        self._gui_comp = LocalizatorGUIComponent()
+        self._setup_gui_logic()
+        self._gui_comp.mainWindow.signal_drop.connect(
+            lambda path: self._gui_comp.set_field('scene', path))
         self.threadpool = QtCore.QThreadPool()
-        self.gui_comp.set_animation_finished_action(self.enable)
-        self.polygon_scene = Polygons_scene(self.gui_comp, self.writer)
-        self.gui_comp.mainWindow.show()
+        self._polygon_scene = PolygonsScene(self._gui_comp, self._writer)
+        self._gui_comp.mainWindow.show()
         return app.exec_()
 
 

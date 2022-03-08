@@ -29,15 +29,15 @@ class GUI(object):
     The RMP GUI class, handles all the boilerplate code for having GUI capable Qt projects
 
     Any GUI application should derive from this class, and set somewhere in the layout the
-    property `graphicsView` to a QGraphicsView.
-    The function you should override in this case is setupUi()
+    property `graphics_view` to a QGraphicsView.
+    The function you should override in this case is setup_ui()
     """
     def __init__(self):
         self.mainWindow = MainWindowPlus(self)
         self.scene = GraphicsScenePlus(self)
         self.sequence = QSequentialAnimationGroup()
         self.sequence.finished.connect(self.animation_finished)
-        self.setupUi()
+        self.setup_ui()
         self._setup_view()
 
 
@@ -70,10 +70,10 @@ class GUI(object):
     #: QSequentialAnimationGroup sequence of animation
     sequence = None
     #: QGraphicsView widget where everything is drawn
-    graphicsView = None
+    graphics_view = None
 
 
-    def setupUi(self):
+    def setup_ui(self):
         """
         Setup the UI layout of the application.
         Should be overrided by any GUI application and define a custom layout.
@@ -85,17 +85,17 @@ class GUI(object):
         """
         Setup and initialize the graphics view
         """
-        if self.graphicsView is not None:
-            self.graphicsView.setScene(self.scene)
-            self.graphicsView.setSceneRect(0, 0, 0, 0)
-            self.graphicsView.setRenderHints(QPainter.Antialiasing)
-            # self.graphicsView.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
+        if self.graphics_view is not None:
+            self.graphics_view.setScene(self.scene)
+            self.graphics_view.setSceneRect(0, 0, 0, 0)
+            self.graphics_view.setRenderHints(QPainter.Antialiasing)
+            # self.graphics_view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
 
             # Enable for smoother animations and Antialiasing - may cause some issues with multiple displays
-            # self.graphicsView.setViewport(QGLWidget(QGLFormat(QGL.SampleBuffers)))
+            # self.graphics_view.setViewport(QGLWidget(QGLFormat(QGL.SampleBuffers)))
 
-            self.graphicsView.scale(self.zoom, -self.zoom)
-            self.graphicsView.setDragMode(1)
+            self.graphics_view.scale(self.zoom, -self.zoom)
+            self.graphics_view.setDragMode(1)
 
 
     def add_disc(self, r, x, y, fill_color=QtCore.Qt.black, line_color=QtCore.Qt.black):
@@ -497,15 +497,15 @@ class GUI(object):
         """
         line_width = self.base_line_width / self.zoom
         text_size = max(1, self.base_text_size / self.zoom)
-        for item in self.graphicsView.items():
+        for item in self.graphics_view.items():
             if not isinstance(item, QGraphicsTextItem):
                 pen = item.pen()
                 pen.setWidthF(line_width)
                 item.setPen(pen)
             else:
                 item.setFont(QFont("Times", text_size))
-        self.graphicsView.resetTransform()
-        self.graphicsView.scale(self.zoom, -self.zoom)
+        self.graphics_view.resetTransform()
+        self.graphics_view.scale(self.zoom, -self.zoom)
 
 
     def animation_finished(self):

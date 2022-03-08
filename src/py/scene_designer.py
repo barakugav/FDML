@@ -43,28 +43,28 @@ class GUI_scene_designer(GUI):
         self.zoom = 50.0
         self.redraw()
 
-    def setupUi(self):
+    def setup_ui(self):
         self.mainWindow = MainWindowSceneDesigner(self)
-        MainWindow = self.mainWindow
+        main_window = self.mainWindow
 
-        MainWindow.setStyleSheet("QMainWindow { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
+        main_window.setStyleSheet("QMainWindow { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
                                  "#centralwidget { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
                                  "QLabel { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }")
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget = QtWidgets.QWidget(main_window)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
-        self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
-        self.graphicsView.setEnabled(True)
+        self.graphics_view = QtWidgets.QGraphicsView(self.centralwidget)
+        self.graphics_view.setEnabled(True)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(
-            self.graphicsView.sizePolicy().hasHeightForWidth())
-        self.graphicsView.setSizePolicy(sizePolicy)
-        self.graphicsView.setObjectName("graphicsView")
-        self.gridLayout.addWidget(self.graphicsView, 3, 1, 1, 1)
+            self.graphics_view.sizePolicy().hasHeightForWidth())
+        self.graphics_view.setSizePolicy(sizePolicy)
+        self.graphics_view.setObjectName("graphics_view")
+        self.gridLayout.addWidget(self.graphics_view, 3, 1, 1, 1)
         self.gridLayout_0 = QtWidgets.QGridLayout()
         self.gridLayout_0.setObjectName("gridLayout_0")
         self.pushButton_resolution = QtWidgets.QPushButton(self.centralwidget)
@@ -142,12 +142,12 @@ class GUI_scene_designer(GUI):
         self.pushButton_load.setObjectName("pushButton_load")
         self.gridLayout_0.addWidget(self.pushButton_load, 3, 0, 1, 1)
         self.gridLayout.addLayout(self.gridLayout_0, 3, 0, 1, 1)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        main_window.setCentralWidget(self.centralwidget)
+        self.statusbar = QtWidgets.QStatusBar(main_window)
         self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+        main_window.setStatusBar(self.statusbar)
 
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(main_window)
 
         self.lineEdits['scene'] = self.lineEdit_scene
         self.lineEdits['saveLocation'] = self.lineEdit_location
