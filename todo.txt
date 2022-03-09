@@ -1,10 +1,6 @@
 fix timeout and process leak handling
 improve scene designer
 tests
-query1 catch exception
-add clear button
-FDML logo, in github, in GUI
-check that daemon file exists
-use temp files
 add examples
 add double measurements example in README
+find better solution for sys.path.insert(..., "gui/"))

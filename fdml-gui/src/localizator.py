@@ -17,10 +17,13 @@ FDML_CORE_TOP = os.path.abspath(os.path.join(
 
 DEBUG_EN = True
 DAEMON_PATH_LINUX = os.path.join(
-    FDML_CORE_TOP, "build/linux", "debug" if DEBUG_EN else "release", "fdml_daemon")
+    FDML_CORE_TOP, "build", "linux", "debug" if DEBUG_EN else "release", "fdml_daemon")
 DAEMON_PATH_WINDOWS = os.path.join(
-    FDML_CORE_TOP, "build/win", "Debug" if DEBUG_EN else "Release", "fdml_daemon")
+    FDML_CORE_TOP, "build", "win", "Debug" if DEBUG_EN else "Release", "fdml_daemon.exe")
 DAEMON_PATH = DAEMON_PATH_LINUX if sys.platform == "linux" or sys.platform == "linux2" else DAEMON_PATH_WINDOWS
+
+if not os.path.exists(DAEMON_PATH):
+    raise ValueError("FDML daemon was not found at \"{}\"".format(DAEMON_PATH))
 
 daemons = set()
 daemons_lock = threading.Lock()
@@ -44,13 +47,12 @@ class Localizator:
         self.ackfile = None
         self.querynum = 0
         self.logfile = None
-        self.is_running = False
         self.daemon = None
         self.lock = threading.Lock()
 
     def __del__(self):
         with self.lock:
-            if self.daemon:
+            if self.is_running():
                 print("Localizator was not stopped! terminating.")
                 self.daemon.kill()
         shutil.rmtree(self.working_dir)
@@ -80,11 +82,11 @@ class Localizator:
 
     def stop(self):
         with self.lock:
-            if not self.daemon:
+            if not self.is_running():
                 return
             self._exec_cmd("--cmd quit")
             try:
-                self.daemon.wait(1) # wait 1 sec
+                self.daemon.wait(1)  # wait 1 sec
             except subprocess.TimeoutExpired as e:
                 print("Daemon failed to quit, terminating.")
                 self.daemon.terminate()
@@ -98,8 +100,11 @@ class Localizator:
             self.logfile.close()
             self.logfile = None
 
+    def is_running(self):
+        return self.daemon is not None
+
     def _exec_cmd(self, cmd):
-        if not self.daemon:
+        if not self.is_running():
             raise ValueError("invalid state: localizator is not running")
         with open(self.cmdfile, "w") as cmdfile:
             cmdfile.write(cmd)
