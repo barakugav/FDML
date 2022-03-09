@@ -59,18 +59,19 @@ class LocalizatorDaemon {
 	 * @brief Execute a single command
 	 *
 	 * @param argv args of the command
-	 * @return int on success, else on error
+	 * @param quit will be set to true if the quit command was issued
+	 * @return on success, else on error
 	 */
-	int exec_cmd(const std::vector<std::string> &argv);
+	int exec_cmd(const std::vector<std::string> &argv, bool &quit);
 
 	/**
 	 * @brief main function for daemon
 	 *
-	 * this function doesn't return unless some error occur
+	 * this function return only if the quit command was issued or some error occurred.
 	 *
 	 * @param argc number of arguments
 	 * @param argv arguments
-	 * @return int 0 on success, else on error
+	 * @return 0 on success, else on error
 	 */
 	static int daemon_main(int argc, const char *argv[]);
 

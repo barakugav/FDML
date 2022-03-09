@@ -10,11 +10,16 @@ class MainWindowPlus(QtWidgets.QMainWindow):
 
     Adding file dragging capability and +/- keys for zoom in/out
     """
+
     def __init__(self, gui):
         super().__init__()
         self.gui = gui
         self.setAcceptDrops(True)
+        self.close_handlers = []
 
+    def closeEvent(self, event):
+        for close_handler in self.close_handlers:
+            close_handler()
 
     def keyPressEvent(self, event):
         """
@@ -31,7 +36,6 @@ class MainWindowPlus(QtWidgets.QMainWindow):
             self.gui.zoom *= 0.9
         self.gui.redraw()
 
-    
     def dragEnterEvent(self, event):
         """
         Handle drag enter events
@@ -41,7 +45,6 @@ class MainWindowPlus(QtWidgets.QMainWindow):
         """
         # do nothing
         event.accept()
-
 
     def dragMoveEvent(self, event):
         """

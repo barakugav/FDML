@@ -9,6 +9,8 @@ import json
 import numpy as np
 import threading
 import atexit
+import tempfile
+import shutil
 
 FDML_CORE_TOP = os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "../../fdml/"))
@@ -35,8 +37,8 @@ atexit.register(kill_all_daemons)
 
 
 class Localizator:
-    def __init__(self, working_dir):
-        self.working_dir = working_dir
+    def __init__(self):
+        self.working_dir = tempfile.mkdtemp()
         self.daemon_id = None
         self.cmdfile = None
         self.ackfile = None
@@ -45,6 +47,13 @@ class Localizator:
         self.is_running = False
         self.daemon = None
         self.lock = threading.Lock()
+
+    def __del__(self):
+        with self.lock:
+            if self.daemon:
+                print("Localizator was not stopped! terminating.")
+                self.daemon.kill()
+        shutil.rmtree(self.working_dir)
 
     def _working_dir(self):
         return os.path.join(self.working_dir, str(self.daemon_id))
@@ -73,7 +82,13 @@ class Localizator:
         with self.lock:
             if not self.daemon:
                 return
-            self.daemon.kill()
+            self._exec_cmd("--cmd quit")
+            try:
+                self.daemon.wait(1) # wait 1 sec
+            except subprocess.TimeoutExpired as e:
+                print("Daemon failed to quit, terminating.")
+                self.daemon.terminate()
+                self.daemon.kill()
             with daemons_lock:
                 daemons.remove(self.daemon)
             self.daemon = None

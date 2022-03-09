@@ -205,8 +205,7 @@ class LocalizatorGUIComponent(GUI):
 class LocalizatorGUI:
     def __init__(self):
         self._writer = None
-        self._localizator = localizator.Localizator(
-            os.path.join(os.getcwd(), ".localizator"))
+        self._localizator = localizator.Localizator()
         self._localizator_worker = None
         self._localizator_worker_lock = threading.Lock()
         self._localizator_query1_res = None
@@ -343,12 +342,16 @@ class LocalizatorGUI:
             file_path = dlg.selectedFiles()[0]
             self._gui_comp.set_field('scene', file_path)
 
+    def _finalize_localizator(self):
+        self._localizator.stop()
+
     def _setup_gui_logic(self):
         self._gui_comp.set_logic('scene_open_dialog', self._open_scene_dialog)
         self._gui_comp.set_logic('scene_load', self._load_scene)
         self._gui_comp.set_logic('m1_compute', self._query1)
         self._gui_comp.set_logic('m2_compute', self._query2)
         self._writer = Writer(self._gui_comp.logger)
+        self._gui_comp.mainWindow.close_handlers.append(self._finalize_localizator)
 
     def run(self, args=[]):
         app = QtWidgets.QApplication(args)

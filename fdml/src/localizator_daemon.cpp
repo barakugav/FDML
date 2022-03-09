@@ -83,19 +83,24 @@ void LocalizatorDaemon::run() {
 		if (!file_exists(ack_filename) && file_exists(cmd_filename)) {
 			std::vector<std::string> argv;
 			parse_cmd_from_file(cmd_filename, argv);
-			int err = exec_cmd(argv);
+
+			bool quit = false;
+			int err = exec_cmd(argv, quit);
 
 			std::ofstream ackfile(ack_filename);
 			ackfile << err;
 			ackfile.close();
+			if (quit)
+				break;
 			fdml_infoln("[LocalizatorDaemon] Command proccessed. Waiting for next command...");
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(100)); /* 0.1 sec */
 		fdml_debug(".");
 	}
+	fdml_infoln("[LocalizatorDaemon] Quit.");
 }
 
-int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv) {
+int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv, bool &quit) {
 	fdml_debug("[LocalizatorDaemon] executing command:");
 	for (const auto &arg : argv)
 		fdml_debug(' ' << arg);
@@ -118,8 +123,9 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv) {
 		std::string out_filename;
 
 		boost::program_options::options_description desc{"Options"};
-		desc.add_options()("help,h", "Help message");
-		desc.add_options()("cmd", boost::program_options::value<std::string>(&cmd), "Command [init, query1, query2]");
+		desc.add_options()("help", "Help message");
+		desc.add_options()("cmd", boost::program_options::value<std::string>(&cmd),
+						   "Command [init, query1, query2, quit]");
 		desc.add_options()("scene", boost::program_options::value<std::string>(&scene_filename), "Scene filename");
 		desc.add_options()("d", boost::program_options::value<double>(&d), "single measurement value");
 		desc.add_options()("d1", boost::program_options::value<double>(&d1), "first value of double measurement query");
@@ -155,7 +161,8 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv) {
 				return -1;
 			} else
 				query(d1, d2, out_filename);
-		}
+		} else if (cmd == "quit")
+			quit = true;
 		return 0;
 	} catch (const std::exception &ex) {
 		std::cerr << ex.what() << '\n';
