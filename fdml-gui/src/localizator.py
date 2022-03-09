@@ -10,11 +10,14 @@ import numpy as np
 import threading
 import atexit
 
+FDML_CORE_TOP = os.path.abspath(os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), "../../fdml/"))
+
 DEBUG_EN = True
-DAEMON_PATH_LINUX = "build/linux/%s/fdml_daemon" % (
-    "debug" if DEBUG_EN else "release")
-DAEMON_PATH_WINDOWS = "build/win/%s/fdml_daemon.exe" % (
-    "Debug" if DEBUG_EN else "Release")
+DAEMON_PATH_LINUX = os.path.join(
+    FDML_CORE_TOP, "build/linux", "debug" if DEBUG_EN else "release", "fdml_daemon")
+DAEMON_PATH_WINDOWS = os.path.join(
+    FDML_CORE_TOP, "build/win", "Debug" if DEBUG_EN else "Release", "fdml_daemon")
 DAEMON_PATH = DAEMON_PATH_LINUX if sys.platform == "linux" or sys.platform == "linux2" else DAEMON_PATH_WINDOWS
 
 daemons = set()

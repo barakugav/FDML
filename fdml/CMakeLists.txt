@@ -4,9 +4,8 @@
 cmake_minimum_required(VERSION 3.1...3.15)
 
 project( fdml )
-set( PROJECT_TOP ${CMAKE_CURRENT_SOURCE_DIR} )
-set( LIBS_TOP ${PROJECT_TOP}/lib )
-set( CPP_SRC ${PROJECT_TOP}/src/cpp )
+set( FDML_TOP ${CMAKE_CURRENT_SOURCE_DIR} )
+set( LIBS_TOP ${FDML_TOP}/lib )
 
 # CGAL and its components
 find_package( CGAL QUIET COMPONENTS  )
@@ -29,15 +28,15 @@ endif()
 
 # fdml_daemon
 add_executable( fdml_daemon
-  ${CPP_SRC}/src/trapezoid.cpp
-  ${CPP_SRC}/src/trapezoider.cpp
-  ${CPP_SRC}/src/localizator.cpp
-  ${CPP_SRC}/src/json_utils.cpp
-  ${CPP_SRC}/src/localizator_daemon.cpp
-  ${CPP_SRC}/bin/fdml_daemon.cpp
+  ${FDML_TOP}/src/trapezoid.cpp
+  ${FDML_TOP}/src/trapezoider.cpp
+  ${FDML_TOP}/src/localizator.cpp
+  ${FDML_TOP}/src/json_utils.cpp
+  ${FDML_TOP}/src/localizator_daemon.cpp
+  ${FDML_TOP}/bin/fdml_daemon.cpp
 )
-include_directories ( fdml_daemon PUBLIC ${CPP_SRC}/include/ )
-include_directories ( fdml_daemon PRIVATE ${CPP_SRC}/src/ )
+include_directories ( fdml_daemon PUBLIC ${FDML_TOP}/include/ )
+include_directories ( fdml_daemon PRIVATE ${FDML_TOP}/src/ )
 
 add_to_cached_list( CGAL_EXECUTABLE_TARGETS fdml_daemon )
 target_link_libraries(fdml_daemon PRIVATE CGAL::CGAL )
