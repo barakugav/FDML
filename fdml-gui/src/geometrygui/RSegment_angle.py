@@ -1,11 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import (QApplication, QGraphicsView,
-                             QGraphicsPixmapItem, QGraphicsScene, QGraphicsPolygonItem,
-                             QGraphicsEllipseItem, QGraphicsLineItem, QOpenGLWidget)
-from PyQt5.QtGui import QPainter, QPixmap, QPolygonF, QPen, QVector3D
-from PyQt5.QtCore import (QObject, QPointF, QPoint, QRectF,
-                          QPropertyAnimation, pyqtProperty, QSequentialAnimationGroup,
-                          QParallelAnimationGroup, QPauseAnimation, Qt)
+from PyQt5.QtWidgets import QGraphicsEllipseItem, QGraphicsLineItem
+from PyQt5.QtGui import QPen, QVector3D
+from PyQt5.QtCore import QObject, QRectF, pyqtProperty
 import math
 
 
@@ -27,6 +22,7 @@ class RSegment_angle(QObject):
     :param line_width: width of segment
     :type line_width: int
     """
+
     def __init__(self, x1, y1, l, a, line_color, line_width):
         self._point_radius = 3
         self._angle = a
@@ -49,7 +45,6 @@ class RSegment_angle(QObject):
         self.line.setPen(pen)
         self.point.setPen(pen)
 
-
     def x(self):
         """
         Return x position of the start endpoint of segment
@@ -58,7 +53,6 @@ class RSegment_angle(QObject):
         :rtype: float
         """
         return self._x1
-
 
     def y(self):
         """
@@ -69,7 +63,6 @@ class RSegment_angle(QObject):
         """
         return self._y1
 
-
     def angle(self):
         """
         Return the angle of the segment
@@ -79,11 +72,9 @@ class RSegment_angle(QObject):
         """
         return self._angle
 
-
     ####################################################
     # The following functions are for animation support
     ####################################################
-
 
     @pyqtProperty(QVector3D)
     def pos(self):
@@ -96,7 +87,6 @@ class RSegment_angle(QObject):
         :rtype: QVector3D
         """
         return self._pos
-
 
     @pos.setter
     def pos(self, value):

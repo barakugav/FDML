@@ -21,6 +21,7 @@ class Worker(QtCore.QRunnable):
     :param *args: arguments to be passed to function
     :type *args: object, object, ...
     """
+
     def __init__(self, fn, *args):
         super(Worker, self).__init__()
 
@@ -30,13 +31,11 @@ class Worker(QtCore.QRunnable):
         self.isRunning = [True]
         self.signals = WorkerSignals()
 
-
     def stop(self):
         """
         Stop the current task
         """
         self.isRunning[0] = False
-
 
     @QtCore.pyqtSlot()
     def run(self):

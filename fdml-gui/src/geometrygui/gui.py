@@ -1,26 +1,19 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-#from PyQt5.QtOpenGL import QGLWidget, QGLFormat, QGL
-from PyQt5.QtWidgets import (QApplication, QGraphicsView,
-                             QGraphicsPixmapItem, QGraphicsScene, QGraphicsPolygonItem,
-                             QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsTextItem, QOpenGLWidget)
-from PyQt5.QtGui import QPainter, QPixmap, QPolygonF, QPen, QVector3D, QPalette, QFont
-from PyQt5.QtCore import (QObject, QPointF, QPoint, QRectF,
-                          QPropertyAnimation, pyqtProperty, QSequentialAnimationGroup,
-                          QParallelAnimationGroup, QPauseAnimation, Qt, pyqtSignal)
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QGraphicsTextItem
+from PyQt5.QtGui import QPainter, QVector3D, QPalette, QFont
+from PyQt5.QtCore import (QPointF, QPropertyAnimation, QSequentialAnimationGroup,
+                          QParallelAnimationGroup, QPauseAnimation, Qt)
 
+from geometrygui.MainWindowsPlus import MainWindowPlus
+from geometrygui.GraphicsScenePlus import GraphicsScenePlus
 
-from MainWindowsPlus import MainWindowPlus
-from GraphicsScenePlus import GraphicsScenePlus
-
-from RPolygon import RPolygon
-from RPolygonWithHoles import RPolygonWithHoles
-from RDisc import RDisc
-from RSegment import RSegment
-from RText import RText
-from RCircleSegment import RCircleSegment
-from RSegment_angle import RSegment_angle
-
-import time
+from geometrygui.RPolygon import RPolygon
+from geometrygui.RPolygonWithHoles import RPolygonWithHoles
+from geometrygui.RDisc import RDisc
+from geometrygui.RSegment import RSegment
+from geometrygui.RText import RText
+from geometrygui.RCircleSegment import RCircleSegment
+from geometrygui.RSegment_angle import RSegment_angle
 import math
 
 
@@ -32,6 +25,7 @@ class GUI(object):
     property `graphics_view` to a QGraphicsView.
     The function you should override in this case is setup_ui()
     """
+
     def __init__(self):
         self.mainWindow = MainWindowPlus(self)
         self.scene = GraphicsScenePlus(self)
@@ -39,7 +33,6 @@ class GUI(object):
         self.sequence.finished.connect(self.animation_finished)
         self.setup_ui()
         self._setup_view()
-
 
     #: Screen width
     width = 1600
@@ -52,7 +45,7 @@ class GUI(object):
     #: Base (default) text size
     base_text_size = 2 * zoom
     #: Function reference that is called when animation is finished
-    animation_finished_action = lambda: None
+    def animation_finished_action(): return None
 
     #: Dictionary of all UI line inputs
     lineEdits = dict()
@@ -72,14 +65,12 @@ class GUI(object):
     #: QGraphicsView widget where everything is drawn
     graphics_view = None
 
-
     def setup_ui(self):
         """
         Setup the UI layout of the application.
         Should be overrided by any GUI application and define a custom layout.
         """
         pass
-
 
     def _setup_view(self):
         """
@@ -96,7 +87,6 @@ class GUI(object):
 
             self.graphics_view.scale(self.zoom, -self.zoom)
             self.graphics_view.setDragMode(1)
-
 
     def add_disc(self, r, x, y, fill_color=QtCore.Qt.black, line_color=QtCore.Qt.black):
         """
@@ -116,10 +106,10 @@ class GUI(object):
         :return: disc
         :rtype: RDisc
         """
-        d = RDisc(r, x, y, fill_color, line_color=line_color, line_width=self.base_line_width / self.zoom)
+        d = RDisc(r, x, y, fill_color, line_color=line_color,
+                  line_width=self.base_line_width / self.zoom)
         self.scene.addItem(d.disc)
         return d
-
 
     def add_polygon(self, points, fill_color=QtCore.Qt.black, line_color=QtCore.Qt.black):
         """
@@ -135,10 +125,10 @@ class GUI(object):
         :return: polygon
         :rtype: RPolygon
         """
-        p = RPolygon(points, fill_color=fill_color, line_color=line_color, line_width=self.base_line_width / self.zoom)
+        p = RPolygon(points, fill_color=fill_color, line_color=line_color,
+                     line_width=self.base_line_width / self.zoom)
         self.scene.addItem(p.polygon)
         return p
-
 
     def add_polygon_with_holes(self, points, holes, fill_color=QtCore.Qt.black, line_color=QtCore.Qt.transparent):
         """
@@ -156,10 +146,10 @@ class GUI(object):
         :return: polygon
         :rtype: RPolygonWithHoles
         """
-        p = RPolygonWithHoles(points, holes, line_color, fill_color, line_width=self.base_line_width / self.zoom)
+        p = RPolygonWithHoles(points, holes, line_color, fill_color,
+                              line_width=self.base_line_width / self.zoom)
         self.scene.addItem(p.polygon)
         return p
-
 
     def add_segment(self, x1, y1, x2, y2, line_color=QtCore.Qt.black, opacity=1.0):
         """
@@ -181,10 +171,10 @@ class GUI(object):
         :return: segment
         :rtype: RSegment
         """
-        s = RSegment(x1, y1, x2, y2, color=line_color, line_width=self.base_line_width / self.zoom, opacity=opacity)
+        s = RSegment(x1, y1, x2, y2, color=line_color,
+                     line_width=self.base_line_width / self.zoom, opacity=opacity)
         self.scene.addItem(s.line)
         return s
-
 
     def add_segment_angle(self, x1, y1, length, angle, line_color=QtCore.Qt.black):
         """
@@ -204,10 +194,10 @@ class GUI(object):
         :return: angled segment
         :rtype: RSegment_angle
         """
-        s = RSegment_angle(x1, y1, length, angle, line_color=line_color, line_width=self.base_line_width / self.zoom)
+        s = RSegment_angle(x1, y1, length, angle, line_color=line_color,
+                           line_width=self.base_line_width / self.zoom)
         self.scene.addItem(s.line)
         return s
-
 
     def add_circle_segment(self, radius: float, center_x: float, center_y: float, start_angle: float,
                            end_angle: float,
@@ -241,7 +231,6 @@ class GUI(object):
         self.scene.addItem(s.path)
         return s
 
-
     def add_text(self, text, x, y, size, color=QtCore.Qt.black):
         """
         Add a text label to the scene and return the object associated with it
@@ -264,8 +253,8 @@ class GUI(object):
         self.scene.addItem(t.text)
         return t
 
-
     # Create a new linear translation animation for obj starting at ix, iy and ending at x, y
+
     def linear_translation_animation(self, obj, ix, iy, x, y, duration=1000):
         """
         Create a new linear translation animation for obj starting at ix, iy and ending at x, y
@@ -291,7 +280,6 @@ class GUI(object):
         anim.setStartValue(QPointF(ix, iy))
         anim.setEndValue(QPointF(x, y))
         return anim
-
 
     def segment_angle_animation(self, obj, ix, iy, ia, x, y, a, clockwise, duration=2000):
         """
@@ -325,15 +313,16 @@ class GUI(object):
         anim = QPropertyAnimation(obj, b'pos')
         anim.setDuration(duration)
         r = 0
-        if (not clockwise and a < ia): ia -= 2 * math.pi
-        if (clockwise and a > ia): ia += 2 * math.pi
+        if (not clockwise and a < ia):
+            ia -= 2 * math.pi
+        if (clockwise and a > ia):
+            ia += 2 * math.pi
         start = QVector3D(float(ix), float(iy), float(ia))
         anim.setStartValue(start)
         end = QVector3D(float(x), float(y), float(a))
         anim.setEndValue(end)
         # anim.setKeyValueAt(0.999, QVector3D(float(x), float(y), float(a + r)))
         return anim
-
 
     def translation_animation(self, obj, func, duration=1000):
         """
@@ -358,7 +347,6 @@ class GUI(object):
             anim.setKeyValueAt(i, (QPointF(func(i)[0], func(i)[1])))
         return anim
 
-
     def visibility_animation(self, obj, visible):
         """
         Create an animation the changes the visibility of an object
@@ -379,7 +367,6 @@ class GUI(object):
             anim.setEndValue(0)
         return anim
 
-
     def pause_animation(self, duration=1000):
         """
         Create an animation that does nothing
@@ -392,7 +379,6 @@ class GUI(object):
         """
         anim = QPauseAnimation(duration)
         return anim
-
 
     def value_animation(self, obj, v_begin, v_end, duration=1000):
         """
@@ -416,7 +402,6 @@ class GUI(object):
         anim.setEndValue(v_end)
         return anim
 
-
     def text_animation(self, obj, text: int):
         """
         Create an animation that changes the text of an object
@@ -434,7 +419,6 @@ class GUI(object):
         anim.setEndValue(text)
         return anim
 
-
     def parallel_animation(self, *animations):
         """
         Create an animation from a set of animations that will run in parallel
@@ -450,7 +434,6 @@ class GUI(object):
             group.addAnimation(anim)
         return group
 
-
     def queue_animation(self, *animations):
         """
         Add an animation to the animation queue
@@ -461,13 +444,11 @@ class GUI(object):
         for anim in animations:
             self.sequence.addAnimation(anim)
 
-
     def play_queue(self):
         """
         Play (and empty) the animation queue
         """
         self.sequence.start()
-
 
     def stop_queue(self):
         """
@@ -476,20 +457,17 @@ class GUI(object):
         self.sequence.stop()
         self.animation_finished()
 
-
     def empty_queue(self):
         """
         Empty the animation queue
         """
         self.sequence.clear()
 
-
     def clear_scene(self):
         """
         Clear the scene of all objects
         """
         self.scene.clear()
-
 
     def redraw(self):
         """
@@ -507,7 +485,6 @@ class GUI(object):
         self.graphics_view.resetTransform()
         self.graphics_view.scale(self.zoom, -self.zoom)
 
-
     def animation_finished(self):
         """
         Function that is called when the `finished` signal is fired
@@ -517,7 +494,6 @@ class GUI(object):
         print("Finished playing animation")
         self.animation_finished_action()
 
-
     def set_animation_finished_action(self, action):
         """
         Set the function to be called when the animation finishes playing
@@ -526,7 +502,6 @@ class GUI(object):
         :type action: function<()->()>
         """
         self.animation_finished_action = action
-
 
     def set_field(self, key, s):
         """
@@ -539,7 +514,6 @@ class GUI(object):
         """
         self.lineEdits[key].setText(s)
 
-
     def get_field(self, key):
         """
         Get the text of field with key <key> in the GUI
@@ -551,7 +525,6 @@ class GUI(object):
         :rtype: str
         """
         return self.lineEdits[key].text()
-
 
     def set_label(self, key, s, color=Qt.black):
         """
@@ -569,7 +542,6 @@ class GUI(object):
         palette.setColor(QPalette.WindowText, color)
         self.labels[key].setPalette(palette)
 
-
     def set_logic(self, key, logic):
         """
         Set the function to be called when the button with key <key> in the GUI is pressed
@@ -585,7 +557,6 @@ class GUI(object):
             pass
         self.pushButtons[key].clicked.connect(logic)
 
-
     def set_button_text(self, key, s):
         """
         Set the text of the button with key <key> in the GUI
@@ -597,7 +568,6 @@ class GUI(object):
         """
         self.pushButtons[key].setText(s)
 
-
     def set_progressbar_value(self, key, n: int):
         """
         Set the value of the progressBar with key <key>
@@ -608,7 +578,6 @@ class GUI(object):
         :type n: int
         """
         self.progressBars[key].setValue(n)
-
 
     def set_program_name(self, s):
         """

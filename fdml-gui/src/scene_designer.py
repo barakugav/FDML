@@ -7,9 +7,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QFileDialog
 import ctypes
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gui/"))
-from gui import GUI, MainWindowPlus
+from geometrygui.gui import GUI, MainWindowPlus
 
 IMG_DIR = os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "../img"))

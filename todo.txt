@@ -2,4 +2,3 @@ fix timeout and process leak handling
 tests
 add examples
 add double measurements example in README
-find better solution for sys.path.insert(..., "gui/"))

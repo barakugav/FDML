@@ -1,11 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import (QApplication, QGraphicsView,
-                             QGraphicsPixmapItem, QGraphicsScene, QGraphicsPolygonItem,
-                             QGraphicsEllipseItem, QGraphicsLineItem, QOpenGLWidget)
-from PyQt5.QtGui import QPainter, QPixmap, QPolygonF, QPen
-from PyQt5.QtCore import (QObject, QPointF, QPoint, QRectF,
-                          QPropertyAnimation, pyqtProperty, QSequentialAnimationGroup,
-                          QParallelAnimationGroup, QPauseAnimation, Qt)
+from PyQt5.QtWidgets import QGraphicsLineItem
+from PyQt5.QtGui import QPen
+from PyQt5.QtCore import QObject, QPointF, pyqtProperty
 
 
 class RSegment(QObject):
@@ -26,6 +21,7 @@ class RSegment(QObject):
     :param line_width: width of segment
     :type line_width: int
     """
+
     def __init__(self, x1, y1, x2, y2, color, line_width, opacity):
         self._x1 = x1
         self._y1 = y1
@@ -41,7 +37,6 @@ class RSegment(QObject):
         pen.setColor(color)
         self.line.setPen(pen)
 
-
     def x(self):
         """
         Return x position of the start endpoint of segment
@@ -50,7 +45,6 @@ class RSegment(QObject):
         :rtype: float
         """
         return self._pos.x()
-
 
     def y(self):
         """
@@ -61,11 +55,9 @@ class RSegment(QObject):
         """
         return self._pos.y()
 
-
     ####################################################
     # The following functions are for animation support
     ####################################################
-
 
     @pyqtProperty(QPointF)
     def pos(self):
@@ -77,7 +69,6 @@ class RSegment(QObject):
         :rtype: QPointF
         """
         return self._pos
-
 
     @pos.setter
     def pos(self, value):

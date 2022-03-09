@@ -1,11 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import (QApplication, QGraphicsView,
-                             QGraphicsPixmapItem, QGraphicsScene, QGraphicsPolygonItem,
-                             QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsTextItem, QOpenGLWidget)
-from PyQt5.QtGui import QPainter, QPixmap, QPolygonF, QPen, QFont, QTransform
-from PyQt5.QtCore import (QObject, QPointF, QPoint, QRectF,
-                          QPropertyAnimation, pyqtProperty, QSequentialAnimationGroup,
-                          QParallelAnimationGroup, QPauseAnimation, Qt)
+from PyQt5.QtWidgets import QGraphicsTextItem
+from PyQt5.QtGui import QFont, QTransform
+from PyQt5.QtCore import QObject, QPointF, pyqtProperty
 
 
 class RText(QObject):
@@ -22,6 +17,7 @@ class RText(QObject):
     :param color: color of the label
     :type color: class:`QtGui.QColor`
     """
+
     def __init__(self, text, x, y, size, color):
         self._pos = QPointF(x - 1.8, y + 1.8)
         super().__init__()
@@ -36,11 +32,9 @@ class RText(QObject):
 
         self._visible = 1
 
-
     ####################################################
     # The following functions are for animation support
     ####################################################
-
 
     @pyqtProperty(int)
     def visible(self):
@@ -52,7 +46,6 @@ class RText(QObject):
         :type value: int
         """
         return self._visible
-
 
     @visible.setter
     def visible(self, value):
@@ -68,4 +61,3 @@ class RText(QObject):
         else:
             self.text.hide()
         self._visible = value
-

@@ -8,11 +8,9 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QFileDialog
 import localizator
 import ctypes
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gui/"))
-from gui import GUI
-from logger import Logger, Writer
-from Worker import Worker
+from geometrygui.gui import GUI
+from geometrygui.logger import Logger, Writer
+from geometrygui.Worker import Worker
 
 
 IMG_DIR = os.path.abspath(os.path.join(

@@ -1,11 +1,7 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import (QApplication, QGraphicsView,
-                             QGraphicsPixmapItem, QGraphicsScene, QGraphicsPolygonItem,
-                             QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsPathItem, QOpenGLWidget)
-from PyQt5.QtGui import QPainter, QPixmap, QPolygonF, QPen, QPainterPath
-from PyQt5.QtCore import (QObject, QPointF, QPoint, QRectF,
-                          QPropertyAnimation, pyqtProperty, QSequentialAnimationGroup,
-                          QParallelAnimationGroup, QPauseAnimation, Qt)
+from PyQt5 import QtGui
+from PyQt5.QtWidgets import QGraphicsPathItem
+from PyQt5.QtGui import QPen, QPainterPath
+from PyQt5.QtCore import QObject, QPointF, QRectF, pyqtProperty, Qt
 import math
 
 
@@ -33,8 +29,9 @@ class RCircleSegment(QObject):
     :param fill_color: color of the interior of circle
     :type fill_color: class:`QtGui.QColor`
     """
-    def __init__(self,radius: float, center_x: float, center_y: float, start_angle: float, 
-            end_angle: float, clockwise, line_width: float, line_color = Qt.black, fill_color=Qt.transparent):
+
+    def __init__(self, radius: float, center_x: float, center_y: float, start_angle: float,
+                 end_angle: float, clockwise, line_width: float, line_color=Qt.black, fill_color=Qt.transparent):
         super().__init__()
         # The supporting rectangle
         if end_angle < start_angle:
@@ -43,12 +40,14 @@ class RCircleSegment(QObject):
         end_angle = -end_angle
         shift = end_angle-start_angle
         if clockwise:
-           shift = -shift-2*math.pi
+            shift = -shift-2*math.pi
         x, y = center_x - radius, center_y - radius
         self.rect = QRectF(x, y, 2 * radius, 2 * radius)
         # The underlying QGraphicsPathItem
-        self.painter_path = QPainterPath(QPointF(center_x+math.cos(start_angle)*radius, center_y-math.sin(start_angle)*radius))
-        self.painter_path.arcTo(self.rect, math.degrees(start_angle), math.degrees(shift))
+        self.painter_path = QPainterPath(QPointF(
+            center_x+math.cos(start_angle)*radius, center_y-math.sin(start_angle)*radius))
+        self.painter_path.arcTo(self.rect, math.degrees(
+            start_angle), math.degrees(shift))
         self.path = QGraphicsPathItem(self.painter_path)
         self.path.setBrush(QtGui.QBrush(fill_color))
         pen = QPen()
@@ -57,11 +56,9 @@ class RCircleSegment(QObject):
         self.path.setPen(pen)
         self._visible = 1
 
-
     ####################################################
     # The following functions are for animation support
     ####################################################
-
 
     @pyqtProperty(int)
     def visible(self):
