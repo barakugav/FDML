@@ -1,5 +1,4 @@
 fix timeout and process leak handling
-improve scene designer
 tests
 add examples
 add double measurements example in README

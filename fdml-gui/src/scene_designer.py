@@ -6,9 +6,13 @@ import json
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QFileDialog
+import ctypes
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gui/"))
-from gui import GUI, MainWindowPlus, RPolygon, RSegment, RDisc
+from gui import GUI, MainWindowPlus
+
+IMG_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), "../img"))
 
 
 class MainWindowSceneDesigner(MainWindowPlus):
@@ -35,12 +39,14 @@ class MainWindowSceneDesigner(MainWindowPlus):
         self.gui.redraw()
 
 
-class GUI_scene_designer(GUI):
-    textEdits = []
-
+class SceneDesignerGUIComponent(GUI):
     def __init__(self):
         super().__init__()
+        self.textEdits = []
         self.zoom = 50.0
+        self.set_program_name("Robot Localization")
+        self.mainWindow.setWindowIcon(
+            QtGui.QIcon(os.path.join(IMG_DIR, "icon.png")))
         self.redraw()
 
     def setup_ui(self):
@@ -48,8 +54,8 @@ class GUI_scene_designer(GUI):
         main_window = self.mainWindow
 
         main_window.setStyleSheet("QMainWindow { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
-                                 "#centralwidget { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
-                                 "QLabel { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }")
+                                  "#centralwidget { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }\n"
+                                  "QLabel { background-color : rgb(54, 57, 63); color : rgb(220, 221, 222); }")
         self.centralwidget = QtWidgets.QWidget(main_window)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -67,80 +73,77 @@ class GUI_scene_designer(GUI):
         self.gridLayout.addWidget(self.graphics_view, 3, 1, 1, 1)
         self.gridLayout_0 = QtWidgets.QGridLayout()
         self.gridLayout_0.setObjectName("gridLayout_0")
-        self.pushButton_resolution = QtWidgets.QPushButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.pushButton_resolution.setFont(font)
-        self.pushButton_resolution.setObjectName("pushButton_resolution")
         spacerItem = QtWidgets.QSpacerItem(300, 20, QtWidgets.QSizePolicy.MinimumExpanding,
                                            QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_0.addItem(spacerItem, 33, 0, 1, 1)
-        self.label_saveLocation = QtWidgets.QLabel(self.centralwidget)
+
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.label_saveLocation.setFont(font)
-        self.label_saveLocation.setObjectName("label_saveLocation")
-        self.gridLayout_0.addWidget(self.label_saveLocation, 4, 0, 1, 1)
-        self.lineEdit_scene = QtWidgets.QLineEdit(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.lineEdit_scene.setFont(font)
-        self.lineEdit_scene.setObjectName("lineEdit_scene")
-        self.gridLayout_0.addWidget(self.lineEdit_scene, 2, 0, 1, 1)
-        self.lineEdit_location = QtWidgets.QLineEdit(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.lineEdit_location.setFont(font)
-        self.lineEdit_location.setObjectName("lineEdit_location")
-        self.gridLayout_0.addWidget(self.lineEdit_location, 5, 0, 1, 1)
-        self.label_scene = QtWidgets.QLabel(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.label_scene.setFont(font)
-        self.label_scene.setObjectName("label_scene")
-        self.gridLayout_0.addWidget(self.label_scene, 1, 0, 1, 1)
+
+        # Scene load
+        self.scene_load_label = QtWidgets.QLabel(self.centralwidget)
+        self.scene_load_label.setFont(font)
+        self.scene_load_label.setObjectName("scene_load_label")
+        self.gridLayout_0.addWidget(self.scene_load_label, 1, 0, 1, 1)
+        self.scene_load_intxt = QtWidgets.QLineEdit(self.centralwidget)
+        self.scene_load_intxt.setFont(font)
+        self.scene_load_intxt.setObjectName("scene_load_intxt")
+        self.gridLayout_0.addWidget(self.scene_load_intxt, 2, 0, 1, 1)
+        self.scene_load_dialog_button = QtWidgets.QToolButton(
+            self.centralwidget)
+        self.scene_load_dialog_button.setFont(font)
+        self.scene_load_dialog_button.setObjectName("scene_load_dialog_button")
+        self.gridLayout_0.addWidget(self.scene_load_dialog_button, 2, 1, 1, 1)
+        self.scene_load_button = QtWidgets.QPushButton(self.centralwidget)
+        self.scene_load_button.setFont(font)
+        self.scene_load_button.setObjectName("scene_load_button")
+        self.gridLayout_0.addWidget(self.scene_load_button, 3, 0, 1, 1)
+
+        # Scene save
+        self.scene_save_label = QtWidgets.QLabel(self.centralwidget)
+        self.scene_save_label.setFont(font)
+        self.scene_save_label.setObjectName("scene_save_label")
+        self.gridLayout_0.addWidget(self.scene_save_label, 4, 0, 1, 1)
+        self.scene_save_intxt = QtWidgets.QLineEdit(self.centralwidget)
+        self.scene_save_intxt.setFont(font)
+        self.scene_save_intxt.setObjectName("scene_save_intxt")
+        self.gridLayout_0.addWidget(self.scene_save_intxt, 5, 0, 1, 1)
+        self.scene_save_dialog_button = QtWidgets.QToolButton(
+            self.centralwidget)
+        self.scene_save_dialog_button.setFont(font)
+        self.scene_save_dialog_button.setObjectName("scene_save_dialog_button")
+        self.gridLayout_0.addWidget(self.scene_save_dialog_button, 5, 1, 1, 1)
+        self.scene_save_button = QtWidgets.QPushButton(self.centralwidget)
+        self.scene_save_button.setFont(font)
+        self.scene_save_button.setObjectName("scene_save_button")
+        self.gridLayout_0.addWidget(self.scene_save_button, 6, 0, 1, 1)
+
+        # Resolution set
+        self.resolution_label = QtWidgets.QLabel(self.centralwidget)
+        self.resolution_label.setFont(font)
+        self.resolution_label.setObjectName("resolution_label")
+        self.gridLayout_0.addWidget(self.resolution_label, 7, 0, 1, 1)
+        self.resolution_intxt = QtWidgets.QLineEdit(self.centralwidget)
+        self.resolution_intxt.setFont(font)
+        self.resolution_intxt.setObjectName("resolution_intxt")
+        self.gridLayout_0.addWidget(self.resolution_intxt, 8, 0, 1, 1)
+        self.resolution_set_button = QtWidgets.QPushButton(self.centralwidget)
+        self.resolution_set_button.setFont(font)
+        self.resolution_set_button.setObjectName("resolution_set_button")
+        self.gridLayout_0.addWidget(self.resolution_set_button, 9, 0, 1, 1)
+
+        # Test TODO and clear
         self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
         self.textEdit.setObjectName("textEdit")
-        self.gridLayout_0.addWidget(self.textEdit, 9, 0, 1, 1)
-        self.pushButton_save = QtWidgets.QPushButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.pushButton_save.setFont(font)
-        self.pushButton_save.setObjectName("pushButton_save")
-        self.gridLayout_0.addWidget(self.pushButton_save, 8, 0, 1, 1)
-        self.label_resolution = QtWidgets.QLabel(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.label_resolution.setFont(font)
-        self.label_resolution.setObjectName("label_resolution")
-        self.gridLayout_0.addWidget(self.label_resolution, 13, 0, 1, 1)
-        self.lineEdit_resolution = QtWidgets.QLineEdit(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.lineEdit_resolution.setFont(font)
-        self.lineEdit_resolution.setObjectName("lineEdit_resolution")
-        self.gridLayout_0.addWidget(self.lineEdit_resolution, 14, 0, 1, 1)
-        self.toolButton_searchScene = QtWidgets.QToolButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.toolButton_searchScene.setFont(font)
-        self.toolButton_searchScene.setObjectName("toolButton_searchScene")
-        self.gridLayout_0.addWidget(self.toolButton_searchScene, 2, 1, 1, 1)
-        self.pushButton_clear = QtWidgets.QPushButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.pushButton_clear.setFont(font)
-        self.pushButton_clear.setObjectName("pushButton_clear")
-        self.gridLayout_0.addWidget(self.pushButton_clear, 29, 0, 1, 1)
+        self.gridLayout_0.addWidget(self.textEdit, 10, 0, 1, 1)
+        self.clear_button = QtWidgets.QPushButton(self.centralwidget)
+        self.clear_button.setFont(font)
+        self.clear_button.setObjectName("clear_button")
+        self.gridLayout_0.addWidget(self.clear_button, 11, 0, 1, 1)
+
         spacerItem1 = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_0.addItem(spacerItem1, 30, 0, 1, 1)
-        self.pushButton_load = QtWidgets.QPushButton(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.pushButton_load.setFont(font)
-        self.pushButton_load.setObjectName("pushButton_load")
-        self.gridLayout_0.addWidget(self.pushButton_load, 3, 0, 1, 1)
         self.gridLayout.addLayout(self.gridLayout_0, 3, 0, 1, 1)
         main_window.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(main_window)
@@ -149,75 +152,21 @@ class GUI_scene_designer(GUI):
 
         QtCore.QMetaObject.connectSlotsByName(main_window)
 
-        self.lineEdits['scene'] = self.lineEdit_scene
-        self.lineEdits['saveLocation'] = self.lineEdit_location
-        self.lineEdits['resolution'] = self.lineEdit_resolution
-        self.pushButtons['load'] = self.pushButton_load
-        self.pushButtons['save'] = self.pushButton_save
-        self.pushButtons['resolution'] = self.pushButton_resolution
-        self.pushButtons['clear'] = self.pushButton_clear
-        self.pushButtons['searchScene'] = self.toolButton_searchScene
-        self.labels['scene'] = self.label_scene
-        self.labels['saveLocation'] = self.label_saveLocation
-        self.labels['resolution'] = self.label_resolution
+        self.labels['scene_load'] = self.scene_load_label
+        self.lineEdits['scene_load'] = self.scene_load_intxt
+        self.pushButtons['scene_load_dialog'] = self.scene_load_dialog_button
+        self.pushButtons['scene_load'] = self.scene_load_button
 
+        self.labels['scene_save'] = self.scene_save_label
+        self.lineEdits['scene_save'] = self.scene_save_intxt
+        self.pushButtons['scene_save_dialog'] = self.scene_save_dialog_button
+        self.pushButtons['scene_save'] = self.scene_save_button
 
-colors = [QtCore.Qt.yellow, QtCore.Qt.green, QtCore.Qt.red, QtCore.Qt.magenta,
-          QtCore.Qt.darkYellow, QtCore.Qt.darkGreen, QtCore.Qt.darkRed, QtCore.Qt.darkMagenta]
-current_color_index = 0
+        self.labels['resolution'] = self.resolution_label
+        self.lineEdits['resolution'] = self.resolution_intxt
+        self.pushButtons['resolution_set'] = self.resolution_set_button
 
-POINT_RADIUS = 0.1
-GRID_SIZE = 200
-resolution = 1.0
-polygon_obstacles = []
-gui_polygon_obstacles = []
-polyline = []
-gui_current_polygon_vertices = []
-gui_current_polygon_edges = []
-grid = []
-
-
-def clear_current_polyline():
-    global polyline
-    polyline = []
-    vertex: RDisc
-    for vertex in gui_current_polygon_vertices:
-        gui.scene.removeItem(vertex.disc)
-    gui_current_polygon_vertices.clear()
-    edge: RSegment
-    for edge in gui_current_polygon_edges:
-        gui.scene.removeItem(edge.line)
-    gui_current_polygon_edges.clear()
-
-
-def submit_polygon_obstacle(polygon):
-    if not is_simple_polygon(polygon):
-        print("invalid polygon!")
-        return False
-    polygon_obstacles.append(polygon)
-    gui_polygon_obstacles.append(gui.add_polygon(
-        polygon, fill_color=QtCore.Qt.transparent, line_color=QtCore.Qt.blue))
-    return True
-
-
-def cancel_current_polygon():
-    polyline.clear()
-    for vertex in gui_current_polygon_vertices:
-        gui.scene.removeItem(vertex.disc)
-    gui_current_polygon_vertices.clear()
-    edge: RSegment
-    for edge in gui_current_polygon_edges:
-        gui.scene.removeItem(edge.line)
-    gui_current_polygon_edges.clear()
-
-
-def pop_vertex():
-    index = len(polyline) - 1
-    if 0 <= index < len(polyline):
-        polyline.pop()
-        gui.scene.removeItem(gui_current_polygon_vertices.pop().disc)
-        if gui_current_polygon_edges:
-            gui.scene.removeItem(gui_current_polygon_edges.pop().line)
+        self.pushButtons['clear'] = self.clear_button
 
 
 def calc_slope_intersection(s):
@@ -303,158 +252,211 @@ def is_simple_polygon(points):
     return True
 
 
-def right_click(x: float, y: float):
-    if len(polygon_obstacles) > 0:
-        clear()
-    print('x', x)
-    print('y', y)
-    x = resolution * round(x / resolution)
-    y = resolution * round(y / resolution)
-    print(x, y)
-    if [x, y] in polyline:
-        if len(polyline) >= 3:
-            submit_polygon_obstacle(polyline)
-            clear_current_polyline()
-        return
-    polyline.append([x, y])
-    gui_current_polygon_vertices.append(gui.add_disc(
-        POINT_RADIUS, x, y, fill_color=QtCore.Qt.red))
-    if len(polyline) > 1:
-        gui_current_polygon_edges.append(
-            gui.add_segment(*polyline[-2], *polyline[-1], line_color=QtCore.Qt.red))
-
-
-def redraw_grid(size):
-    for segment in grid:
-        gui.scene.removeItem(segment.line)
-    grid.clear()
-    color = QtCore.Qt.lightGray
-    # size = int(size/RESOLUTION)
-    length = size * resolution
-    for i in range(-size, size):
-        if i == 0:
-            continue
-        i = i * resolution
-        grid.append(gui.add_segment(-length, i, length, i, line_color=color))
-        grid.append(gui.add_segment(i, -length, i, length, line_color=color))
-    color = QtCore.Qt.black
-    grid.append(gui.add_segment(-length, 0, length, 0, line_color=color))
-    grid.append(gui.add_segment(0, -length, 0, length, line_color=color))
-    for rline in grid:
-        rline.line.setZValue(-1)
-
-
-def set_up():
-    redraw_grid(GRID_SIZE)
-    gui.add_disc(POINT_RADIUS, 0, 0)
-
-
-def export_scene():
-    filename = gui.get_field('saveLocation')
-    d = {'obstacles': polygon_obstacles, }
-    try:
-        with open(filename, 'w') as f:
-            f.write(json.dumps(d, indent=4, sort_keys=True))
-            gui.textEdit.setPlainText("Scene saved to: " + filename)
-    except Exception as e:
-        print('Failed to write to file', filename + ':', e)
-        gui.textEdit.setPlainText(
-            'Failed to write to file ' + filename + ':' + str(e))
-
-
-def load_scene():
-    global polyline
-    global current_color_index
-    filename = gui.get_field('scene')
-    try:
-        with open(filename, 'r') as f:
-            d = json.load(f)
-            clear()
-
-            if 'obstacles' in d:
-                if len(d['obstacles']) > 1:
-                    raise ValueError(
-                        "only scene with one obstacle are supported")
-                for polygon in d['obstacles']:
-                    if not submit_polygon_obstacle(polygon):
-                        raise ValueError("polygon is not valid")
-        gui.textEdit.setPlainText("Scene loaded from: " + filename)
-    except Exception as e:
-        print('Failed to load from file', filename + ':', e)
-        gui.textEdit.setPlainText(
-            'Failed to load file ' + filename + ': ' + str(e))
-
-
-def clear():
-    gui_polygon: RPolygon
-    for gui_polygon in gui_polygon_obstacles:
-        gui.scene.removeItem(gui_polygon.polygon)
-    gui_polygon_obstacles.clear()
-    polygon_obstacles.clear()
-
-
-def set_resolution():
-    global resolution
-    try:
-        resolution = float(gui.get_field('resolution'))
-        print('Resolution set to:', resolution)
-        gui.textEdit.setPlainText('Resolution set to: ' + str(resolution))
-    except Exception as e:
-        print('Failed to set resolution:', e)
-    redraw_grid(GRID_SIZE)
-
-
-def undo():
-    global selected
-    if polyline:
-        pop_vertex()
-
-
-def get_file():
+def open_file_dialog(init_dir=""):
     dlg = QFileDialog()
     dlg.setFileMode(QFileDialog.AnyFile)
-    dlg.setDirectory('')
+    dlg.setDirectory(init_dir)
     if dlg.exec_():
         filenames = dlg.selectedFiles()
         return filenames[0]
 
 
-def browse_input_file():
-    file_path = get_file()
-    if file_path:
-        gui.set_field('scene', file_path)
-        load_scene()
+POINT_RADIUS = 0.1
+GRID_SIZE = 200
 
 
-def drop_input_file(file_path):
-    gui.set_field('scene', file_path)
-    load_scene()
+class SceneDesignerGUI:
+    def __init__(self, args=[]):
+        self.resolution = 1.0
+        self.polygon_obstacles = []
+        self.gui_polygon_obstacles = []
+        self.polyline = []
+        self.gui_current_polygon_vertices = []
+        self.gui_current_polygon_edges = []
+        self.grid = []
+
+        self._app = QtWidgets.QApplication(sys.argv)
+        self.gui = SceneDesignerGUIComponent()
+        self.gui.scene.left_click_signal.connect(self._left_click)
+        self.gui.mainWindow.signal_ctrl_z.connect(self._undo)
+        self.gui.mainWindow.signal_esc.connect(self._clear_current_polyline)
+        self.gui.mainWindow.signal_drop.connect(self._load_scene_button)
+        self.gui.set_animation_finished_action(lambda: None)
+
+        self._setup_logic()
+
+        self._redraw_grid(GRID_SIZE)
+        self.gui.add_disc(POINT_RADIUS, 0, 0)
+
+    def _setup_logic(self):
+        self.gui.set_label('scene_load', 'Existing scene:')
+        self.gui.set_button_text('scene_load_dialog', '..')
+        self.gui.set_logic('scene_load_dialog', self._open_scene_load_dialog)
+        self.gui.set_button_text('scene_load', 'Load Scene')
+        self.gui.set_logic('scene_load', self._load_scene_button)
+
+        self.gui.set_label('scene_save', 'Output Path:')
+        self.gui.set_button_text('scene_save_dialog', '..')
+        self.gui.set_logic('scene_save_dialog', self._open_scene_save_dialog)
+        self.gui.set_button_text('scene_save', 'Save Scene')
+        self.gui.set_logic('scene_save', self._save_scene_button)
+
+        self.gui.set_label('resolution', 'Resolution')
+        self.gui.set_button_text('resolution_set', 'Set Resolution')
+        self.gui.set_field('resolution', str(self.resolution))
+        self.gui.set_logic('resolution_set', self._set_resolution)
+
+        self.gui.set_button_text('clear', 'Clear scene')
+        self.gui.set_logic('clear', self._clear)
+
+    def _display_print(self, *args):
+        s = ""
+        for a in args:
+            s += str(a)
+        self.gui.textEdit.setPlainText(s)
+
+    def _clear_current_polyline(self):
+        self.polyline = []
+        for vertex in self.gui_current_polygon_vertices:
+            self.gui.scene.removeItem(vertex.disc)
+        self.gui_current_polygon_vertices.clear()
+        for edge in self.gui_current_polygon_edges:
+            self.gui.scene.removeItem(edge.line)
+        self.gui_current_polygon_edges.clear()
+
+    def _submit_polygon_obstacle(self, polygon):
+        if not is_simple_polygon(polygon):
+            self._display_print("invalid polygon!")
+            return False
+        self.polygon_obstacles.append(polygon)
+        self.gui_polygon_obstacles.append(self.gui.add_polygon(
+            polygon, fill_color=QtCore.Qt.transparent, line_color=QtCore.Qt.blue))
+        return True
+
+    def _left_click(self, x, y):
+        if len(self.polygon_obstacles) > 0:
+            self._clear()
+        x = self.resolution * round(x / self.resolution)
+        y = self.resolution * round(y / self.resolution)
+        if [x, y] in self.polyline:
+            if len(self.polyline) >= 3:
+                self._submit_polygon_obstacle(self.polyline)
+                self._clear_current_polyline()
+            return
+        self.polyline.append([x, y])
+        self.gui_current_polygon_vertices.append(self.gui.add_disc(
+            POINT_RADIUS, x, y, fill_color=QtCore.Qt.red))
+        if len(self.polyline) > 1:
+            self.gui_current_polygon_edges.append(
+                self.gui.add_segment(*self.polyline[-2], *self.polyline[-1], line_color=QtCore.Qt.red))
+
+    def _redraw_grid(self, size):
+        for segment in self.grid:
+            self.gui.scene.removeItem(segment.line)
+        self.grid.clear()
+        color = QtCore.Qt.lightGray
+        length = size * self.resolution
+        for i in range(-size, size):
+            if i == 0:
+                continue
+            i = i * self.resolution
+            self.grid.append(self.gui.add_segment(-length, i,
+                                                  length, i, line_color=color))
+            self.grid.append(self.gui.add_segment(
+                i, -length, i, length, line_color=color))
+        color = QtCore.Qt.black
+        self.grid.append(self.gui.add_segment(-length, 0,
+                         length, 0, line_color=color))
+        self.grid.append(self.gui.add_segment(
+            0, -length, 0, length, line_color=color))
+        for rline in self.grid:
+            rline.line.setZValue(-1)
+
+    def _save_scene_button(self):
+        self._save_scene(self.gui.get_field('scene_save'))
+
+    def _save_scene(self, filename):
+        self.gui.set_field('scene_save', filename)
+        d = {'obstacles': self.polygon_obstacles}
+        try:
+            with open(filename, 'w') as f:
+                f.write(json.dumps(d, indent=4, sort_keys=True))
+                self._display_print("Scene saved to:", filename)
+        except Exception as e:
+            self._display_print("Failed to write to file", filename, ':', e)
+
+    def _load_scene_button(self):
+        self._load_scene(self.gui.get_field('scene_load'))
+
+    def _load_scene(self, filename, *args):
+        self.gui.set_field('scene_load', filename)
+        try:
+            with open(filename, 'r') as f:
+                d = json.load(f)
+                self._clear()
+
+                if 'obstacles' in d:
+                    if len(d['obstacles']) > 1:
+                        raise ValueError(
+                            "only scene with one obstacle are supported")
+                    for polygon in d['obstacles']:
+                        if not self._submit_polygon_obstacle(polygon):
+                            raise ValueError("polygon is not valid")
+            self._display_print("Scene loaded from:", filename)
+        except Exception as e:
+            self._display_print("Failed to load file", filename, ': ', e)
+
+    def _clear(self):
+        for gui_polygon in self.gui_polygon_obstacles:
+            self.gui.scene.removeItem(gui_polygon.polygon)
+        self.gui_polygon_obstacles.clear()
+        self.polygon_obstacles.clear()
+
+    def _set_resolution(self):
+        try:
+            self.resolution = float(self.gui.get_field('resolution'))
+            self._display_print("Resolution set to:", self.resolution)
+        except Exception as e:
+            self._display_print('Failed to set resolution:', e)
+        self._redraw_grid(GRID_SIZE)
+
+    def _undo(self):
+        if len(self.polyline) == 0:
+            return
+        self.polyline.pop()
+        self.gui.scene.removeItem(
+            self.gui_current_polygon_vertices.pop().disc)
+        if self.gui_current_polygon_edges:
+            self.gui.scene.removeItem(
+                self.gui_current_polygon_edges.pop().line)
+
+    def _open_scene_load_dialog(self):
+        initpath = os.path.dirname(self.gui.get_field('scene_load'))
+        initpath = initpath if os.path.isdir(initpath) else ""
+        file_path = open_file_dialog(initpath)
+        if file_path:
+            self._load_scene(file_path)
+
+    def _open_scene_save_dialog(self):
+        initpath = os.path.dirname(self.gui.get_field('scene_save'))
+        if not os.path.isdir(initpath):
+            initpath = os.path.dirname(self.gui.get_field('scene_load'))
+        initpath = initpath if os.path.isdir(initpath) else ""
+        file_path = open_file_dialog(initpath)
+        if file_path:
+            self._save_scene(file_path)
+
+    def run(self):
+        self.gui.mainWindow.show()
+        return self._app.exec_()
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        resolution = float(sys.argv[1])
-    app = QtWidgets.QApplication(sys.argv)
-    gui = GUI_scene_designer()
-    gui.scene.right_click_signal.connect(right_click)
-    gui.mainWindow.signal_ctrl_z.connect(undo)
-    gui.mainWindow.signal_esc.connect(cancel_current_polygon)
-    gui.mainWindow.signal_drop.connect(drop_input_file)
-    gui.set_animation_finished_action(lambda: None)
-    gui.set_label('scene', 'Input Path:')
-    gui.set_logic('load', load_scene)
-    gui.set_button_text('load', 'Load Scene')
-    gui.set_label('saveLocation', 'Output Path:')
-    gui.set_logic('save', export_scene)
-    gui.set_button_text('save', 'Save Scene')
-    gui.set_label('resolution', 'Resolution')
-    gui.set_field('resolution', str(resolution))
-    gui.set_logic('resolution', set_resolution)
-    gui.set_button_text('resolution', 'Set Resolution')
-    gui.set_button_text('searchScene', '..')
-    gui.set_logic('searchScene', browse_input_file)
-    gui.set_button_text('clear', 'Clear scene')
-    gui.set_logic('clear', clear)
-    set_up()
-    gui.mainWindow.show()
-    sys.exit(app.exec_())
+    if not (sys.platform == "linux" or sys.platform == "linux2"):
+        fdml_gui_appid = u'fdml.fdml_gui.scene_designer'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+            fdml_gui_appid)
+
+    gui = SceneDesignerGUI(sys.argv)
+    ret = gui.run()
+    sys.exit(ret)

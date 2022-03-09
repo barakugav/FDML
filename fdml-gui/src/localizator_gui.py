@@ -10,9 +10,9 @@ import localizator
 import ctypes
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gui/"))
-from Worker import Worker
-from logger import Logger, Writer
 from gui import GUI
+from logger import Logger, Writer
+from Worker import Worker
 
 
 IMG_DIR = os.path.abspath(os.path.join(
@@ -60,6 +60,8 @@ class LocalizatorGUIComponent(GUI):
     def __init__(self):
         super().__init__()
         self.set_program_name("Robot Localization")
+        self.mainWindow.setWindowIcon(
+            QtGui.QIcon(os.path.join(IMG_DIR, "icon.png")))
         self.redraw()
 
     def setup_ui(self):
@@ -228,17 +230,25 @@ class LocalizatorGUIComponent(GUI):
 
 
 class LocalizatorGUI:
-    def __init__(self):
-        self._writer = None
+    def __init__(self, args=[]):
+        self._app = QtWidgets.QApplication(args)
         self._localizator = localizator.Localizator()
         self._localizator_worker = None
         self._localizator_worker_lock = threading.Lock()
         self._localizator_query1_res = None
         self._localizator_query2_res = None
-        self._gui_comp = None
-        self._polygon_scene = None
+        self._gui_comp = LocalizatorGUIComponent()
+        self._writer = Writer(self._gui_comp.logger)
+        self._polygon_scene = PolygonsScene(self._gui_comp, self._writer)
         self._displayed_polygons = []
         self._displayed_segments = []
+        self._threadpool = QtCore.QThreadPool()
+
+        self._setup_gui_logic()
+        self._gui_comp.mainWindow.close_handlers.append(
+            self._finalize_localizator)
+        self._gui_comp.mainWindow.signal_drop.connect(
+            lambda path: self._gui_comp.set_field('scene', path))
 
     def _print(self, *args):
         if self._writer:
@@ -268,7 +278,7 @@ class LocalizatorGUI:
                 self._localizator_init, scene_file)
             self._localizator_worker.signals.finished.connect(
                 self._localizator_init_done)
-        self.threadpool.start(self._localizator_worker)
+        self._threadpool.start(self._localizator_worker)
 
     def _localizator_init(self, scene_filename, is_running):
         self._print("Localizator init...")
@@ -298,7 +308,7 @@ class LocalizatorGUI:
             self._localizator_worker = Worker(self._localizator_query1, d)
             self._localizator_worker.signals.finished.connect(
                 self._localizator_query1_done)
-        self.threadpool.start(self._localizator_worker)
+        self._threadpool.start(self._localizator_worker)
 
     def _localizator_query1(self, d, is_running):
         self._print("Localizator query with d = ", d)
@@ -340,7 +350,7 @@ class LocalizatorGUI:
             self._localizator_worker = Worker(self._localizator_query2, d1, d2)
             self._localizator_worker.signals.finished.connect(
                 self._localizator_query2_done)
-        self.threadpool.start(self._localizator_worker)
+        self._threadpool.start(self._localizator_worker)
 
     def _localizator_query2(self, d1, d2, is_running):
         self._print("Localizator query with d1 =", d1, "d2 =", d2)
@@ -386,29 +396,18 @@ class LocalizatorGUI:
         self._gui_comp.set_logic('m1_compute', self._query1)
         self._gui_comp.set_logic('m2_compute', self._query2)
         self._gui_comp.set_logic('clear_button', self._clear_displayed_result)
-        self._writer = Writer(self._gui_comp.logger)
-        self._gui_comp.mainWindow.close_handlers.append(
-            self._finalize_localizator)
 
-    def run(self, args=[]):
-        app = QtWidgets.QApplication(args)
-        self._gui_comp = LocalizatorGUIComponent()
-        self._gui_comp.mainWindow.setWindowIcon(
-            QtGui.QIcon(os.path.join(IMG_DIR, "icon.png")))
-        self._setup_gui_logic()
-        self._gui_comp.mainWindow.signal_drop.connect(
-            lambda path: self._gui_comp.set_field('scene', path))
-        self.threadpool = QtCore.QThreadPool()
-        self._polygon_scene = PolygonsScene(self._gui_comp, self._writer)
+    def run(self):
         self._gui_comp.mainWindow.show()
-        return app.exec_()
+        return self._app.exec_()
 
 
 if __name__ == "__main__":
     if not (sys.platform == "linux" or sys.platform == "linux2"):
-        fdml_gui_appid = u'fdml.fdml_gui'
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(fdml_gui_appid)
+        fdml_gui_appid = u'fdml.fdml_gui.localizator'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+            fdml_gui_appid)
 
-    gui = LocalizatorGUI()
-    ret = gui.run(sys.argv)
+    gui = LocalizatorGUI(sys.argv)
+    ret = gui.run()
     sys.exit(ret)
