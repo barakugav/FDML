@@ -15,7 +15,7 @@
 
 namespace FDML {
 
-static const bool DEBUG_PRINT_EN = true;
+static const bool DEBUG_PRINT_EN = false;
 
 #define fdml_info(args)                                                                                                \
 	do {                                                                                                               \
