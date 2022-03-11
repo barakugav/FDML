@@ -51,7 +51,7 @@ class LocalizatorDaemon {
 	/**
 	 * @brief Run a infinity loop, reading commands from the given cmd_filename
 	 *
-	 * This function doesn't return.
+	 * This function return only if the quit command was issued or an error occurred.
 	 */
 	void run();
 

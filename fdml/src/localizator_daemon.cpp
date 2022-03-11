@@ -8,6 +8,14 @@
 
 namespace FDML {
 
+enum localizator_daemon_retcode {
+	LOCALIZATOR_DAEMON_RETCODE_OK = 0,
+	LOCALIZATOR_DAEMON_RETCODE_MISSING_ARGS,
+	LOCALIZATOR_DAEMON_RETCODE_UNKNOWN_ARGS,
+	LOCALIZATOR_DAEMON_RETCODE_RUNTIME_ERR,
+	LOCALIZATOR_DAEMON_RETCODE_TOO_MANY_ARGS,
+};
+
 static bool file_exists(const std::string &filename) {
 	std::ifstream f(filename.c_str());
 	return f.good();
@@ -54,7 +62,6 @@ void LocalizatorDaemon::load_scene(const std::string &scene_filename) {
 	} catch (const std::exception &e) {
 		if (localizator)
 			localizator.reset();
-		std::cerr << e.what() << std::endl;
 		throw e;
 	}
 }
@@ -108,8 +115,10 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv, bool &quit
 
 	try {
 		const unsigned int MAX_ARGS_NUM = 16;
-		if (argv.size() > MAX_ARGS_NUM)
-			throw std::runtime_error("too many args");
+		if (argv.size() > MAX_ARGS_NUM) {
+			fdml_errln("Too many arguments");
+			return LOCALIZATOR_DAEMON_RETCODE_TOO_MANY_ARGS;
+		}
 		const char *argv_arr[MAX_ARGS_NUM + 1];
 		argv_arr[0] = "localizator_daemon";
 		for (unsigned int i = 0; i < argv.size(); i++)
@@ -139,34 +148,39 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv, bool &quit
 		notify(vm);
 
 		if (vm.count("help"))
-			std::cout << desc << '\n';
+			fdml_info(desc);
 		else if (!vm.count("cmd")) {
-			std::cerr << "The following flags are required: --cmd" << '\n';
-			return -1;
+			fdml_errln("The following flags are required: --cmd");
+			return LOCALIZATOR_DAEMON_RETCODE_MISSING_ARGS;
 		} else if (cmd == "init") {
 			if (!vm.count("scene")) {
-				std::cerr << "The following flags are required: --scene" << '\n';
-				return -1;
+				fdml_errln("The following flags are required: --scene");
+				return LOCALIZATOR_DAEMON_RETCODE_MISSING_ARGS;
 			} else
 				load_scene(scene_filename);
 		} else if (cmd == "query1") {
 			if (!vm.count("d") || !vm.count("out")) {
-				std::cerr << "The following flags are required: --d --out" << '\n';
-				return -1;
+				fdml_errln("The following flags are required: --d --out");
+				return LOCALIZATOR_DAEMON_RETCODE_MISSING_ARGS;
 			} else
 				query(d, out_filename);
 		} else if (cmd == "query2") {
 			if (!vm.count("d1") || !vm.count("d2") || !vm.count("out")) {
-				std::cerr << "The following flags are required: --d1 --d2 --out" << '\n';
-				return -1;
+				fdml_errln("The following flags are required: --d1 --d2 --out");
+				return LOCALIZATOR_DAEMON_RETCODE_MISSING_ARGS;
 			} else
 				query(d1, d2, out_filename);
 		} else if (cmd == "quit")
 			quit = true;
-		return 0;
+		else {
+			fdml_info("Unknown command: " << cmd);
+			fdml_info(desc);
+			return LOCALIZATOR_DAEMON_RETCODE_UNKNOWN_ARGS;
+		}
+		return LOCALIZATOR_DAEMON_RETCODE_OK;
 	} catch (const std::exception &ex) {
-		std::cerr << ex.what() << '\n';
-		return -2;
+		fdml_errln(ex.what());
+		return LOCALIZATOR_DAEMON_RETCODE_RUNTIME_ERR;
 	}
 }
 
@@ -189,18 +203,19 @@ int LocalizatorDaemon::daemon_main(int argc, const char *argv[]) {
 		notify(vm);
 
 		if (vm.count("help"))
-			std::cout << desc << '\n';
-		else if (!vm.count("cmdfile") || !vm.count("ackfile"))
-			std::cout << "The following flags are required: --cmdfile --ackfile" << '\n';
-		else {
+			fdml_info(desc);
+		else if (!vm.count("cmdfile") || !vm.count("ackfile")) {
+			fdml_errln("The following flags are required: --cmdfile --ackfile");
+			return LOCALIZATOR_DAEMON_RETCODE_MISSING_ARGS;
+		} else {
 			FDML::LocalizatorDaemon daemon(cmd_filename, ack_filename);
 			daemon.run();
 		}
-		return 0;
+		return LOCALIZATOR_DAEMON_RETCODE_OK;
 
 	} catch (const std::exception &ex) {
-		std::cerr << ex.what() << '\n';
-		return -1;
+		fdml_errln(ex.what());
+		return LOCALIZATOR_DAEMON_RETCODE_RUNTIME_ERR;
 	}
 }
 

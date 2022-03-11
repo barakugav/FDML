@@ -23,6 +23,12 @@ static const bool DEBUG_PRINT_EN = false;
 	} while (false)
 #define fdml_infoln(args) fdml_info(args << std::endl)
 
+#define fdml_err(args)                                                                                                 \
+	do {                                                                                                               \
+		std::cerr << args;                                                                                             \
+	} while (false)
+#define fdml_errln(args) fdml_err(args << std::endl)
+
 #define fdml_debug(args)                                                                                               \
 	do {                                                                                                               \
 		if (DEBUG_PRINT_EN)                                                                                            \
