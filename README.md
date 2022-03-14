@@ -101,6 +101,6 @@ pip install PyQt5
 TODO
 
 ```bash
-python fdml-gui/src/py/scene_designer.py
-python fdml-gui/src/py/localizator_gui.py
+python fdml-gui/fdmlgui/scene_designer.py
+python fdml-gui/fdmlgui/localizator_gui.py
 ```
