@@ -280,7 +280,8 @@ Trapezoid::ID Trapezoider::create_trapezoid(const Halfedge &top_edge, const Half
 	/* create the Trapezoid */
 	Trapezoid::ID t_id = trapezoids.size();
 	auto top_edge_d = direct_edge_free_face(top_edge), bottom_edge_d = direct_edge_free_face(bottom_edge);
-	Trapezoid trapezoid(t_id, top_edge_d, bottom_edge_d, left_vertex, right_vertex);
+	trapezoids.emplace_back(t_id, top_edge_d, bottom_edge_d, left_vertex, right_vertex);
+	Trapezoid &trapezoid = trapezoids.back();
 
 	auto &left_v_data = vertices_data[trapezoid.left_vertex];
 	auto &right_v_data = vertices_data[trapezoid.right_vertex];
@@ -300,8 +301,6 @@ Trapezoid::ID Trapezoider::create_trapezoid(const Halfedge &top_edge, const Half
 		right_v_data.top_left_trapezoid = t_id;
 	if (!right_on_bottom || right_on_top)
 		right_v_data.bottom_left_trapezoid = t_id;
-
-	trapezoids.push_back(std::move(trapezoid));
 
 	return t_id;
 }
@@ -441,7 +440,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 	for (auto v1 = arr.vertices_begin(); v1 != arr.vertices_end(); ++v1)
 		for (auto v2 = arr.vertices_begin(); v2 != arr.vertices_end(); ++v2)
 			if (v1 != v2)
-				events.push_back(Event(v1, v2));
+				events.emplace_back(v1, v2);
 
 	/* Sort events by their angle */
 	sort(events.begin(), events.end(), [](const Event &e1, const Event &e2) {

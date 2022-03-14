@@ -180,12 +180,10 @@ void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::str
 		std::vector<boost::json::array> point_objs;
 		for (auto it = polygon.vertices_begin(); it != polygon.vertices_end(); ++it)
 			point_objs.push_back(point2json(*it));
-		boost::json::array polygon_obj(point_objs.begin(), point_objs.end());
-		polygon_objs.push_back(polygon_obj);
+		polygon_objs.emplace_back(point_objs.begin(), point_objs.end());
 	}
-	auto polygons_obj = std::make_pair("polygons", boost::json::array(polygon_objs.begin(), polygon_objs.end()));
 	std::vector<std::pair<std::string, boost::json::value>> top_lvl_fields;
-	top_lvl_fields.push_back(polygons_obj);
+	top_lvl_fields.emplace_back("polygons", boost::json::array(polygon_objs.begin(), polygon_objs.end()));
 	boost::json::object top_lvl_obj(top_lvl_fields.begin(), top_lvl_fields.end());
 	boost::json::value top_lvl_obj2(top_lvl_obj);
 
@@ -201,12 +199,10 @@ void write_segments_to_json(const std::vector<Segment> &segments, const std::str
 		std::vector<boost::json::array> point_objs;
 		point_objs.push_back(point2json(segment.source()));
 		point_objs.push_back(point2json(segment.target()));
-		boost::json::array segment_obj(point_objs.begin(), point_objs.end());
-		segments_objs.push_back(segment_obj);
+		segments_objs.emplace_back(point_objs.begin(), point_objs.end());
 	}
-	auto segments_obj = std::make_pair("segments", boost::json::array(segments_objs.begin(), segments_objs.end()));
 	std::vector<std::pair<std::string, boost::json::value>> top_lvl_fields;
-	top_lvl_fields.push_back(segments_obj);
+	top_lvl_fields.emplace_back("segments", boost::json::array(segments_objs.begin(), segments_objs.end()));
 	boost::json::object top_lvl_obj(top_lvl_fields.begin(), top_lvl_fields.end());
 	boost::json::value top_lvl_obj2(top_lvl_obj);
 

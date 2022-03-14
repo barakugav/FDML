@@ -144,7 +144,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 				points.push_back(begin);
 				for (unsigned int i = 1; i < appx_num; i++) {
 					Direction dir = rotate(i_begin, i * angle_between / appx_num);
-					points.push_back(Point(vertex + normalize(dir.vector()) * d));
+					points.emplace_back(vertex + normalize(dir.vector()) * d);
 				}
 				points.push_back(end);
 				fdml_debugln("\t\tO(" << vertex << ") r(" << d << ") B(" << begin << ") E(" << end << ')');
@@ -273,7 +273,7 @@ void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::
 			}
 
 			if (prev_valid)
-				res.push_back({prev, res_point});
+				res.emplace_back(prev, res_point);
 			prev = res_point;
 			prev_valid = true;
 		}
@@ -295,7 +295,7 @@ void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::
 				auto measure_point = top_line.has_on(vertex) ? vertex : intersection(top_line, Line(vertex, dir));
 				points[side] = measure_point + normalize((-dir).vector()) * d1;
 			}
-			res.push_back({points[0], points[1]});
+			res.emplace_back(points[0], points[1]);
 		}
 	}
 }

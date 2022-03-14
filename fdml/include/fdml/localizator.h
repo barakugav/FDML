@@ -18,6 +18,7 @@ class Localizator {
 	struct TrapezoidOpening {
 		Kernel::FT min;
 		Kernel::FT max;
+		TrapezoidOpening(const Kernel::FT &min, const Kernel::FT &max) : min(min), max(max){};
 	};
 
 	typedef boost::geometry::model::point<Kernel::FT, 1, boost::geometry::cs::cartesian> TrapezoidRTreePoint;

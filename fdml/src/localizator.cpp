@@ -16,7 +16,7 @@ void Localizator::init(const Polygon &scene) {
 		const auto &trapezoid = *trapezoider.get_trapezoid(i);
 		Kernel::FT min, max;
 		trapezoid.calc_min_max_openings(min, max);
-		openings.push_back({min.exact(), max.exact()});
+		openings.emplace_back(min.exact(), max.exact());
 	}
 
 	fdml_debugln("[Localizator] Trapezoids openings:");
