@@ -33,7 +33,6 @@ add_executable( fdml_daemon
   ${FDML_TOP}/bin/fdml_daemon.cpp
 )
 include_directories ( fdml_daemon PUBLIC ${FDML_TOP}/include/ )
-include_directories ( fdml_daemon PRIVATE ${FDML_TOP}/src/ )
 
 add_to_cached_list( CGAL_EXECUTABLE_TARGETS fdml_daemon )
 target_link_libraries(fdml_daemon PRIVATE CGAL::CGAL )

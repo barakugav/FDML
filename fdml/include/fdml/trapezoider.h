@@ -1,6 +1,6 @@
-#include "closer_edge.hpp"
-#include "defs.h"
-#include "trapezoid.h"
+#include "fdml/defs.h"
+#include "fdml/internal/closer_edge.hpp"
+#include "fdml/trapezoid.h"
 
 #ifndef __FDML_TRAPEZOIDER_H__
 #define __FDML_TRAPEZOIDER_H__

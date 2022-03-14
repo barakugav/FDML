@@ -1,6 +1,7 @@
-#include "defs.h"
+#include "fdml/defs.h"
+#include "fdml/trapezoider.h"
+
 #include <boost/geometry.hpp>
-#include <trapezoider.h>
 
 #ifndef __FDML_LOCALIZATOR_H__
 #define __FDML_LOCALIZATOR_H__

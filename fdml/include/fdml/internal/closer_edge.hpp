@@ -1,4 +1,5 @@
-#include "defs.h"
+#include "fdml/defs.h"
+
 #include <CGAL/Visibility_2/visibility_utils.h>
 
 #ifndef __FDML_CLOSER_EDGE_HPP__

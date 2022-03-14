@@ -1,5 +1,6 @@
-#include "defs.h"
 #include <vector>
+
+#include "fdml/defs.h"
 
 #ifndef __FDML_JSON_UTILS_H__
 #define __FDML_JSON_UTILS_H__

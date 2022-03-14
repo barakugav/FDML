@@ -3,8 +3,9 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 #endif
-#include "defs.h"
 #include <math.h>
+
+#include "fdml/defs.h"
 
 #include "CGAL/determinant_of_vectors.h"
 #include "CGAL/enum.h"

@@ -1,5 +1,5 @@
-#include "localizator.h"
-#include "utils.hpp"
+#include "fdml/localizator.h"
+#include "fdml/internal/utils.hpp"
 
 namespace FDML {
 

@@ -1,8 +1,10 @@
-#include "json_utils.h"
-#include "boost/json.hpp"
-#include "utils.hpp"
 #include <fstream>
 #include <iostream>
+
+#include "fdml/internal/json_utils.h"
+#include "fdml/internal/utils.hpp"
+
+#include <boost/json.hpp>
 
 namespace FDML {
 

@@ -1,5 +1,6 @@
-#include "trapezoider.h"
-#include "utils.hpp"
+#include "fdml/trapezoider.h"
+#include "fdml/internal/utils.hpp"
+
 #include <CGAL/Arr_vertical_decomposition_2.h>
 
 namespace FDML {
