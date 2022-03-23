@@ -22,7 +22,7 @@ template <typename _Direction> static _Direction rotate(const _Direction &d, dou
 }
 
 static Direction get_mid_angle(Direction angle_begin, Direction angle_end) {
-	auto v_begin = normalize(angle_begin.vector()), v_end = normalize(angle_end.vector());
+	auto v_begin = Utils::normalize(angle_begin.vector()), v_end = Utils::normalize(angle_end.vector());
 	double angle_between = std::acos(CGAL::to_double(v_begin * v_end));
 	assert(angle_between != 0);
 	double a_mid = angle_between / 2;
@@ -94,7 +94,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 	Direction a_begin = -angle_begin, a_end = -angle_end;
 	assert(Line({0, 0}, a_begin).oriented_side({a_end.dx(), a_end.dy()}) == CGAL::ON_POSITIVE_SIDE);
 	Direction top_edge_direction = edge_direction(top_edge);
-	assert(is_free(top_edge->face()));
+	assert(Utils::is_free(top_edge->face()));
 
 	/* Calculate the trapezoid bounds. Will be used to intersect each result entry. */
 	const Polygon trapezoid_bounds = get_bounds_2d();
@@ -121,7 +121,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 
 		fdml_debugln("\tangle interval [" << i_begin << ", " << i_end << ']');
 		auto top_edge_line = top_edge->curve().line();
-		auto v_begin = normalize(i_begin.vector()), v_end = normalize(i_end.vector());
+		auto v_begin = Utils::normalize(i_begin.vector()), v_end = Utils::normalize(i_end.vector());
 		double angle_between = std::acos(CGAL::to_double(v_begin * v_end));
 		assert(angle_between != 0);
 		fdml_debugln("\tv_begin(" << v_begin << ") v_end(" << v_end << ')');
@@ -144,7 +144,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 				points.push_back(begin);
 				for (unsigned int i = 1; i < appx_num; i++) {
 					Direction dir = rotate(i_begin, i * angle_between / appx_num);
-					points.emplace_back(vertex + normalize(dir.vector()) * d);
+					points.emplace_back(vertex + Utils::normalize(dir.vector()) * d);
 				}
 				points.push_back(end);
 				fdml_debugln("\t\tO(" << vertex << ") r(" << d << ") B(" << begin << ") E(" << end << ')');
@@ -161,7 +161,8 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 				points.push_back(begin);
 				for (unsigned int i = 1; i < appx_num; i++) {
 					Direction dir = rotate(i_begin, i * angle_between / appx_num);
-					points.push_back(intersection(top_edge_line, Line(vertex, dir)) + normalize(dir.vector()) * d);
+					points.push_back(intersection(top_edge_line, Line(vertex, dir)) +
+									 Utils::normalize(dir.vector()) * d);
 				}
 				points.push_back(end);
 
@@ -225,18 +226,18 @@ void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::
 		Point inter_point = intersection(top_line, bottom_line);
 		/* angle range between angle_begin and angle_end */
 		double angle_range =
-			std::acos(CGAL::to_double(normalize(angle_begin.vector()) * normalize(angle_end.vector())));
+			std::acos(CGAL::to_double(Utils::normalize(angle_begin.vector()) * Utils::normalize(angle_end.vector())));
 		assert(angle_range != 0);
 		Direction top_line_dir = -edge_direction(top_edge), bottom_line_dir = edge_direction(bottom_edge);
 		double bottom_line_angle = atan2(bottom_line_dir.dy(), bottom_line_dir.dx());
 		double a_begin = atan2(angle_begin.dy(), angle_begin.dx());
 		/* angle between top and bottom edges */
-		double angle_between =
-			std::acos(CGAL::to_double(normalize(bottom_line_dir.vector()) * normalize(top_line_dir.vector())));
+		double angle_between = std::acos(
+			CGAL::to_double(Utils::normalize(bottom_line_dir.vector()) * Utils::normalize(top_line_dir.vector())));
 
 		/* calc the direction from the intersection point to the middle of top edge. use with k */
 		auto top_s = top_edge->source()->point(), top_t = top_edge->target()->point();
-		auto k_dir = normalize(
+		auto k_dir = Utils::normalize(
 			Vector((top_s.x() + top_t.x()) / 2 - inter_point.x(), (top_s.y() + top_t.y()) / 2 - inter_point.y()));
 
 		Point prev;
@@ -265,7 +266,7 @@ void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::
 			}
 
 			auto measure_point = inter_point + k_dir * k;
-			Point res_point = measure_point + normalize((-dir).vector()) * d1;
+			Point res_point = measure_point + Utils::normalize((-dir).vector()) * d1;
 			if (Line(bottom_edge->source()->point(), bottom_line_dir).oriented_side(res_point) ==
 				CGAL::ON_NEGATIVE_SIDE) {
 				prev_valid = false;
@@ -293,7 +294,7 @@ void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::
 			for (auto side : {LEFT, RIGHT}) {
 				auto vertex = (side == LEFT ? left_vertex : right_vertex)->point();
 				auto measure_point = top_line.has_on(vertex) ? vertex : intersection(top_line, Line(vertex, dir));
-				points[side] = measure_point + normalize((-dir).vector()) * d1;
+				points[side] = measure_point + Utils::normalize((-dir).vector()) * d1;
 			}
 			res.emplace_back(points[0], points[1]);
 		}

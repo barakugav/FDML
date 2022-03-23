@@ -62,11 +62,10 @@ template <typename JsonObj> static void validate_size(const JsonObj &obj, unsign
 		ERR("Unexpected number of elements in \"" << obj_name << "\" Json object: " << obj.size() << " != " << size);
 }
 
-void parse_scene_from_json(const std::string &filename, Polygon &scene) {
+Polygon JsonUtils::read_scene(const std::string &filename) {
 	fdml_debugln("[JsonUtils] parsing scene from file: " << filename);
 	const auto j = parse_file(filename);
-
-	scene = Polygon();
+	Polygon scene;
 
 	const auto &obj = get_object(j, "top_level");
 	validate_size(obj, 1, "top_level");
@@ -88,6 +87,7 @@ void parse_scene_from_json(const std::string &filename, Polygon &scene) {
 		} else
 			ERR("Unknown Json tag: " << obstacles_key);
 	}
+	return scene;
 }
 
 template <typename Out> void json_format_pretty(Out &os, boost::json::value const &jv, std::string *indent = nullptr) {
@@ -173,7 +173,7 @@ static boost::json::array point2json(const Point &p) {
 	return boost::json::array(point.begin(), point.end());
 }
 
-void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::string &filename) {
+void JsonUtils::write_polygons(const std::vector<Polygon> &polygons, const std::string &filename) {
 	fdml_debugln("[JsonUtils] writing polygons into: " << filename);
 	std::vector<boost::json::array> polygon_objs;
 	for (const Polygon &polygon : polygons) {
@@ -192,7 +192,7 @@ void write_polygons_to_json(const std::vector<Polygon> &polygons, const std::str
 	outfile.close();
 }
 
-void write_segments_to_json(const std::vector<Segment> &segments, const std::string &filename) {
+void JsonUtils::write_segments(const std::vector<Segment> &segments, const std::string &filename) {
 	fdml_debugln("[JsonUtils] writing segments into: " << filename);
 	std::vector<boost::json::array> segments_objs;
 	for (const Segment &segment : segments) {

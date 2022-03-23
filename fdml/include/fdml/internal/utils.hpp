@@ -40,19 +40,22 @@ static const bool DEBUG_PRINT_EN = false;
 
 #define FDML_UNUSED(var) (void)var
 
-template <typename _Vector> static _Vector normalize(_Vector v) {
-	Kernel::FT norm = CGAL::approximate_sqrt(v.squared_length());
-	return norm > 1e-30 ? v / norm : v;
-}
+class Utils {
+  public:
+	template <typename _Vector> static _Vector normalize(_Vector v) {
+		Kernel::FT norm = CGAL::approximate_sqrt(v.squared_length());
+		return norm > 1e-30 ? v / norm : v;
+	}
 
-/* This function should be used only for debug uses */
-inline int direction_to_angles(const Direction &dir) {
-	double x = CGAL::to_double(dir.dx());
-	double y = CGAL::to_double(dir.dy());
-	return (int)(std::atan2(y, x) * 180 / M_PI);
-}
+	/* This function should be used only for debug uses */
+	static inline int direction_to_angles(const Direction &dir) {
+		double x = CGAL::to_double(dir.dx());
+		double y = CGAL::to_double(dir.dy());
+		return (int)(std::atan2(y, x) * 180 / M_PI);
+	}
 
-inline bool is_free(Face face) { return !face->is_unbounded(); }
+	static inline bool is_free(const Face &face) { return !face->is_unbounded(); }
+};
 
 } // namespace FDML
 

@@ -57,8 +57,7 @@ int fdml_main(int argc, const char *argv[]) {
 			return FDML_RETCODE_UNKNOWN_ARGS;
 		}
 
-		Polygon scene;
-		parse_scene_from_json(scenefile, scene);
+		Polygon scene = JsonUtils::read_scene(scenefile);
 
 		Localizator localizator;
 		localizator.init(scene);
@@ -69,11 +68,11 @@ int fdml_main(int argc, const char *argv[]) {
 		switch (command_type) {
 		case CMD_QUERY1:
 			localizator.query(d, polygons);
-			write_polygons_to_json(polygons, resfile);
+			JsonUtils::write_polygons(polygons, resfile);
 			break;
 		case CMD_QUERY2:
 			localizator.query(d1, d2, segments);
-			write_segments_to_json(segments, resfile);
+			JsonUtils::write_segments(segments, resfile);
 			break;
 		default:
 			fdml_errln("Unknown command_type: " << command_type);

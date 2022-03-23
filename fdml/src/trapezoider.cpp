@@ -266,13 +266,15 @@ static void create_arrangement(Arrangement &arr, const Polygon &scene) {
 	/* validate no zero width edges exists */
 	for (auto v = arr.vertices_begin(); v != arr.vertices_end(); ++v)
 		foreach_vertex_edge(v, [](const auto &e) {
-			if (is_free(e->face()) ^ is_free(e->face()))
+			if (Utils::is_free(e->face()) ^ Utils::is_free(e->face()))
 				throw std::invalid_argument("zero width edges are not supported");
 		});
 }
 
 /* return an edge or it's twin, the one with the free face, that is face representing the interior of the room */
-static Halfedge direct_edge_free_face(const Halfedge &edge) { return is_free(edge->face()) ? edge : edge->twin(); }
+static Halfedge direct_edge_free_face(const Halfedge &edge) {
+	return Utils::is_free(edge->face()) ? edge : edge->twin();
+}
 
 /* Create a new Trapezoid and update the relevant data structures */
 Trapezoid::ID Trapezoider::create_trapezoid(const Halfedge &top_edge, const Halfedge &bottom_edge,
@@ -348,8 +350,8 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 		const DecompVertexData &v_decomp_data = decomp[v];
 		Halfedge top_edge, bottom_edge;
 
-		if ((v_decomp_data.is_edge_above && is_free(v_decomp_data.edge_above->face())) &&
-			(v_decomp_data.is_edge_below && is_free(v_decomp_data.edge_below->face())) &&
+		if ((v_decomp_data.is_edge_above && Utils::is_free(v_decomp_data.edge_above->face())) &&
+			(v_decomp_data.is_edge_below && Utils::is_free(v_decomp_data.edge_below->face())) &&
 			!find_edge_left_from_vertex(v, MinMax::Min, top_edge)) {
 
 			/* Reflex (more than 180 degrees) vertex */
@@ -358,8 +360,8 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 			auto id = create_trapezoid(v_decomp_data.edge_above, v_decomp_data.edge_below, left_v, v);
 			most_right_vertex[trapezoids.at(id).top_edge] = v;
 
-		} else if ((!v_decomp_data.is_edge_above || !is_free(v_decomp_data.edge_above->face())) &&
-				   (!v_decomp_data.is_edge_below || !is_free(v_decomp_data.edge_below->face())) &&
+		} else if ((!v_decomp_data.is_edge_above || !Utils::is_free(v_decomp_data.edge_above->face())) &&
+				   (!v_decomp_data.is_edge_below || !Utils::is_free(v_decomp_data.edge_below->face())) &&
 				   (find_edge_vertical(v, CGAL::POSITIVE, top_edge) ||
 					find_edge_left_from_vertex(v, MinMax::Min, top_edge)) &&
 				   find_edge_left_from_vertex(v, MinMax::Max, bottom_edge)) {
@@ -370,7 +372,7 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 			create_trapezoid(top_edge, bottom_edge, left_v, v);
 
 		} else {
-			if (v_decomp_data.is_edge_above && is_free(v_decomp_data.edge_above->face())) {
+			if (v_decomp_data.is_edge_above && Utils::is_free(v_decomp_data.edge_above->face())) {
 
 				// Edge above the vertex
 				fdml_debugln("[Trapezoider] New trapezoid: up (" << v->point() << ')');
@@ -382,7 +384,7 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 				auto id = create_trapezoid(v_decomp_data.edge_above, bottom_edge, left_v, v);
 				most_right_vertex[trapezoids.at(id).top_edge] = v;
 			}
-			if (v_decomp_data.is_edge_below && is_free(v_decomp_data.edge_below->face())) {
+			if (v_decomp_data.is_edge_below && Utils::is_free(v_decomp_data.edge_below->face())) {
 
 				// Edge below the vertex
 				fdml_debugln("[Trapezoider] New trapezoid: down (" << v->point() << ')');
@@ -472,7 +474,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 	fdml_debugln("[Trapezoider] PRS events:");
 	for (const auto &event : events)
 		fdml_debugln("\t(" << event.v1->point() << ") (" << event.v2->point()
-						   << ") angle= " << direction_to_angles(event.get_ray()));
+						   << ") angle= " << Utils::direction_to_angles(event.get_ray()));
 
 	/* init rays */
 	Direction init_ray_direction(0, 1);
@@ -528,7 +530,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 		if (get_edge(event.v1, event.v2, v1v2_edge)) {
 
 			/* Type 1 event - an edge between v1 and v2 exists. */
-			bool left_is_free = is_free(v1v2_edge->face());
+			bool left_is_free = Utils::is_free(v1v2_edge->face());
 			fdml_debugln("[Trapezoider] PRS event type 1: v1v2_edge (" << v1v2_edge->curve() << ") left is "
 																	   << (left_is_free ? "free" : "not free"));
 			if (left_is_free) {
@@ -608,7 +610,7 @@ void Trapezoider::calc_trapezoids_with_rotational_sweep() {
 			calc_edge_left_right_vertices(closest_edge, ray, closest_left, closest_right);
 			if (closest_edge->source()->point() != closest_right)
 				closest_edge = closest_edge->twin();
-			if (!is_free(closest_edge->face()))
+			if (!Utils::is_free(closest_edge->face()))
 				continue; // The ray is in non free area of the room
 
 			/* Type 2 event */

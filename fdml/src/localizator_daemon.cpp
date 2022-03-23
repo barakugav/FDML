@@ -49,8 +49,7 @@ void LocalizatorDaemon::load_scene(const std::string &scene_filename) {
 		if (localizator)
 			localizator.reset();
 
-		Polygon scene;
-		parse_scene_from_json(scene_filename, scene);
+		Polygon scene = JsonUtils::read_scene(scene_filename);
 		localizator = std::make_unique<Localizator>();
 		localizator->init(scene);
 
@@ -67,7 +66,7 @@ void LocalizatorDaemon::query(double d, const std::string &outfile) const {
 
 	std::vector<Polygon> polygons;
 	localizator->query(d, polygons);
-	write_polygons_to_json(polygons, outfile);
+	JsonUtils::write_polygons(polygons, outfile);
 }
 
 void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) const {
@@ -76,7 +75,7 @@ void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) 
 
 	std::vector<Segment> segments;
 	localizator->query(d1, d2, segments);
-	write_segments_to_json(segments, outfile);
+	JsonUtils::write_segments(segments, outfile);
 }
 
 void LocalizatorDaemon::run() {
