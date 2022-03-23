@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.1...3.15)
 
 project( fdml )
-set( FDML_TOP ${CMAKE_CURRENT_SOURCE_DIR} )
+set( TOOL_TOP ${CMAKE_CURRENT_SOURCE_DIR} )
+set( FDML_TOP ${CMAKE_CURRENT_SOURCE_DIR}/../../ )
 set( LIBS_TOP ${FDML_TOP}/lib )
 
 # CGAL and its components
@@ -23,14 +24,13 @@ if ( NOT Boost_FOUND )
   return()
 endif()
 
-# fdml_daemon
 add_executable( fdml_daemon
   ${FDML_TOP}/src/trapezoid.cpp
   ${FDML_TOP}/src/trapezoider.cpp
   ${FDML_TOP}/src/localizator.cpp
   ${FDML_TOP}/src/json_utils.cpp
   ${FDML_TOP}/src/localizator_daemon.cpp
-  ${FDML_TOP}/bin/fdml_daemon.cpp
+  ${TOOL_TOP}/fdml_daemon.cpp
 )
 include_directories ( fdml_daemon PUBLIC ${FDML_TOP}/include/ )
 

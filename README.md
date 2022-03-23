@@ -4,7 +4,7 @@
 <img src="https://github.com/barakugav/fdml/blob/master/doc/logo_horizontal.png?raw=true" alt="drawing" width="600"/>
 </div>
 
-FDML is a CPP software for robot localization processing and queries using few (one or two) distance measurements.
+FDML is a CPP software for robot localization processing and queries using few (one or two) distance measurements. The project contains few different tools: command line tools at /fdml/bin, GUI tool at /fdml-gui.
 
 ## FDML-core
 ### Installation
@@ -19,13 +19,11 @@ sudo apt-get install build-essential cmake
 sudo apt-get install libboost-system-dev libboost-program-options-dev
 sudo apt-get install libcgal-dev
 mkdir -p lib/; wget -O boost_1_78_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.78.0/boost_1_78_0.tar.gz/download; tar xzvf boost_1_78_0.tar.gz --directory lib/; rm boost_1_78_0.tar.gz
-
-mkdir -p build/linux/debug/; cmake -DCMAKE_BUILD_TYPE=Debug -Bbuild/linux/debug/ -S./
-mkdir -p build/linux/release/; cmake -DCMAKE_BUILD_TYPE=Release -Bbuild/linux/release/ -S./
 ```
-Compile using make:
+
+Compile a command line tool using a specific binary build script (fdml_daemon for example):
 ```bash
-make -C build/linux/release
+bin/fdml_daemon/build.py
 ```
 
 #### Windows
@@ -39,19 +37,20 @@ git clone https://github.com/microsoft/vcpkg; cd vcpkg; .\bootstrap-vcpkg.bat
 .\vcpkg.exe install cgal
 ```
 
-Clone the repository and config compilation setup
+Clone the repository and config compilation setup for a specific command line tool (fdml_daemon for example)
 ```bash
 git clone https://github.com/barakugav/FDML.git; cd fdml/fdml
-mkdir build/win/
+cd bin/fdml_daemon
+mkdir build
 cmake-gui
-	choose source code folder: {ROOT}/
-	choose build folder: {ROOT}/build/win
+	choose source code folder: bin/fdml_daemon/
+	choose build folder: bin/fdml_daemon/build/
 	specify the Generator (e.g., Visual Studio 16 2019),
 	specify the Optional Platform: win32
 	select Specify toolchain file for cross compilation (the file vcpkg.cmake within the directory where you have installed vcpkg, e.g. C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake).
 ```
 
-Compile using Visual Studio. open /build/Win/fdml.sln, "Build -> Build Solution".
+Compile using Visual Studio. open /build/fdml.sln, "Build -> Build Solution".
 
 ### Usage
 

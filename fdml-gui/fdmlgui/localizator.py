@@ -12,18 +12,9 @@ import atexit
 import tempfile
 import shutil
 
-FDML_CORE_TOP = os.path.abspath(os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "../../fdml/"))
-
+# If true, a debug executable of the daemon will be used
 DEBUG_EN = True
-DAEMON_PATH_LINUX = os.path.join(
-    FDML_CORE_TOP, "build", "linux", "debug" if DEBUG_EN else "release", "fdml_daemon")
-DAEMON_PATH_WINDOWS = os.path.join(
-    FDML_CORE_TOP, "build", "win", "Debug" if DEBUG_EN else "Release", "fdml_daemon.exe")
-DAEMON_PATH = DAEMON_PATH_LINUX if sys.platform == "linux" or sys.platform == "linux2" else DAEMON_PATH_WINDOWS
 
-if not os.path.exists(DAEMON_PATH):
-    raise ValueError("FDML daemon was not found at \"{}\"".format(DAEMON_PATH))
 
 daemons = set()
 daemons_lock = threading.Lock()
@@ -50,12 +41,34 @@ class Localizator:
         self.daemon = None
         self.lock = threading.Lock()
 
+        if Localizator.get_daemon_exe(verbose=True) is None:
+            raise ValueError()
+
     def __del__(self):
         with self.lock:
             if self.is_running():
                 print("Localizator was not stopped! terminating.")
                 self.daemon.kill()
         shutil.rmtree(self.working_dir)
+
+    @staticmethod
+    def get_daemon_exe(verbose=False):
+        fdml_core_top = os.path.abspath(os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "..", "..", "fdml"))
+        fdml_daemon_dir = os.path.join(fdml_core_top, "bin", "fdml_daemon")
+        build_dir = os.path.join(fdml_daemon_dir, "build")
+
+        build_type_c = "Debug" if DEBUG_EN else "Release"
+        exe_filename = "fdml_daemon" if sys.platform == "linux" or sys.platform == "linux2" else "fdml_daemon.exe"
+
+        build_type0 = "debug" if DEBUG_EN else "release"
+        for build_type in [build_type0, build_type0.capitalize()]:
+            daemon_path = os.path.join(build_dir, build_type, exe_filename)
+            if os.path.exists(daemon_path):
+                return daemon_path
+        print("Failed to find daemon executable at ", os.path.join(
+            build_dir, build_type0, exe_filename), file=sys.stderr)
+        return None
 
     def _working_dir(self):
         return os.path.join(self.working_dir, str(self.daemon_id))
@@ -71,7 +84,7 @@ class Localizator:
             self.logfile = open(os.path.join(
                 working_dir, ".logfile"), "a")
 
-            cmd = [DAEMON_PATH, "--cmdfile",
+            cmd = [Localizator.get_daemon_exe(), "--cmdfile",
                    self.cmdfile, "--ackfile", self.ackfile]
             self.daemon = subprocess.Popen(
                 cmd, stdout=self.logfile,  stderr=self.logfile)
