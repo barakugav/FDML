@@ -5,7 +5,7 @@ import sys
 import subprocess
 
 
-def build_tool(tool_dir, debug=True):
+def build_tool(tool_dir, debug=True, parallel=4):
     if not (sys.platform == "linux" or sys.platform == "linux2"):
         raise ValueError(
             "Only Linux is supported by this script. For windows, build using Visual Studio. See README.md")
@@ -15,4 +15,7 @@ def build_tool(tool_dir, debug=True):
     if not os.path.exists(os.path.join(build_dir, "Makefile")):
         subprocess.run(["cmake", "-DCMAKE_BUILD_TYPE=" +
                        ("Debug" if debug else "Release"), "-B" + build_dir, "-S" + tool_dir])
-    subprocess.run(["make", "-C", build_dir])
+    if not parallel or parallel == 1:
+        subprocess.run(["make", "-C", build_dir])
+    else:
+        subprocess.run(["make", "-C", build_dir, "-j" + str(parallel)])
