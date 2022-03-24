@@ -1,0 +1,17 @@
+if( NOT CLS_COMMON_FILE_INCLUDED)
+  set(CLS_COMMON_FILE_INCLUDED 1)
+
+  if (WIN32)
+    find_program(CMAKE_UNAME uname /bin /usr/bin /usr/local/bin)
+    if(CMAKE_UNAME)
+      exec_program(uname ARGS -s OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
+      if (CMAKE_SYSTEM_NAME2 MATCHES "CYGWIN")
+        message(STATUS "This is the Windows CMake running within the cygwin platform.")
+        set(SGAL_WIN32_CMAKE_ON_CYGWIN TRUE CACHE INTERNAL "This is the cygwin platform." )
+      endif()
+    endif()
+    hide_variable(CMAKE_UNAME)
+  endif()
+
+  set(CMAKE_COLORMAKEFILE ON)
+endif()
