@@ -1,9 +1,9 @@
+#ifndef FDML_DEFS_HPP
+#define FDML_DEFS_HPP
+
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Arrangement_2.h>
 #include <CGAL/Polygon_2.h>
-
-#ifndef FDML_DEFS_H
-#define FDML_DEFS_H
 
 namespace FDML {
 

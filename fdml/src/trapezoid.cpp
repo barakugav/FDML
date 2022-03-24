@@ -1,9 +1,9 @@
-#include "fdml/trapezoid.h"
+#include "fdml/trapezoid.hpp"
 #include "fdml/internal/utils.hpp"
 
-#include "CGAL/Boolean_set_operations_2.h"
-#include "CGAL/Boolean_set_operations_2/Gps_polygon_validation.h"
-#include "CGAL/Polygon_with_holes_2.h"
+#include <CGAL/Boolean_set_operations_2.h>
+#include <CGAL/Boolean_set_operations_2/Gps_polygon_validation.h>
+#include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/enum.h>
 
 namespace FDML {

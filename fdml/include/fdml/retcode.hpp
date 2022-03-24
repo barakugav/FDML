@@ -1,5 +1,5 @@
-#ifndef FDML_RETCODE_H
-#define FDML_RETCODE_H
+#ifndef FDML_RETCODE_HPP
+#define FDML_RETCODE_HPP
 
 namespace FDML {
 

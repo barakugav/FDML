@@ -2,12 +2,12 @@
 #include <stdexcept>
 #include <thread>
 
-#include "fdml/internal/json_utils.h"
-#include "fdml/internal/utils.hpp"
-#include "fdml/localizator_daemon.h"
-#include "fdml/retcode.h"
-
 #include <boost/program_options.hpp>
+
+#include "fdml/internal/json_utils.hpp"
+#include "fdml/internal/utils.hpp"
+#include "fdml/localizator_daemon.hpp"
+#include "fdml/retcode.hpp"
 
 namespace FDML {
 

@@ -1,3 +1,6 @@
+#ifndef FDML_UTILS_HPP
+#define FDML_UTILS_HPP
+
 #ifndef M_PI
 // windows
 #define _USE_MATH_DEFINES
@@ -5,14 +8,11 @@
 #endif
 #include <math.h>
 
-#include "fdml/defs.h"
+#include "fdml/defs.hpp"
 
 #include "CGAL/determinant_of_vectors.h"
 #include "CGAL/enum.h"
 #include "CGAL/number_utils.h"
-
-#ifndef FDML_UTILS_HPP
-#define FDML_UTILS_HPP
 
 namespace FDML {
 

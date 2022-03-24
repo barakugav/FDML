@@ -1,7 +1,7 @@
-#include "fdml/localizator.h"
+#ifndef FDML_LOCALIZATOR_DAEMON_HPP
+#define FDML_LOCALIZATOR_DAEMON_HPP
 
-#ifndef FDML_LOCALIZATOR_DAEMON_H
-#define FDML_LOCALIZATOR_DAEMON_H
+#include "fdml/localizator.hpp"
 
 namespace FDML {
 

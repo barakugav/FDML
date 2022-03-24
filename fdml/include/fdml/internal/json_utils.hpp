@@ -1,9 +1,9 @@
+#ifndef FDML_JSON_UTILS_HPP
+#define FDML_JSON_UTILS_HPP
+
 #include <vector>
 
-#include "fdml/defs.h"
-
-#ifndef FDML_JSON_UTILS_H
-#define FDML_JSON_UTILS_H
+#include "fdml/defs.hpp"
 
 namespace FDML {
 

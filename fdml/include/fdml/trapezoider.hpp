@@ -1,9 +1,9 @@
-#include "fdml/defs.h"
-#include "fdml/internal/closer_edge.hpp"
-#include "fdml/trapezoid.h"
+#ifndef FDML_TRAPEZOIDER_HPP
+#define FDML_TRAPEZOIDER_HPP
 
-#ifndef FDML_TRAPEZOIDER_H
-#define FDML_TRAPEZOIDER_H
+#include "fdml/defs.hpp"
+#include "fdml/internal/closer_edge.hpp"
+#include "fdml/trapezoid.hpp"
 
 namespace FDML {
 

@@ -1,10 +1,10 @@
-#include "fdml/defs.h"
-#include "fdml/trapezoider.h"
+#ifndef FDML_LOCALIZATOR_HPP
+#define FDML_LOCALIZATOR_HPP
+
+#include "fdml/defs.hpp"
+#include "fdml/trapezoider.hpp"
 
 #include <boost/geometry.hpp>
-
-#ifndef FDML_LOCALIZATOR_H
-#define FDML_LOCALIZATOR_H
 
 namespace FDML {
 

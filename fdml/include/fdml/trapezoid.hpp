@@ -1,13 +1,15 @@
+#ifndef FDML_TRAPEZOID_HPP
+#define FDML_TRAPEZOID_HPP
+
 #ifndef M_PI
 // windows
 #define _USE_MATH_DEFINES
 #include <cmath>
 #endif
-#include "defs.h"
-#include <math.h>
 
-#ifndef FDML_TRAPEZOID_H
-#define FDML_TRAPEZOID_H
+#include "defs.hpp"
+
+#include <math.h>
 
 namespace FDML {
 

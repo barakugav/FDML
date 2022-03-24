@@ -1,7 +1,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "fdml/internal/json_utils.h"
+#include "fdml/internal/json_utils.hpp"
 #include "fdml/internal/utils.hpp"
 
 #include <boost/json.hpp>

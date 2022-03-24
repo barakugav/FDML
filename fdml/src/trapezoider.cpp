@@ -1,4 +1,4 @@
-#include "fdml/trapezoider.h"
+#include "fdml/trapezoider.hpp"
 #include "fdml/internal/utils.hpp"
 
 #include <CGAL/Arr_vertical_decomposition_2.h>
