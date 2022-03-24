@@ -49,7 +49,7 @@ if (FDML_USE_STATIC_LIBS)
   set_target_properties(FDML PROPERTIES LINK_SEARCH_START_STATIC 1)
 endif()
 
-find_package(Boost ${FDML_BOOST_MIN_VERSION} REQUIRED COMPONENTS system thread filesystem program_options regex)
+find_package(Boost ${FDML_BOOST_MIN_VERSION} REQUIRED COMPONENTS system thread filesystem program_options json)
 
 if (FDML_USE_STATIC_LIBS)
   set_target_properties(FDML PROPERTIES LINK_SEARCH_END_STATIC 1)
@@ -74,7 +74,7 @@ if (FDML_WITH_PYBINDINGS)
 
   find_package(PythonLibs ${FDML_PY_MAJOR_DOT_MINOR_VERSION} EXACT REQUIRED)
   find_package(Boost ${FDML_BOOST_MIN_VERSION} REQUIRED COMPONENTS
-    system thread program_options
+    system thread
     python${FDML_PY_MAJOR_MINOR_VERSION} numpy${FDML_PY_MAJOR_MINOR_VERSION})
 
   include_directories(${PYTHON_INCLUDE_DIRS})

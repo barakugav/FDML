@@ -1,5 +1,5 @@
-if(NOT CLS_MACROS_FILE_INCLUDED)
-  set(CLS_MACROS_FILE_INCLUDED 1)
+if(NOT FDML_MACROS_FILE_INCLUDED)
+  set(FDML_MACROS_FILE_INCLUDED 1)
 
   macro(hide_variable var)
     set (${var} ${${var}} CACHE INTERNAL "Variable hidden from user" FORCE)

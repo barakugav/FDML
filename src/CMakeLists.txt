@@ -79,16 +79,12 @@ foreach(p LIB BIN INC CMAKE PYTHON)
 endforeach()
 
 # Add subdirectories
-add_subdirectory(scripts)
-if (FDML_WITH_CLASSIFY)
-  add_subdirectory(classify)
-endif()
 add_subdirectory(libs)
 add_subdirectory(cmds)
 
 # Add all targets to the build-tree export set
-# set(FDML_TARGETS FDML)
-set(FDML_TARGETS ${FDML_TARGETS} prep)
+# todo: replace with the executable name
+# set(FDML_TARGETS prep)
 export(TARGETS ${FDML_TARGETS}
        FILE "${PROJECT_BINARY_DIR}/FDMLTargets.cmake")
 

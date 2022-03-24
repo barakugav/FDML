@@ -1,5 +1,5 @@
-if( NOT CLS_COMMON_FILE_INCLUDED)
-  set(CLS_COMMON_FILE_INCLUDED 1)
+if( NOT FDML_COMMON_FILE_INCLUDED)
+  set(FDML_COMMON_FILE_INCLUDED 1)
 
   if (WIN32)
     find_program(CMAKE_UNAME uname /bin /usr/bin /usr/local/bin)
