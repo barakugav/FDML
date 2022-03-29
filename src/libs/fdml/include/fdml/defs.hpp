@@ -7,6 +7,14 @@
 
 namespace FDML {
 
+#ifdef __linux__
+	#define FDML_LINUX
+#elif _WIN32
+	#define FDML_WINDOWS
+#else
+//	#error failed to determine platform type
+#endif
+
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
 typedef CGAL::Segment_2<Kernel>                 Segment;
 typedef Kernel::Point_2                         Point;

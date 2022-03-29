@@ -5,6 +5,9 @@
 #include "fdml/internal/utils.hpp"
 
 #include <boost/json.hpp>
+#ifdef FDML_LINUX
+#include <boost/json/src.hpp>
+#endif
 
 namespace FDML {
 

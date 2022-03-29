@@ -15,7 +15,7 @@ endif()
 
 # Set minimal required versions
 set(FDML_PY_MIN_VERSION 3.8)
-set(FDML_BOOST_MIN_VERSION 1.73.0)
+set(FDML_BOOST_MIN_VERSION 1.75.0)
 
 # Find CGAL package
 find_package(CGAL REQUIRED COMPONENTS Core)
