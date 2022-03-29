@@ -7,7 +7,7 @@
 
 namespace FDML {
 
-int fdml_main(int argc, const char *argv[]) {
+int fdml_main(int argc, const char* argv[]) {
   try {
     std::string scenefile, cmd;
     std::string resfile;
@@ -18,8 +18,7 @@ int fdml_main(int argc, const char *argv[]) {
     desc.add_options()("cmd", boost::program_options::value<std::string>(&cmd), "Command [query1, query2]");
     desc.add_options()("d", boost::program_options::value<double>(&d), "single measurement value");
     desc.add_options()("d1", boost::program_options::value<double>(&d1), "first value of double measurement query");
-    desc.add_options()("d2", boost::program_options::value<double>(&d2),
-                       "second value of double measurement query");
+    desc.add_options()("d2", boost::program_options::value<double>(&d2), "second value of double measurement query");
     desc.add_options()("out", boost::program_options::value<std::string>(&resfile), "Output file for results");
 
     boost::program_options::variables_map vm;
@@ -37,26 +36,21 @@ int fdml_main(int argc, const char *argv[]) {
     else if (!vm.count("scenefile") || !vm.count("cmd") || !vm.count("out")) {
       fdml_errln("The following flags are required: --scenefile --cmd --out");
       return FDML_RETCODE_MISSING_ARGS;
-    }
-    else if (cmd == std::string("query1")) {
+    } else if (cmd == std::string("query1")) {
       if (!vm.count("d")) {
         fdml_errln("The following flags are required: --d");
         return FDML_RETCODE_MISSING_ARGS;
-      }
-      else {
+      } else {
         command_type = CMD_QUERY1;
       }
-    }
-    else if (cmd == std::string("query2")) {
+    } else if (cmd == std::string("query2")) {
       if (!vm.count("d1") || !vm.count("d2")) {
         fdml_errln("The following flags are required: --d1 --d2");
         return FDML_RETCODE_MISSING_ARGS;
-      }
-      else {
+      } else {
         command_type = CMD_QUERY2;
       }
-    }
-    else {
+    } else {
       fdml_infoln("Unknown command: " << cmd);
       fdml_infoln(desc);
       return FDML_RETCODE_UNKNOWN_ARGS;
@@ -71,21 +65,21 @@ int fdml_main(int argc, const char *argv[]) {
     std::vector<Segment> segments;
 
     switch (command_type) {
-     case CMD_QUERY1:
+    case CMD_QUERY1:
       localizator.query(d, polygons);
       JsonUtils::write_polygons(polygons, resfile);
       break;
-     case CMD_QUERY2:
+    case CMD_QUERY2:
       localizator.query(d1, d2, segments);
       JsonUtils::write_segments(segments, resfile);
       break;
-     default:
+    default:
       fdml_errln("Unknown command_type: " << command_type);
       return FDML_RETCODE_INTERNAL_ERR;
     }
 
     return FDML_RETCODE_OK;
-  } catch (const std::exception &ex) {
+  } catch (const std::exception& ex) {
     fdml_errln(ex.what());
     return FDML_RETCODE_RUNTIME_ERR;
   }
@@ -93,4 +87,6 @@ int fdml_main(int argc, const char *argv[]) {
 
 } // namespace FDML
 
-int main(int argc, const char *argv[]) { FDML::fdml_main(argc, argv); }
+int main(int argc, const char* argv[]) {
+  FDML::fdml_main(argc, argv);
+}

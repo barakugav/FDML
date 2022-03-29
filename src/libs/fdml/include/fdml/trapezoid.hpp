@@ -34,7 +34,7 @@ public:
   static const Direction ANGLE_NONE;
 
   Trapezoid(Trapezoid::ID id, Halfedge top_edge, Halfedge bottom_edge, Vertex left_vertex, Vertex right_vertex);
-  Trapezoid(const Trapezoid &) = default;
+  Trapezoid(const Trapezoid& other) = default;
   Trapezoid::ID get_id() const;
 
   /**
@@ -51,7 +51,7 @@ public:
    * @param d the measurement value
    * @param res output result
    */
-  void calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) const;
+  void calc_result_m1(const Kernel::FT& d, std::vector<Polygon>& res) const;
 
   /**
    * @brief Calculates all the points a sensor might be within the trapezoid measering distance 'd1' at top edge and
@@ -61,7 +61,7 @@ public:
    * @param d2 the measurement value to the bottom edge
    * @param res output result
    */
-  void calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::vector<Segment> &res) const;
+  void calc_result_m2(const Kernel::FT& d1, const Kernel::FT& d2, std::vector<Segment>& res) const;
 
   /**
    * @brief Calculate the minimum and maximum opening of this trapezoid
@@ -72,15 +72,15 @@ public:
    * @param opening_min output for the minimum opening of the trapezoid
    * @param opening_max output for the maximum opening of the trapezoid
    */
-  void calc_min_max_openings(Kernel::FT &opening_min, Kernel::FT &opening_max) const;
+  void calc_min_max_openings(Kernel::FT& opening_min, Kernel::FT& opening_max) const;
 };
 
-template <class OutputStream> OutputStream &operator<<(OutputStream &os, const Trapezoid &trapezoid) {
-  auto dir_to_angles = [](const Direction &dir) {
-                         double x = CGAL::to_double(dir.dx());
-                         double y = CGAL::to_double(dir.dy());
-                         return (int)(std::atan2(y, x) * 180 / M_PI);
-                       };
+template <class OutputStream> OutputStream& operator<<(OutputStream& os, const Trapezoid& trapezoid) {
+  auto dir_to_angles = [](const Direction& dir) {
+    double x = CGAL::to_double(dir.dx());
+    double y = CGAL::to_double(dir.dy());
+    return (int)(std::atan2(y, x) * 180 / M_PI);
+  };
   os << 'T' << trapezoid.get_id();
   int angle_begin = trapezoid.angle_begin != Trapezoid::ANGLE_NONE ? dir_to_angles(trapezoid.angle_begin) : 0;
   int angle_end = trapezoid.angle_end != Trapezoid::ANGLE_NONE ? dir_to_angles(trapezoid.angle_end) : 0;

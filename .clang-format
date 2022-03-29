@@ -1,0 +1,18 @@
+Language: Cpp
+ColumnLimit: 120
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+MaxEmptyLinesToKeep: 1
+
+PointerAlignment: Left
+AllowShortFunctionsOnASingleLine: Empty
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+	AfterEnum: false
+
+AlignConsecutiveMacros: true
+AlignConsecutiveBitFields: true
+AlignConsecutiveDeclarations: false
+AlignConsecutiveAssignments: false

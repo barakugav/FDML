@@ -18,14 +18,14 @@ private:
   std::unique_ptr<Localizator> localizator;
 
 public:
-  LocalizatorDaemon(const std::string &cmd_filename, const std::string &ack_filename);
+  LocalizatorDaemon(const std::string& cmd_filename, const std::string& ack_filename);
 
   /**
    * @brief Load a scene from a json file
    *
    * @param scene_filename path to a json file containing a scene
    */
-  void load_scene(const std::string &scene_filename);
+  void load_scene(const std::string& scene_filename);
 
   /**
    * @brief Query command of one measurament
@@ -35,7 +35,7 @@ public:
    * @param d the single measurament value
    * @param outfile path to an output file for the query result (json)
    */
-  void query(double d, const std::string &outfile) const;
+  void query(double d, const std::string& outfile) const;
 
   /**
    * @brief Query command of two measurament
@@ -46,7 +46,7 @@ public:
    * @param d2 the second measurament value
    * @param outfile path to an output file for the query result (json)
    */
-  void query(double d1, double d2, const std::string &outfile) const;
+  void query(double d1, double d2, const std::string& outfile) const;
 
   /**
    * @brief Run a infinity loop, reading commands from the given cmd_filename
@@ -62,7 +62,7 @@ public:
    * @param quit will be set to true if the quit command was issued
    * @return on success, else on error
    */
-  int exec_cmd(const std::vector<std::string> &argv, bool &quit);
+  int exec_cmd(const std::vector<std::string>& argv, bool& quit);
 
   /**
    * @brief main function for daemon
@@ -73,7 +73,7 @@ public:
    * @param argv arguments
    * @return 0 on success, else on error
    */
-  static int daemon_main(int argc, const char *argv[]);
+  static int daemon_main(int argc, const char* argv[]);
 
 private:
   /* Checks that a scene was actually loaded before handling a query command */

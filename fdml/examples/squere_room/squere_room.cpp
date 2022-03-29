@@ -26,7 +26,7 @@ int main() {
   localizator.query(robot_measurement, single_res);
 
   std::cout << "Single measurement result:" << std::endl;
-  for (Polygon &p : single_res)
+  for (const Polygon& p : single_res)
     std::cout << '\t' << p << std::endl;
 
   /* If the robot is able to perform a second distance measurement in the
@@ -40,6 +40,6 @@ int main() {
   localizator.query(robot_measurement, second_robot_measurement, double_res);
 
   std::cout << "Double measurement result:" << std::endl;
-  for (Segment &s : double_res)
+  for (const Segment& s : double_res)
     std::cout << '\t' << s << std::endl;
 }

@@ -27,7 +27,7 @@ private:
     Trapezoid::ID bottom_right_trapezoid;
     std::set<Halfedge, Closer_edge> ray_edges;
     VertexData() {}
-    VertexData(Point &v, const Arrangement::Geometry_traits_2 *geom_traits);
+    VertexData(const Point& v, const Arrangement::Geometry_traits_2* geom_traits);
   };
 
   /* Arrangement of the simple polygon room, built from the input points */
@@ -44,7 +44,7 @@ public:
    *
    * @param scene simple polygon scene
    */
-  void calc_trapezoids(const Polygon &scene);
+  void calc_trapezoids(const Polygon& scene);
 
   TrapezoidIterator trapezoids_begin() const;
   TrapezoidIterator trapezoids_end() const;
@@ -52,9 +52,9 @@ public:
   TrapezoidIterator get_trapezoid(Trapezoid::ID id) const;
 
 private:
-  Trapezoid::ID create_trapezoid(const Halfedge &top_edge, const Halfedge &bottom_edge, const Vertex &left_vertex,
-                                 const Vertex &right_vertex);
-  void finalize_trapezoid(const Trapezoid &trapezoid);
+  Trapezoid::ID create_trapezoid(const Halfedge& top_edge, const Halfedge& bottom_edge, const Vertex& left_vertex,
+                                 const Vertex& right_vertex);
+  void finalize_trapezoid(const Trapezoid& trapezoid);
   void init_trapezoids_with_regular_vertical_decomposition();
   void calc_trapezoids_with_rotational_sweep();
 };

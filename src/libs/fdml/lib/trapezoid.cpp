@@ -10,14 +10,16 @@ namespace FDML {
 
 const Direction Trapezoid::ANGLE_NONE(0, 0);
 
-Trapezoid::Trapezoid(Trapezoid::ID id, Halfedge top_edge, Halfedge bottom_edge, Vertex left_vertex, Vertex right_vertex) :
-  id(id), top_edge(top_edge), bottom_edge(bottom_edge), left_vertex(left_vertex), right_vertex(right_vertex),
-    angle_begin(Trapezoid::ANGLE_NONE), angle_end(Trapezoid::ANGLE_NONE) {}
+Trapezoid::Trapezoid(Trapezoid::ID id, Halfedge top_edge, Halfedge bottom_edge, Vertex left_vertex, Vertex right_vertex)
+    : id(id), top_edge(top_edge), bottom_edge(bottom_edge), left_vertex(left_vertex), right_vertex(right_vertex),
+      angle_begin(Trapezoid::ANGLE_NONE), angle_end(Trapezoid::ANGLE_NONE) {}
 
-Trapezoid::ID Trapezoid::get_id() const { return id; }
+Trapezoid::ID Trapezoid::get_id() const {
+  return id;
+}
 
 /* rotate a direction by a given angle (radians) */
-template <typename _Direction> static _Direction rotate(const _Direction &d, double r) {
+template <typename _Direction> static _Direction rotate(const _Direction& d, double r) {
   return d.transform(Kernel::Aff_transformation_2(CGAL::Rotation(), std::sin(r), std::cos(r)));
 }
 
@@ -30,13 +32,12 @@ static Direction get_mid_angle(Direction angle_begin, Direction angle_end) {
 }
 
 /* Calculate which of an edge endpoint is "left" and "right" relative to some direction */
-static void calc_edge_left_right_vertices(const Halfedge &edge, const Direction &dir, Point &left, Point &right) {
+static void calc_edge_left_right_vertices(const Halfedge& edge, const Direction& dir, Point& left, Point& right) {
   Point p1 = edge->source()->point(), p2 = edge->target()->point();
   if (Line({0, 0}, dir).oriented_side({(p1.x() - p2.x()) / 2, (p1.y() - p2.y()) / 2}) == CGAL::ON_POSITIVE_SIDE) {
     left = p1;
     right = p2;
-  }
-  else {
+  } else {
     left = p2;
     right = p1;
   }
@@ -69,7 +70,7 @@ Polygon Trapezoid::get_bounds_2d() const {
 }
 
 /* calculate the intersection point of two lines */
-static Point intersection(const Line &l1, const Line &l2) {
+static Point intersection(const Line& l1, const Line& l2) {
   auto res = CGAL::intersection(l1, l2);
   assert(!res->empty());
   return boost::get<Point>(res.get());
@@ -82,12 +83,12 @@ static const unsigned int ARC_APPX_POINTS_NUM = 360;
 static const unsigned int CONCHOID_APPX_POINTS_NUM = 360;
 static const unsigned int ELLIPSE_APPX_POINTS_NUM = 360;
 
-static Direction edge_direction(const Halfedge &edge) {
+static Direction edge_direction(const Halfedge& edge) {
   auto s = edge->source()->point(), t = edge->target()->point();
   return Direction(t.x() - s.x(), t.y() - s.y());
 }
 
-void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) const {
+void Trapezoid::calc_result_m1(const Kernel::FT& d, std::vector<Polygon>& res) const {
   if (d <= 0)
     throw std::invalid_argument("distance measurement must be positive.");
   fdml_debugln("[Trapezoid] calculating single measurement result...");
@@ -104,8 +105,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
   /* calculate the mid angle, which is perpendicular to the top edge, and use it to split the trapezoid angle
    * interval into 2 to ensure simple polygon output for each result entry. */
   Direction mid_angle = top_edge_direction.perpendicular(CGAL::LEFT_TURN);
-  bool begin_before_mid =
-    Line({0, 0}, mid_angle).oriented_side({a_begin.dx(), a_begin.dy()}) == CGAL::ON_NEGATIVE_SIDE;
+  bool begin_before_mid = Line({0, 0}, mid_angle).oriented_side({a_begin.dx(), a_begin.dy()}) == CGAL::ON_NEGATIVE_SIDE;
   bool end_after_mid = Line({0, 0}, mid_angle).oriented_side({a_end.dx(), a_end.dy()}) == CGAL::ON_POSITIVE_SIDE;
   Direction angle_intervals[2][2] = {{begin_before_mid ? a_begin : mid_angle, end_after_mid ? mid_angle : a_end},
                                      {begin_before_mid ? mid_angle : a_begin, end_after_mid ? a_end : mid_angle}};
@@ -114,7 +114,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
 
   /* calculate result for each angle interval */
   for (unsigned int internal_idx = 0; internal_idx < 2; internal_idx++) {
-    auto &angle_interval = angle_intervals[internal_idx];
+    auto& angle_interval = angle_intervals[internal_idx];
     bool before_mid = internal_idx == 0;
     auto i_begin = angle_interval[0], i_end = angle_interval[1];
     if (i_begin == i_end)
@@ -132,7 +132,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
     const auto LEFT = 0, RIGHT = 1;
     for (auto side : {LEFT, RIGHT}) {
       auto vertex = (side == LEFT ? left_vertex : right_vertex)->point();
-      auto &points = side == LEFT ? left_points : right_points;
+      auto& points = side == LEFT ? left_points : right_points;
 
       if (top_edge_line.has_on(vertex)) {
         /* Arc curve */
@@ -150,21 +150,18 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
         points.push_back(end);
         fdml_debugln("\t\tO(" << vertex << ") r(" << d << ") B(" << begin << ") E(" << end << ')');
 
-      }
-      else {
+      } else {
         /* Conchoid curve */
         fdml_debugln("\tcurve " << (side == LEFT ? "left" : "right") << " is conchoid");
         Point begin = intersection(top_edge_line, Line(vertex, i_begin)) + v_begin * d;
         Point end = intersection(top_edge_line, Line(vertex, i_end)) + v_end * d;
-        unsigned int appx_num =
-          (unsigned int)((std::abs(angle_between) / (M_PI * 2)) * CONCHOID_APPX_POINTS_NUM);
+        unsigned int appx_num = (unsigned int)((std::abs(angle_between) / (M_PI * 2)) * CONCHOID_APPX_POINTS_NUM);
 
         /* approximate all points of the curve by used angle steps */
         points.push_back(begin);
         for (unsigned int i = 1; i < appx_num; i++) {
           Direction dir = rotate(i_begin, i * angle_between / appx_num);
-          points.push_back(intersection(top_edge_line, Line(vertex, dir)) +
-                           Utils::normalize(dir.vector()) * d);
+          points.push_back(intersection(top_edge_line, Line(vertex, dir)) + Utils::normalize(dir.vector()) * d);
         }
         points.push_back(end);
 
@@ -172,7 +169,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
       }
 
       fdml_debug("\t\tcurve points:");
-      for (auto &p : left_points)
+      for (auto& p : left_points)
         fdml_debug(" (" << p << ')');
       fdml_debugln("");
     }
@@ -189,8 +186,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
         right_begin++;
       res_unbounded.insert(res_unbounded.vertices_end(), left_begin, left_points.end());
       res_unbounded.insert(res_unbounded.vertices_end(), right_begin, right_points.rend());
-    }
-    else {
+    } else {
       /* avoid points duplication if the two curves share start/end vertices */
       auto left_begin = left_points.rbegin();
       if (*left_begin == right_points.back())
@@ -206,7 +202,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
     std::vector<CGAL::Polygon_with_holes_2<Kernel>> res_bounded;
     CGAL::intersection(trapezoid_bounds, res_unbounded, std::back_inserter(res_bounded));
     fdml_debugln("\ttrapezoid result:");
-    for (const auto &res_cell : res_bounded) {
+    for (const auto& res_cell : res_bounded) {
       assert(res_cell.number_of_holes() == 0);
       res.push_back(res_cell.outer_boundary());
       fdml_debugln("\t\t" << res_cell.outer_boundary());
@@ -214,11 +210,11 @@ void Trapezoid::calc_result_m1(const Kernel::FT &d, std::vector<Polygon> &res) c
   }
 }
 
-static double atan2(const Kernel::FT &y, const Kernel::FT &x) {
+static double atan2(const Kernel::FT& y, const Kernel::FT& x) {
   return std::atan2(CGAL::to_double(y), CGAL::to_double(x));
 }
 
-void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::vector<Segment> &res) const {
+void Trapezoid::calc_result_m2(const Kernel::FT& d1, const Kernel::FT& d2, std::vector<Segment>& res) const {
   if (d1 <= 0 || d2 <= 0)
     throw std::invalid_argument("distance measurements must be positive.");
   fdml_debugln("[Trapezoid] calculating double measurement result...");
@@ -229,19 +225,19 @@ void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::
     Point inter_point = intersection(top_line, bottom_line);
     /* angle range between angle_begin and angle_end */
     double angle_range =
-      std::acos(CGAL::to_double(Utils::normalize(angle_begin.vector()) * Utils::normalize(angle_end.vector())));
+        std::acos(CGAL::to_double(Utils::normalize(angle_begin.vector()) * Utils::normalize(angle_end.vector())));
     assert(angle_range != 0);
     Direction top_line_dir = -edge_direction(top_edge), bottom_line_dir = edge_direction(bottom_edge);
     double bottom_line_angle = atan2(bottom_line_dir.dy(), bottom_line_dir.dx());
     double a_begin = atan2(angle_begin.dy(), angle_begin.dx());
     /* angle between top and bottom edges */
     double angle_between = std::acos(
-                                     CGAL::to_double(Utils::normalize(bottom_line_dir.vector()) * Utils::normalize(top_line_dir.vector())));
+        CGAL::to_double(Utils::normalize(bottom_line_dir.vector()) * Utils::normalize(top_line_dir.vector())));
 
     /* calc the direction from the intersection point to the middle of top edge. use with k */
     auto top_s = top_edge->source()->point(), top_t = top_edge->target()->point();
     auto k_dir = Utils::normalize(
-                                  Vector((top_s.x() + top_t.x()) / 2 - inter_point.x(), (top_s.y() + top_t.y()) / 2 - inter_point.y()));
+        Vector((top_s.x() + top_t.x()) / 2 - inter_point.x(), (top_s.y() + top_t.y()) / 2 - inter_point.y()));
 
     Point prev;
     bool prev_valid = false;
@@ -270,8 +266,7 @@ void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::
 
       auto measure_point = inter_point + k_dir * k;
       Point res_point = measure_point + Utils::normalize((-dir).vector()) * d1;
-      if (Line(bottom_edge->source()->point(), bottom_line_dir).oriented_side(res_point) ==
-          CGAL::ON_NEGATIVE_SIDE) {
+      if (Line(bottom_edge->source()->point(), bottom_line_dir).oriented_side(res_point) == CGAL::ON_NEGATIVE_SIDE) {
         prev_valid = false;
         continue;
       }
@@ -282,8 +277,7 @@ void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::
       prev_valid = true;
     }
 
-  }
-  else { /* top and bottom are parallel */
+  } else { /* top and bottom are parallel */
     auto lines_dis = CGAL::approximate_sqrt(CGAL::squared_distance(top_line, bottom_line));
     Direction bottom_line_dir = edge_direction(bottom_edge);
     double local_angle = std::asin(CGAL::to_double(lines_dis / (d1 + d2)));
@@ -305,35 +299,35 @@ void Trapezoid::calc_result_m2(const Kernel::FT &d1, const Kernel::FT &d2, std::
   }
 }
 
-void Trapezoid::calc_min_max_openings(Kernel::FT &opening_min, Kernel::FT &opening_max) const {
+void Trapezoid::calc_min_max_openings(Kernel::FT& opening_min, Kernel::FT& opening_max) const {
   /* for any fixed angle, the opening function is a affine function, and therefore monotonically increasing or
    * decreasing as a function x. Therefore, to calculate the minimum or the maximum of the opening function we only
    * need to consider the values at the end of the x valid interval of the functions, these are the x values defined
    * by the left and right limiting vertices. */
 
-  auto calc_arc_opening = [this](const Point &vertex, const Direction &angle) {
-                            Line bottom_line = bottom_edge->curve().line();
-                            if (bottom_line.has_on(vertex))
-                              return (Kernel::FT)0;
-                            Line opening_line = Line(vertex, angle);
-                            Point inter = intersection(bottom_line, opening_line);
-                            Kernel::FT xd = vertex.x() - inter.x(), xy = vertex.y() - inter.y();
-                            return CGAL::approximate_sqrt(xd * xd + xy * xy);
-                          };
-  auto calc_conchoid_opening = [this](const Point &vertex, const Direction &angle) {
-                                 Line top_line = top_edge->curve().line();
-                                 Line bottom_line = bottom_edge->curve().line();
-                                 Line opening_line = Line(vertex, angle);
-                                 Point inter1 = top_line.has_on(vertex) ? vertex : intersection(top_line, opening_line);
-                                 Point inter2 = bottom_line.has_on(vertex) ? vertex : intersection(bottom_line, opening_line);
-                                 Kernel::FT xd = inter1.x() - inter2.x(), xy = inter1.y() - inter2.y();
-                                 return CGAL::approximate_sqrt(xd * xd + xy * xy);
-                               };
+  auto calc_arc_opening = [this](const Point& vertex, const Direction& angle) {
+    Line bottom_line = bottom_edge->curve().line();
+    if (bottom_line.has_on(vertex))
+      return (Kernel::FT)0;
+    Line opening_line = Line(vertex, angle);
+    Point inter = intersection(bottom_line, opening_line);
+    Kernel::FT xd = vertex.x() - inter.x(), xy = vertex.y() - inter.y();
+    return CGAL::approximate_sqrt(xd * xd + xy * xy);
+  };
+  auto calc_conchoid_opening = [this](const Point& vertex, const Direction& angle) {
+    Line top_line = top_edge->curve().line();
+    Line bottom_line = bottom_edge->curve().line();
+    Line opening_line = Line(vertex, angle);
+    Point inter1 = top_line.has_on(vertex) ? vertex : intersection(top_line, opening_line);
+    Point inter2 = bottom_line.has_on(vertex) ? vertex : intersection(bottom_line, opening_line);
+    Kernel::FT xd = inter1.x() - inter2.x(), xy = inter1.y() - inter2.y();
+    return CGAL::approximate_sqrt(xd * xd + xy * xy);
+  };
   auto angle_between = [](double low, double high) {
-                         double r = high - low;
-                         return low < high ? r : r + 2 * M_PI;
-                       };
-  auto dir_to_angle = [](const Direction &dir) { return atan2(dir.dy(), dir.dx()); };
+    double r = high - low;
+    return low < high ? r : r + 2 * M_PI;
+  };
+  auto dir_to_angle = [](const Direction& dir) { return atan2(dir.dy(), dir.dx()); };
   for (unsigned int side = 0; side < 2; side++) {
     Point limit_vertex = (side == 0 ? left_vertex : right_vertex)->point();
     Kernel::FT max, min;
@@ -348,17 +342,15 @@ void Trapezoid::calc_min_max_openings(Kernel::FT &opening_min, Kernel::FT &openi
       max = CGAL::max(m1, m2);
 
       Point bottom_left, bottom_right;
-      calc_edge_left_right_vertices(bottom_edge, get_mid_angle(angle_begin, angle_end), bottom_left,
-                                    bottom_right);
+      calc_edge_left_right_vertices(bottom_edge, get_mid_angle(angle_begin, angle_end), bottom_left, bottom_right);
       Direction perp = Direction(bottom_right.x() - bottom_left.x(), bottom_right.y() - bottom_left.y())
-        .perpendicular(CGAL::LEFT_TURN);
+                           .perpendicular(CGAL::LEFT_TURN);
       if (perp.counterclockwise_in_between(angle_begin, angle_end))
         min = calc_arc_opening(limit_vertex, -perp);
       else
         min = CGAL::min(m1, m2);
 
-    }
-    else {
+    } else {
       /* Conchoid */
       /* for a conchoid curve of a limiting vertex, i failed to calculate analytically the minimum point, and
        * therefore forced to search numerically on the convex function. The maximum will always be one of the
@@ -387,8 +379,7 @@ void Trapezoid::calc_min_max_openings(Kernel::FT &opening_min, Kernel::FT &openi
     if (side == 0) {
       opening_min = min;
       opening_max = max;
-    }
-    else {
+    } else {
       opening_min = CGAL::min(opening_min, min);
       opening_max = CGAL::max(opening_max, max);
     }

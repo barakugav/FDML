@@ -11,41 +11,40 @@ namespace FDML {
  * @brief "Less" object used in a map during a rotational sweep to keep track of the closer edges intersection an
  * imaginary ray comming out of a point 'q'
  */
-class Closer_edge :
-    public CGAL::cpp98::binary_function<Halfedge, Halfedge, bool> {
+class Closer_edge : public CGAL::cpp98::binary_function<Halfedge, Halfedge, bool> {
   typedef Halfedge EH;
   typedef Arrangement::Geometry_traits_2 Geometry_traits_2;
   typedef typename Geometry_traits_2::Point_2 Point_2;
 
-  const Geometry_traits_2 *geom_traits;
+  const Geometry_traits_2* geom_traits;
   Point_2 q;
 
 public:
   Closer_edge() {}
-  Closer_edge(const Geometry_traits_2 *traits, const Point_2 &q) : geom_traits(traits), q(q) {}
+  Closer_edge(const Geometry_traits_2* traits, const Point_2& q) : geom_traits(traits), q(q) {}
 
-  int vtype(const Point_2 &c, const Point_2 &p) const {
+  int vtype(const Point_2& c, const Point_2& p) const {
     switch (CGAL::Visibility_2::orientation_2(geom_traits, q, c, p)) {
-     case CGAL::COLLINEAR:
+    case CGAL::COLLINEAR:
       if (CGAL::Visibility_2::less_distance_to_point_2(geom_traits, q, c, p))
         return 0;
       else
         return 3;
-     case CGAL::RIGHT_TURN:
+    case CGAL::RIGHT_TURN:
       return 1;
-     case CGAL::LEFT_TURN:
+    case CGAL::LEFT_TURN:
       return 2;
-     default:
+    default:
       CGAL_assume(false);
     }
     return -1;
   }
 
-  bool operator()(const EH &e1, const EH &e2) const {
+  bool operator()(const EH& e1, const EH& e2) const {
     if (e1 == e2)
       return false;
     const Point_2 &s1 = e1->source()->point(), t1 = e1->target()->point(), s2 = e2->source()->point(),
-      t2 = e2->target()->point();
+                  t2 = e2->target()->point();
     if (e1->source() == e2->source()) {
 
       int vt1 = vtype(s1, t1), vt2 = vtype(s1, t2);
@@ -85,7 +84,7 @@ public:
 
     CGAL::Orientation e1q = CGAL::Visibility_2::orientation_2(geom_traits, s1, t1, q);
     switch (e1q) {
-     case CGAL::COLLINEAR:
+    case CGAL::COLLINEAR:
       if (CGAL::Visibility_2::collinear(geom_traits, q, s2, t2)) {
         // q is collinear with e1 and e2.
         return (CGAL::Visibility_2::less_distance_to_point_2(geom_traits, q, s1, s2) ||
@@ -100,43 +99,43 @@ public:
                   CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, s1));
       }
       break;
-     case CGAL::RIGHT_TURN:
+    case CGAL::RIGHT_TURN:
       switch (CGAL::Visibility_2::orientation_2(geom_traits, s1, t1, s2)) {
-       case CGAL::COLLINEAR:
+      case CGAL::COLLINEAR:
         return CGAL::Visibility_2::orientation_2(geom_traits, s1, t1, t2) != e1q;
-       case CGAL::RIGHT_TURN:
+      case CGAL::RIGHT_TURN:
         if (CGAL::Visibility_2::orientation_2(geom_traits, s1, t1, t2) == CGAL::LEFT_TURN)
           return CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, q) ==
-            CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, s1);
+                 CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, s1);
         else
           return false;
-       case CGAL::LEFT_TURN:
+      case CGAL::LEFT_TURN:
         if (CGAL::Visibility_2::orientation_2(geom_traits, s1, t1, t2) == CGAL::RIGHT_TURN)
           return CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, q) ==
-            CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, s1);
+                 CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, s1);
         else
           return true;
-       default:
+      default:
         CGAL_assume(false);
       }
       break;
-     case CGAL::LEFT_TURN:
+    case CGAL::LEFT_TURN:
       switch (CGAL::Visibility_2::orientation_2(geom_traits, s1, t1, s2)) {
-       case CGAL::COLLINEAR:
+      case CGAL::COLLINEAR:
         return CGAL::Visibility_2::orientation_2(geom_traits, s1, t1, t2) != e1q;
-       case CGAL::LEFT_TURN:
+      case CGAL::LEFT_TURN:
         if (CGAL::Visibility_2::orientation_2(geom_traits, s1, t1, t2) == CGAL::RIGHT_TURN)
           return CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, q) ==
-            CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, s1);
+                 CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, s1);
         else
           return false;
-       case CGAL::RIGHT_TURN:
+      case CGAL::RIGHT_TURN:
         if (CGAL::Visibility_2::orientation_2(geom_traits, s1, t1, t2) == CGAL::LEFT_TURN)
           return CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, q) ==
-            CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, s1);
+                 CGAL::Visibility_2::orientation_2(geom_traits, s2, t2, s1);
         else
           return true;
-       default:
+      default:
         CGAL_assume(false);
       }
     }

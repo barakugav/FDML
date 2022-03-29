@@ -18,25 +18,25 @@ namespace FDML {
 
 static const bool DEBUG_PRINT_EN = false;
 
-#define fdml_info(args)                                                 \
-  do {                                                                  \
-    std::cout << args;                                                  \
+#define fdml_info(args)                                                                                                \
+  do {                                                                                                                 \
+    std::cout << args;                                                                                                 \
   } while (false)
 #define fdml_infoln(args) fdml_info(args << std::endl)
 
-#define fdml_err(args)                                                  \
-  do {                                                                  \
-    std::cerr << args;                                                  \
+#define fdml_err(args)                                                                                                 \
+  do {                                                                                                                 \
+    std::cerr << args;                                                                                                 \
   } while (false)
 #define fdml_errln(args) fdml_err(args << std::endl)
 
-#define fdml_debug(args)                                                \
-  do {                                                                  \
-    if (DEBUG_PRINT_EN)                                                 \
-      std::cout << args;                                                \
+#define fdml_debug(args)                                                                                               \
+  do {                                                                                                                 \
+    if (DEBUG_PRINT_EN)                                                                                                \
+      std::cout << args;                                                                                               \
   } while (false)
 #define fdml_debugln(args) fdml_debug(args << std::endl)
-#define fdml_debug_line() fdml_debug(__FILE__ << ":" << __LINE__ << std::endl)
+#define fdml_debug_line()  fdml_debug(__FILE__ << ":" << __LINE__ << std::endl)
 
 #define FDML_UNUSED(var) (void)var
 
@@ -48,13 +48,15 @@ public:
   }
 
   /* This function should be used only for debug uses */
-  static inline int direction_to_angles(const Direction &dir) {
+  static inline int direction_to_angles(const Direction& dir) {
     double x = CGAL::to_double(dir.dx());
     double y = CGAL::to_double(dir.dy());
     return (int)(std::atan2(y, x) * 180 / M_PI);
   }
 
-  static inline bool is_free(const Face &face) { return !face->is_unbounded(); }
+  static inline bool is_free(const Face& face) {
+    return !face->is_unbounded();
+  }
 };
 
 } // namespace FDML

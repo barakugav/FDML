@@ -11,19 +11,19 @@
 
 namespace FDML {
 
-static bool file_exists(const std::string &filename) {
+static bool file_exists(const std::string& filename) {
   std::ifstream f(filename.c_str());
   return f.good();
 }
 
-static void remove_whitespace(std::string &s) {
+static void remove_whitespace(std::string& s) {
   while (s.size() != 0 && std::isspace(s.front()))
     s.erase(s.begin());
   while (s.size() != 0 && std::isspace(s.back()))
     s.pop_back();
 }
 
-static void split(const std::string &s, char c, std::vector<std::string> &words) {
+static void split(const std::string& s, char c, std::vector<std::string>& words) {
   std::istringstream iss(s);
   for (std::string word; std::getline(iss, word, c);) {
     remove_whitespace(word);
@@ -32,17 +32,17 @@ static void split(const std::string &s, char c, std::vector<std::string> &words)
   }
 }
 
-static void parse_cmd_from_file(const std::string &filename, std::vector<std::string> &argv) {
+static void parse_cmd_from_file(const std::string& filename, std::vector<std::string>& argv) {
   std::stringstream buffer;
   buffer << std::ifstream(filename).rdbuf();
   std::string cmd = buffer.str();
   split(cmd, ' ', argv);
 }
 
-LocalizatorDaemon::LocalizatorDaemon(const std::string &cmd_filename, const std::string &ack_filename) :
-  cmd_filename(cmd_filename), ack_filename(ack_filename), localizator(nullptr) {}
+LocalizatorDaemon::LocalizatorDaemon(const std::string& cmd_filename, const std::string& ack_filename)
+    : cmd_filename(cmd_filename), ack_filename(ack_filename), localizator(nullptr) {}
 
-void LocalizatorDaemon::load_scene(const std::string &scene_filename) {
+void LocalizatorDaemon::load_scene(const std::string& scene_filename) {
   fdml_infoln("[LocalizatorDaemon] Init with scene: " << scene_filename);
 
   try {
@@ -53,14 +53,14 @@ void LocalizatorDaemon::load_scene(const std::string &scene_filename) {
     localizator = std::make_unique<Localizator>();
     localizator->init(scene);
 
-  } catch (const std::exception &e) {
+  } catch (const std::exception& e) {
     if (localizator)
       localizator.reset();
     throw e;
   }
 }
 
-void LocalizatorDaemon::query(double d, const std::string &outfile) const {
+void LocalizatorDaemon::query(double d, const std::string& outfile) const {
   fdml_infoln("[LocalizatorDaemon] Query1: " << d);
   check_state();
 
@@ -69,7 +69,7 @@ void LocalizatorDaemon::query(double d, const std::string &outfile) const {
   JsonUtils::write_polygons(polygons, outfile);
 }
 
-void LocalizatorDaemon::query(double d1, double d2, const std::string &outfile) const {
+void LocalizatorDaemon::query(double d1, double d2, const std::string& outfile) const {
   fdml_infoln("[LocalizatorDaemon] Query2: " << d1 << " " << d2);
   check_state();
 
@@ -101,9 +101,9 @@ void LocalizatorDaemon::run() {
   fdml_infoln("[LocalizatorDaemon] Quit.");
 }
 
-int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv, bool &quit) {
+int LocalizatorDaemon::exec_cmd(const std::vector<std::string>& argv, bool& quit) {
   fdml_debug("[LocalizatorDaemon] executing command:");
-  for (const auto &arg : argv)
+  for (const auto& arg : argv)
     fdml_debug(' ' << arg);
   fdml_debugln("");
 
@@ -113,7 +113,7 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv, bool &quit
       fdml_errln("Too many arguments");
       return FDML_RETCODE_TOO_MANY_ARGS;
     }
-    const char *argv_arr[MAX_ARGS_NUM + 1];
+    const char* argv_arr[MAX_ARGS_NUM + 1];
     argv_arr[0] = "localizator_daemon";
     for (unsigned int i = 0; i < argv.size(); i++)
       argv_arr[1 + i] = argv[i].c_str();
@@ -127,13 +127,11 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv, bool &quit
 
     boost::program_options::options_description desc{"Options"};
     desc.add_options()("help", "Help message");
-    desc.add_options()("cmd", boost::program_options::value<std::string>(&cmd),
-                       "Command [init, query1, query2, quit]");
+    desc.add_options()("cmd", boost::program_options::value<std::string>(&cmd), "Command [init, query1, query2, quit]");
     desc.add_options()("scene", boost::program_options::value<std::string>(&scene_filename), "Scene filename");
     desc.add_options()("d", boost::program_options::value<double>(&d), "single measurement value");
     desc.add_options()("d1", boost::program_options::value<double>(&d1), "first value of double measurement query");
-    desc.add_options()("d2", boost::program_options::value<double>(&d2),
-                       "second value of double measurement query");
+    desc.add_options()("d2", boost::program_options::value<double>(&d2), "second value of double measurement query");
     desc.add_options()("out", boost::program_options::value<std::string>(&out_filename), "Output file");
 
     const auto options = boost::program_options::parse_command_line(argc, argv_arr, desc);
@@ -146,29 +144,25 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv, bool &quit
     else if (!vm.count("cmd")) {
       fdml_errln("The following flags are required: --cmd");
       return FDML_RETCODE_MISSING_ARGS;
-    }
-    else if (cmd == std::string("init")) {
+    } else if (cmd == std::string("init")) {
       if (!vm.count("scene")) {
         fdml_errln("The following flags are required: --scene");
         return FDML_RETCODE_MISSING_ARGS;
-      }
-      else load_scene(scene_filename);
-    }
-    else if (cmd == std::string("query1")) {
+      } else
+        load_scene(scene_filename);
+    } else if (cmd == std::string("query1")) {
       if (!vm.count("d") || !vm.count("out")) {
         fdml_errln("The following flags are required: --d --out");
         return FDML_RETCODE_MISSING_ARGS;
-      }
-      else query(d, out_filename);
-    }
-    else if (cmd == std::string("query2")) {
+      } else
+        query(d, out_filename);
+    } else if (cmd == std::string("query2")) {
       if (!vm.count("d1") || !vm.count("d2") || !vm.count("out")) {
         fdml_errln("The following flags are required: --d1 --d2 --out");
         return FDML_RETCODE_MISSING_ARGS;
       } else
         query(d1, d2, out_filename);
-    }
-    else if (cmd == std::string("quit"))
+    } else if (cmd == std::string("quit"))
       quit = true;
     else {
       fdml_info("Unknown command: " << cmd);
@@ -176,7 +170,7 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string> &argv, bool &quit
       return FDML_RETCODE_UNKNOWN_ARGS;
     }
     return FDML_RETCODE_OK;
-  } catch (const std::exception &ex) {
+  } catch (const std::exception& ex) {
     fdml_errln(ex.what());
     return FDML_RETCODE_RUNTIME_ERR;
   }
@@ -187,7 +181,7 @@ void LocalizatorDaemon::check_state() const {
     throw std::runtime_error("Localizator wan't initialized");
 }
 
-int LocalizatorDaemon::daemon_main(int argc, const char *argv[]) {
+int LocalizatorDaemon::daemon_main(int argc, const char* argv[]) {
   try {
     std::string cmd_filename, ack_filename;
     boost::program_options::options_description desc{"Options"};
@@ -205,14 +199,13 @@ int LocalizatorDaemon::daemon_main(int argc, const char *argv[]) {
     else if (!vm.count("cmdfile") || !vm.count("ackfile")) {
       fdml_errln("The following flags are required: --cmdfile --ackfile");
       return FDML_RETCODE_MISSING_ARGS;
-    }
-    else {
+    } else {
       FDML::LocalizatorDaemon daemon(cmd_filename, ack_filename);
       daemon.run();
     }
     return FDML_RETCODE_OK;
 
-  } catch (const std::exception &ex) {
+  } catch (const std::exception& ex) {
     fdml_errln(ex.what());
     return FDML_RETCODE_RUNTIME_ERR;
   }

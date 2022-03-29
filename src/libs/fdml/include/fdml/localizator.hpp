@@ -18,7 +18,7 @@ private:
   struct TrapezoidOpening {
     Kernel::FT min;
     Kernel::FT max;
-    TrapezoidOpening(const Kernel::FT &min, const Kernel::FT &max) : min(min), max(max) {};
+    TrapezoidOpening(const Kernel::FT& min, const Kernel::FT& max) : min(min), max(max){};
   };
 
   typedef boost::geometry::model::point<Kernel::FT, 1, boost::geometry::cs::cartesian> TrapezoidRTreePoint;
@@ -47,7 +47,7 @@ public:
    *
    * @param scene simple polygon scene
    */
-  void init(const Polygon &scene);
+  void init(const Polygon& scene);
 
   /**
    * @brief Calculate all the points in the room a sensor might be after it measure d at some wall
@@ -55,7 +55,7 @@ public:
    * @param d the single measurement value
    * @param res collections of polygons representing all the possible points in the room a sensor might be at
    */
-  void query(const Kernel::FT &d, std::vector<Polygon> &res) const;
+  void query(const Kernel::FT& d, std::vector<Polygon>& res) const;
 
   /**
    * @brief Calculate all the points in the room a sensor might be after it measured d1 in a single direction and d2
@@ -65,7 +65,7 @@ public:
    * @param d2 the second measurement value
    * @param res collection of segments representing all the possible points in the room a sensor might be at
    */
-  void query(const Kernel::FT &d1, const Kernel::FT &d2, std::vector<Segment> &res) const;
+  void query(const Kernel::FT& d1, const Kernel::FT& d2, std::vector<Segment>& res) const;
 };
 
 } // namespace FDML
