@@ -33,10 +33,6 @@ else()
 endif()
 
 # Add some compiler options
-# if (WIN32)
-#   add_definitions(-GR)
-#   add_definitions(-vmg)
-# endif()
 
 # Use dynamic link for all FDML libraries
 add_definitions(-DFDML_ALL_DYN_LINK)
