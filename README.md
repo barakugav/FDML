@@ -61,30 +61,30 @@ scene.push_back(Point(0, 10));
 scene.push_back(Point(10, 10));
 scene.push_back(Point(10, 0));
 
-/* localizator is initiated with simple polygon scene */
-Localizator localizator;
-localizator.init(scene);
+/* locator is initiated with simple polygon scene */
+Locator locator;
+locator.init(scene);
 
 /* Assuming a robot is within the given scene, in an unknown location and an
  * unknown orientation, after performing a single distance measurement, the
- * localizator can be used to calculate all the possible location the robot
+ * locator can be used to calculate all the possible location the robot
  * might be in.
  * Queries of a single measurement result in a collection of areas representing
  * all the possible locations of the robot, each represented as polygon.
  */
 double robot_measurement = 5.7;
 std::vector<Polygon> single_res;
-localizator.query(robot_measurement, single_res);
+locator.query(robot_measurement, single_res);
 
 /* If the robot is able to perform a second distance measurement in the
- * opposite direction of the first measurement, the localizator can be used to
+ * opposite direction of the first measurement, the locator can be used to
  * calculate a more accurate localization result using the two measurements.
  * Queries of double measurements result in a collection of segments
  * representing all the possible locations of the robot.
  */
 double second_robot_measurement = 2.4;
 std::vector<Segment> double_res;
-localizator.query(robot_measurement, second_robot_measurement, double_res);
+locator.query(robot_measurement, second_robot_measurement, double_res);
 ```
 
 ## FDML-GUI
@@ -101,5 +101,5 @@ TODO
 
 ```bash
 python fdml-gui/fdmlgui/scene_designer.py
-python fdml-gui/fdmlgui/localizator_gui.py
+python fdml-gui/fdmlgui/locator_gui.py
 ```

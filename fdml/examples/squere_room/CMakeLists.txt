@@ -26,7 +26,7 @@ endif()
 add_executable( squere_room
   ${FDML_TOP}/src/trapezoid.cpp
   ${FDML_TOP}/src/trapezoider.cpp
-  ${FDML_TOP}/src/localizator.cpp
+  ${FDML_TOP}/src/locator.cpp
   ${EXAMPLE_TOP}/squere_room.cpp
 )
 include_directories ( squere_room ${FDML_TOP}/include/ )

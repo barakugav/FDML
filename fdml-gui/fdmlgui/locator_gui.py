@@ -6,7 +6,7 @@ import json
 import threading
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QFileDialog
-import localizator
+import locator
 import ctypes
 from geometrygui.gui import GUI
 from geometrygui.logger import Logger, Writer
@@ -54,7 +54,7 @@ class PolygonsScene():
         return success
 
 
-class LocalizatorGUIComponent(GUI):
+class LocatorGUIComponent(GUI):
     def __init__(self):
         super().__init__()
         self.set_program_name("Robot Localization")
@@ -227,15 +227,15 @@ class LocalizatorGUIComponent(GUI):
         self.set_button_text('clear_button', "Clear")
 
 
-class LocalizatorGUI:
+class LocatorGUI:
     def __init__(self, args=[]):
         self._app = QtWidgets.QApplication(args)
-        self._localizator = localizator.Localizator()
-        self._localizator_worker = None
-        self._localizator_worker_lock = threading.Lock()
-        self._localizator_query1_res = None
-        self._localizator_query2_res = None
-        self._gui_comp = LocalizatorGUIComponent()
+        self._locator = locator.Locator()
+        self._locator_worker = None
+        self._locator_worker_lock = threading.Lock()
+        self._locator_query1_res = None
+        self._locator_query2_res = None
+        self._gui_comp = LocatorGUIComponent()
         self._writer = Writer(self._gui_comp.logger)
         self._polygon_scene = PolygonsScene(self._gui_comp, self._writer)
         self._displayed_polygons = []
@@ -244,7 +244,7 @@ class LocalizatorGUI:
 
         self._setup_gui_logic()
         self._gui_comp.mainWindow.close_handlers.append(
-            self._finalize_localizator)
+            self._finalize_locator)
         self._gui_comp.mainWindow.signal_drop.connect(
             lambda path: self._gui_comp.set_field('scene', path))
 
@@ -255,37 +255,37 @@ class LocalizatorGUI:
             print(*args)
 
     def _load_scene(self):
-        with self._localizator_worker_lock:
-            if self._localizator_worker is not None:
+        with self._locator_worker_lock:
+            if self._locator_worker is not None:
                 self._print("last command is still in proccessing...")
                 return
-            self._localizator_worker = {}  # dummy place holder
+            self._locator_worker = {}  # dummy place holder
 
-        self._localizator.stop()
+        self._locator.stop()
         self._clear_displayed_result()
         self._gui_comp.clear_scene()
         scene_file = self._gui_comp.get_field('scene')
         success = self._polygon_scene.load_scene(scene_file)
         if not success:
-            with self._localizator_worker_lock:
-                self._localizator_worker = None
+            with self._locator_worker_lock:
+                self._locator_worker = None
             return
 
-        with self._localizator_worker_lock:
-            self._localizator_worker = Worker(
-                self._localizator_init, scene_file)
-            self._localizator_worker.signals.finished.connect(
-                self._localizator_init_done)
-        self._threadpool.start(self._localizator_worker)
+        with self._locator_worker_lock:
+            self._locator_worker = Worker(
+                self._locator_init, scene_file)
+            self._locator_worker.signals.finished.connect(
+                self._locator_init_done)
+        self._threadpool.start(self._locator_worker)
 
-    def _localizator_init(self, scene_filename, is_running):
-        self._print("Localizator init...")
-        self._localizator.run(scene_filename)
+    def _locator_init(self, scene_filename, is_running):
+        self._print("Locator init...")
+        self._locator.run(scene_filename)
 
-    def _localizator_init_done(self, is_running):
-        self._print("Localizator init is done")
-        with self._localizator_worker_lock:
-            self._localizator_worker = None
+    def _locator_init_done(self, is_running):
+        self._print("Locator init is done")
+        with self._locator_worker_lock:
+            self._locator_worker = None
 
     def _query1(self):
         self._clear_displayed_result()
@@ -299,34 +299,34 @@ class LocalizatorGUI:
             self._print("invalid d value")
             return
 
-        with self._localizator_worker_lock:
-            if self._localizator_worker is not None:
+        with self._locator_worker_lock:
+            if self._locator_worker is not None:
                 self._print("last command is still in proccessing...")
                 return
-            self._localizator_worker = Worker(self._localizator_query1, d)
-            self._localizator_worker.signals.finished.connect(
-                self._localizator_query1_done)
-        self._threadpool.start(self._localizator_worker)
+            self._locator_worker = Worker(self._locator_query1, d)
+            self._locator_worker.signals.finished.connect(
+                self._locator_query1_done)
+        self._threadpool.start(self._locator_worker)
 
-    def _localizator_query1(self, d, is_running):
-        self._print("Localizator query with d = ", d)
-        if not self._localizator.is_running():
-            self._print("Localizator was not initialized")
+    def _locator_query1(self, d, is_running):
+        self._print("Locator query with d = ", d)
+        if not self._locator.is_running():
+            self._print("Locator was not initialized")
             return
-        self._localizator_query1_res = self._localizator.query1(d)
+        self._locator_query1_res = self._locator.query1(d)
 
-    def _localizator_query1_done(self, is_running):
-        if self._localizator_query1_res is not None:
-            self._print("Localizator query is complete")
-            for polygon in self._localizator_query1_res:
+    def _locator_query1_done(self, is_running):
+        if self._locator_query1_res is not None:
+            self._print("Locator query is complete")
+            for polygon in self._locator_query1_res:
                 fill_color = QtGui.QColor(0, 0, 255, 100)
                 line_color = QtCore.Qt.transparent
                 gui_polygon = self._gui_comp.add_polygon(
                     polygon, fill_color, line_color)
                 self._displayed_polygons.append(gui_polygon)
-            self._localizator_query1_res = None
-        with self._localizator_worker_lock:
-            self._localizator_worker = None
+            self._locator_query1_res = None
+        with self._locator_worker_lock:
+            self._locator_worker = None
 
     def _query2(self):
         self._clear_displayed_result()
@@ -341,33 +341,33 @@ class LocalizatorGUI:
             self._print("invalid d1 d2 values")
             return
 
-        with self._localizator_worker_lock:
-            if self._localizator_worker is not None:
+        with self._locator_worker_lock:
+            if self._locator_worker is not None:
                 self._print("last command is still in proccessing...")
                 return
-            self._localizator_worker = Worker(self._localizator_query2, d1, d2)
-            self._localizator_worker.signals.finished.connect(
-                self._localizator_query2_done)
-        self._threadpool.start(self._localizator_worker)
+            self._locator_worker = Worker(self._locator_query2, d1, d2)
+            self._locator_worker.signals.finished.connect(
+                self._locator_query2_done)
+        self._threadpool.start(self._locator_worker)
 
-    def _localizator_query2(self, d1, d2, is_running):
-        self._print("Localizator query with d1 =", d1, "d2 =", d2)
-        if not self._localizator.is_running():
-            self._print("Localizator was not initialized")
+    def _locator_query2(self, d1, d2, is_running):
+        self._print("Locator query with d1 =", d1, "d2 =", d2)
+        if not self._locator.is_running():
+            self._print("Locator was not initialized")
             return
-        self._localizator_query2_res = self._localizator.query2(d1, d2)
+        self._locator_query2_res = self._locator.query2(d1, d2)
 
-    def _localizator_query2_done(self, is_running):
-        if self._localizator_query2_res is not None:
-            self._print("Localizator query is complete")
-            for segment in self._localizator_query2_res:
+    def _locator_query2_done(self, is_running):
+        if self._locator_query2_res is not None:
+            self._print("Locator query is complete")
+            for segment in self._locator_query2_res:
                 line_color = QtGui.QColor(0, 0, 255, 100)
                 gui_segment = self._gui_comp.add_segment(
                     segment[0][0], segment[0][1], segment[1][0], segment[1][1], line_color)
                 self._displayed_segments.append(gui_segment)
-            self._localizator_query2_res = []
-        with self._localizator_worker_lock:
-            self._localizator_worker = None
+            self._locator_query2_res = []
+        with self._locator_worker_lock:
+            self._locator_worker = None
 
     def _clear_displayed_result(self):
         for gui_polygon in self._displayed_polygons:
@@ -385,8 +385,8 @@ class LocalizatorGUI:
             file_path = dlg.selectedFiles()[0]
             self._gui_comp.set_field('scene', file_path)
 
-    def _finalize_localizator(self):
-        self._localizator.stop()
+    def _finalize_locator(self):
+        self._locator.stop()
 
     def _setup_gui_logic(self):
         self._gui_comp.set_logic('scene_open_dialog', self._open_scene_dialog)
@@ -402,10 +402,10 @@ class LocalizatorGUI:
 
 if __name__ == "__main__":
     if not (sys.platform == "linux" or sys.platform == "linux2"):
-        fdml_gui_appid = u'fdml.fdml_gui.localizator'
+        fdml_gui_appid = u'fdml.fdml_gui.locator'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
             fdml_gui_appid)
 
-    gui = LocalizatorGUI(sys.argv)
+    gui = LocatorGUI(sys.argv)
     ret = gui.run()
     sys.exit(ret)

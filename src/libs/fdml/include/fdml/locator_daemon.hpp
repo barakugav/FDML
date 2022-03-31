@@ -1,24 +1,24 @@
-#ifndef FDML_LOCALIZATOR_DAEMON_HPP
-#define FDML_LOCALIZATOR_DAEMON_HPP
+#ifndef FDML_LOCATOR_DAEMON_HPP
+#define FDML_LOCATOR_DAEMON_HPP
 
-#include "fdml/localizator.hpp"
+#include "fdml/locator.hpp"
 
 namespace FDML {
 
 /**
- * @brief Wrapper daemon for the Localizator class. Provide files communication with another proccess.
+ * @brief Wrapper daemon for the Locator class. Provide files communication with another proccess.
  */
-class LocalizatorDaemon {
+class LocatorDaemon {
 private:
   /* file used to pass commands to the daemon */
   std::string cmd_filename;
   /* file used to acknowledge the user of the daemon when a command is finished */
   std::string ack_filename;
-  /* The underlying Localizator */
-  std::unique_ptr<Localizator> localizator;
+  /* The underlying Locator */
+  std::unique_ptr<Locator> locator;
 
 public:
-  LocalizatorDaemon(const std::string& cmd_filename, const std::string& ack_filename);
+  LocatorDaemon(const std::string& cmd_filename, const std::string& ack_filename);
 
   /**
    * @brief Load a scene from a json file

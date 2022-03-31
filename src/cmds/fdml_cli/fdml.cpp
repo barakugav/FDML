@@ -2,7 +2,7 @@
 
 #include "fdml/internal/json_utils.hpp"
 #include "fdml/internal/utils.hpp"
-#include "fdml/localizator.hpp"
+#include "fdml/locator.hpp"
 #include "fdml/retcode.hpp"
 
 namespace FDML {
@@ -58,19 +58,19 @@ int fdml_main(int argc, const char* argv[]) {
 
     Polygon scene = JsonUtils::read_scene(scenefile);
 
-    Localizator localizator;
-    localizator.init(scene);
+    Locator locator;
+    locator.init(scene);
 
     std::vector<Polygon> polygons;
     std::vector<Segment> segments;
 
     switch (command_type) {
     case CMD_QUERY1:
-      localizator.query(d, polygons);
+      locator.query(d, polygons);
       JsonUtils::write_polygons(polygons, resfile);
       break;
     case CMD_QUERY2:
-      localizator.query(d1, d2, segments);
+      locator.query(d1, d2, segments);
       JsonUtils::write_segments(segments, resfile);
       break;
     default:

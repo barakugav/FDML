@@ -30,7 +30,7 @@ def kill_all_daemons():
 atexit.register(kill_all_daemons)
 
 
-class Localizator:
+class Locator:
     def __init__(self):
         self.working_dir = tempfile.mkdtemp()
         self.daemon_id = None
@@ -41,13 +41,13 @@ class Localizator:
         self.daemon = None
         self.lock = threading.Lock()
 
-        if Localizator.get_daemon_exe(verbose=True) is None:
+        if Locator.get_daemon_exe(verbose=True) is None:
             raise ValueError()
 
     def __del__(self):
         with self.lock:
             if self.is_running():
-                print("Localizator was not stopped! terminating.")
+                print("Locator was not stopped! terminating.")
                 self.daemon.kill()
         shutil.rmtree(self.working_dir)
 
@@ -84,7 +84,7 @@ class Localizator:
             self.logfile = open(os.path.join(
                 working_dir, ".logfile"), "a")
 
-            cmd = [Localizator.get_daemon_exe(), "--cmdfile",
+            cmd = [Locator.get_daemon_exe(), "--cmdfile",
                    self.cmdfile, "--ackfile", self.ackfile]
             self.daemon = subprocess.Popen(
                 cmd, stdout=self.logfile,  stderr=self.logfile)
@@ -118,7 +118,7 @@ class Localizator:
 
     def _exec_cmd(self, cmd):
         if not self.is_running():
-            raise ValueError("invalid state: localizator is not running")
+            raise ValueError("invalid state: locator is not running")
         with open(self.cmdfile, "w") as cmdfile:
             cmdfile.write(cmd)
         while not os.path.isfile(self.ackfile):

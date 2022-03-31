@@ -14,14 +14,14 @@ endif()
 
 # The source files:
 set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/json_utils.cpp)
-set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/localizator.cpp)
-set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/localizator_daemon.cpp)
+set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/locator.cpp)
+set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/locator_daemon.cpp)
 set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/trapezoid.cpp)
 set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/trapezoider.cpp)
 
 set(FDML_HDR_FILES ${FDML_HDR_FILES} include/fdml/defs.hpp)
-set(FDML_HDR_FILES ${FDML_HDR_FILES} include/fdml/localizator_daemon.hpp)
-set(FDML_HDR_FILES ${FDML_HDR_FILES} include/fdml/localizator.hpp)
+set(FDML_HDR_FILES ${FDML_HDR_FILES} include/fdml/locator_daemon.hpp)
+set(FDML_HDR_FILES ${FDML_HDR_FILES} include/fdml/locator.hpp)
 set(FDML_HDR_FILES ${FDML_HDR_FILES} include/fdml/retcode.hpp)
 set(FDML_HDR_FILES ${FDML_HDR_FILES} include/fdml/trapezoider.hpp)
 set(FDML_HDR_FILES ${FDML_HDR_FILES} include/fdml/trapezoid.hpp)

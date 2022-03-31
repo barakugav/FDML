@@ -1,5 +1,5 @@
-#ifndef FDML_LOCALIZATOR_HPP
-#define FDML_LOCALIZATOR_HPP
+#ifndef FDML_LOCATOR_HPP
+#define FDML_LOCATOR_HPP
 
 #include "fdml/defs.hpp"
 #include "fdml/trapezoider.hpp"
@@ -9,11 +9,11 @@
 namespace FDML {
 
 /**
- * @brief The localizator class is used to preproccess a simple polygon room, and to query the possible positions a
+ * @brief The locator class is used to preproccess a simple polygon room, and to query the possible positions a
  * sensor might be in the room given one or two measeraments.
  *
  */
-class Localizator {
+class Locator {
 private:
   struct TrapezoidOpening {
     Kernel::FT min;
@@ -40,10 +40,10 @@ private:
   TrapezoidRTree rtree;
 
 public:
-  Localizator() {}
+  Locator() {}
 
   /**
-   * @brief Init the localizator with a simple polygon room
+   * @brief Init the locator with a simple polygon room
    *
    * @param scene simple polygon scene
    */

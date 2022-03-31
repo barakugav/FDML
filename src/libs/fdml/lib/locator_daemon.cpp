@@ -6,7 +6,7 @@
 
 #include "fdml/internal/json_utils.hpp"
 #include "fdml/internal/utils.hpp"
-#include "fdml/localizator_daemon.hpp"
+#include "fdml/locator_daemon.hpp"
 #include "fdml/retcode.hpp"
 
 namespace FDML {
@@ -39,47 +39,47 @@ static void parse_cmd_from_file(const std::string& filename, std::vector<std::st
   split(cmd, ' ', argv);
 }
 
-LocalizatorDaemon::LocalizatorDaemon(const std::string& cmd_filename, const std::string& ack_filename)
-    : cmd_filename(cmd_filename), ack_filename(ack_filename), localizator(nullptr) {}
+LocatorDaemon::LocatorDaemon(const std::string& cmd_filename, const std::string& ack_filename)
+    : cmd_filename(cmd_filename), ack_filename(ack_filename), locator(nullptr) {}
 
-void LocalizatorDaemon::load_scene(const std::string& scene_filename) {
-  fdml_infoln("[LocalizatorDaemon] Init with scene: " << scene_filename);
+void LocatorDaemon::load_scene(const std::string& scene_filename) {
+  fdml_infoln("[LocatorDaemon] Init with scene: " << scene_filename);
 
   try {
-    if (localizator)
-      localizator.reset();
+    if (locator)
+      locator.reset();
 
     Polygon scene = JsonUtils::read_scene(scene_filename);
-    localizator = std::make_unique<Localizator>();
-    localizator->init(scene);
+    locator = std::make_unique<Locator>();
+    locator->init(scene);
 
   } catch (const std::exception& e) {
-    if (localizator)
-      localizator.reset();
+    if (locator)
+      locator.reset();
     throw e;
   }
 }
 
-void LocalizatorDaemon::query(double d, const std::string& outfile) const {
-  fdml_infoln("[LocalizatorDaemon] Query1: " << d);
+void LocatorDaemon::query(double d, const std::string& outfile) const {
+  fdml_infoln("[LocatorDaemon] Query1: " << d);
   check_state();
 
   std::vector<Polygon> polygons;
-  localizator->query(d, polygons);
+  locator->query(d, polygons);
   JsonUtils::write_polygons(polygons, outfile);
 }
 
-void LocalizatorDaemon::query(double d1, double d2, const std::string& outfile) const {
-  fdml_infoln("[LocalizatorDaemon] Query2: " << d1 << " " << d2);
+void LocatorDaemon::query(double d1, double d2, const std::string& outfile) const {
+  fdml_infoln("[LocatorDaemon] Query2: " << d1 << " " << d2);
   check_state();
 
   std::vector<Segment> segments;
-  localizator->query(d1, d2, segments);
+  locator->query(d1, d2, segments);
   JsonUtils::write_segments(segments, outfile);
 }
 
-void LocalizatorDaemon::run() {
-  fdml_infoln("[LocalizatorDaemon] Daemon is running. Waiting for next command...");
+void LocatorDaemon::run() {
+  fdml_infoln("[LocatorDaemon] Daemon is running. Waiting for next command...");
   while (true) {
     if (!file_exists(ack_filename) && file_exists(cmd_filename)) {
       std::vector<std::string> argv;
@@ -93,16 +93,16 @@ void LocalizatorDaemon::run() {
       ackfile.close();
       if (quit)
         break;
-      fdml_infoln("[LocalizatorDaemon] Command proccessed. Waiting for next command...");
+      fdml_infoln("[LocatorDaemon] Command proccessed. Waiting for next command...");
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(100)); /* 0.1 sec */
     fdml_debug(".");
   }
-  fdml_infoln("[LocalizatorDaemon] Quit.");
+  fdml_infoln("[LocatorDaemon] Quit.");
 }
 
-int LocalizatorDaemon::exec_cmd(const std::vector<std::string>& argv, bool& quit) {
-  fdml_debug("[LocalizatorDaemon] executing command:");
+int LocatorDaemon::exec_cmd(const std::vector<std::string>& argv, bool& quit) {
+  fdml_debug("[LocatorDaemon] executing command:");
   for (const auto& arg : argv)
     fdml_debug(' ' << arg);
   fdml_debugln("");
@@ -114,7 +114,7 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string>& argv, bool& quit
       return FDML_RETCODE_TOO_MANY_ARGS;
     }
     const char* argv_arr[MAX_ARGS_NUM + 1];
-    argv_arr[0] = "localizator_daemon";
+    argv_arr[0] = "locator_daemon";
     for (unsigned int i = 0; i < argv.size(); i++)
       argv_arr[1 + i] = argv[i].c_str();
     int argc = 1 + argv.size();
@@ -176,12 +176,12 @@ int LocalizatorDaemon::exec_cmd(const std::vector<std::string>& argv, bool& quit
   }
 }
 
-void LocalizatorDaemon::check_state() const {
-  if (!localizator)
-    throw std::runtime_error("Localizator wan't initialized");
+void LocatorDaemon::check_state() const {
+  if (!locator)
+    throw std::runtime_error("Locator wasn't initialized");
 }
 
-int LocalizatorDaemon::daemon_main(int argc, const char* argv[]) {
+int LocatorDaemon::daemon_main(int argc, const char* argv[]) {
   try {
     std::string cmd_filename, ack_filename;
     boost::program_options::options_description desc{"Options"};
@@ -200,7 +200,7 @@ int LocalizatorDaemon::daemon_main(int argc, const char* argv[]) {
       fdml_errln("The following flags are required: --cmdfile --ackfile");
       return FDML_RETCODE_MISSING_ARGS;
     } else {
-      FDML::LocalizatorDaemon daemon(cmd_filename, ack_filename);
+      FDML::LocatorDaemon daemon(cmd_filename, ack_filename);
       daemon.run();
     }
     return FDML_RETCODE_OK;
