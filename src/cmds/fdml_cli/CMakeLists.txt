@@ -1,9 +1,10 @@
 # Add source files
-set(FDML_DAEMON_SOURCE_FILES ${FDML_DAEMON_SOURCE_FILES} fdml.cpp)
+set(FDML_CLI_SOURCE_FILES ${FDML_CLI_SOURCE_FILES} fdml_cli.cpp)
+set(FDML_CLI_SOURCE_FILES ${FDML_CLI_SOURCE_FILES} ../../libs/fdml/lib/json_utils.cpp)
 
 ###############################################################################
 
-add_executable(fdml_cli ${FDML_DAEMON_SOURCE_FILES})
+add_executable(fdml_cli ${FDML_CLI_SOURCE_FILES})
 
 ###############################################################################
 
