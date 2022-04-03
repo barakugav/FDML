@@ -1,5 +1,5 @@
-include(WriteCompilerDetectionHeader)
-include(CheckLibraryExists)
+# include(WriteCompilerDetectionHeader)
+# include(CheckLibraryExists)
 
 set(FDML_LIB_DIR "${CMAKE_BINARY_DIR}/src/libs/fdml")
 
@@ -35,10 +35,10 @@ source_group(src FILES ${FDML_SRC_FILES} ${FDML_HDR_FILES})
 
 if (BUILD_SHARED_LIBS)
   add_definitions(-DFDML_ALL_DYN_LINK)
-  add_library(FDML SHARED ${FDML_SRC_FILES})
+  add_library(fdml SHARED ${FDML_SRC_FILES})
   set (CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
 else()
-  add_library(FDML STATIC ${FDML_SRC_FILES})
+  add_library(fdml STATIC ${FDML_SRC_FILES})
 endif()
 
 ###############################################################################
@@ -70,23 +70,21 @@ if (FDML_WITH_PYBINDINGS)
 
   find_package(PythonLibs ${FDML_PY_MAJOR_DOT_MINOR_VERSION} EXACT REQUIRED)
   find_package(Boost ${FDML_BOOST_MIN_VERSION} REQUIRED COMPONENTS
-    system thread
+    system thread program_options
     python${FDML_PY_MAJOR_MINOR_VERSION} numpy${FDML_PY_MAJOR_MINOR_VERSION})
 
   include_directories(${PYTHON_INCLUDE_DIRS})
   add_definitions(-DFDML_BUILD_PYBINDINGS)
-  add_library(FDMLPY SHARED ${FDML_SOURCE_FILES} lib/pybindings.cpp)
-  target_link_directories(FDMLPY PRIVATE ${OpenCASCADE_LIBRARY_DIR})
-  target_link_libraries(FDMLPY PRIVATE
-    FDML
-    ${OpenCASCADE_LIBRARIES}
+  add_library(fdmlpy SHARED ${FDML_SOURCE_FILES} lib/fdml_pybindings.cpp)
+  target_link_libraries(fdmlpy PRIVATE
+    fdml
     ${Boost_LIBRARIES}
     ${PYTHON_LIBRARIES}
     ${CMAKE_DL_LIBS}
     ${EXTRA_LIBS} boost_python38)
   # don't prepend wrapper library name with lib
-  set_target_properties(FDMLPY PROPERTIES PREFIX "")
-  set_target_properties(FDMLPY PROPERTIES OUTPUT_NAME FDML)
+  set_target_properties(fdmlpy PROPERTIES PREFIX "")
+  set_target_properties(fdmlpy PROPERTIES OUTPUT_NAME fdml)
 endif()
 
 ###############################################################################
@@ -106,7 +104,7 @@ add_definitions(-DFDML_LIB)
 #   add_definitions(-DGL_GLEXT_PROTOTYPES)
 # endif(WIN32)
 
-set_target_properties(FDML PROPERTIES
+set_target_properties(fdml PROPERTIES
   VERSION "${FDML_SOVERSION}"
   SOVERSION "${FDML_SONAME_VERSION}")
 
@@ -118,10 +116,7 @@ set_target_properties(FDML PROPERTIES
 #   endif(APPLE)
 # endif(NOT WIN32)
 
-# List ${OpenCASCADE_LIBRARIES} twice because either there are inter
-# dependencies between the libraries of open cascade that cannot be resolved
-# or the order of the libraries in the list is simply wrong.
-target_link_libraries(FDML PRIVATE
+target_link_libraries(fdml PRIVATE
   ${Boost_LIBRARIES}
   ${NON_WIN32_LIBRARIES}
   ${CMAKE_DL_LIBS}
@@ -132,12 +127,12 @@ target_link_libraries(FDML PRIVATE
 ################################################################################
 # Copy stubs
 if (FDML_WITH_PYBINDINGS)
-set (FDML_SRC_STUBS_DIR "${CMAKE_CURRENT_LIST_DIR}/stubs")
-set (FDML_STUBS_SRC_FILES FDML.pyi)
-foreach(name IN LISTS FDML_STUBS_SRC_FILES)
-  set (FDML_STUBS ${FDML_STUBS} ${FDML_LIB_DIR}/${name})
-  configure_file(${FDML_SRC_STUBS_DIR}/${name} ${FDML_LIB_DIR}/${name})
-endforeach()
+  set (FDML_SRC_STUBS_DIR "${CMAKE_CURRENT_LIST_DIR}/stubs")
+  set (FDML_STUBS_SRC_FILES fdml.pyi)
+  foreach(name IN LISTS FDML_STUBS_SRC_FILES)
+    set (FDML_STUBS ${FDML_STUBS} ${FDML_LIB_DIR}/${name})
+    configure_file(${FDML_SRC_STUBS_DIR}/${name} ${FDML_LIB_DIR}/${name})
+  endforeach()
 endif()
 
 ################################################################################
@@ -145,10 +140,10 @@ endif()
 ################################################################################
 # Copy setup
 if (FDML_WITH_PYBINDINGS)
-set (FDML_SRC_SETUP_DIR "${CMAKE_CURRENT_LIST_DIR}/scripts")
-configure_file(${FDML_SRC_SETUP_DIR}/setup.py ${FDML_LIB_DIR}/setup.py)
-configure_file(${FDML_SRC_SETUP_DIR}/README ${FDML_LIB_DIR}/README)
-set (FDML_SETUP_FILES ${FDML_LIB_DIR}/setup.py ${FDML_LIB_DIR}/README)
+  set (FDML_SRC_SETUP_DIR "${CMAKE_CURRENT_LIST_DIR}")
+  configure_file(${FDML_SRC_SETUP_DIR}/setup.py ${FDML_LIB_DIR}/setup.py)
+  configure_file(${FDML_SRC_SETUP_DIR}/README.rst ${FDML_LIB_DIR}/README.rst)
+  set (FDML_SETUP_FILES ${FDML_LIB_DIR}/setup.py ${FDML_LIB_DIR}/README)
 endif()
 
 ################################################################################
@@ -156,28 +151,28 @@ endif()
 ################################################################################
 # Setup application
 if (FDML_WITH_PYBINDINGS)
-set (FDML_BUILD_OUTPUT_DIR "${FDML_LIB_DIR}/dist")
-set (FDML_TAR ${FDML_BUILD_OUTPUT_DIR}/FDML-1.0.tar.gz)
-set (FDML_WHL ${FDML_BUILD_OUTPUT_DIR}/FDML-1.0-py3-none-any.whl)
-set (FDML_BUILD_OUTPUT ${FDML_TAR} ${FDML_WHL})
-set (FDML_BUILD_CMD ${Python3_EXECUTABLE})
-set (FDML_BUILD_ARGS -m build ${FDML_LIB_DIR})
-set (FDML_BUILD_DEPENDS FDMLPY ${FDML_STUBS} ${FDML_SETUP_FILES})
-add_custom_command(
-  OUTPUT ${FDML_BUILD_OUTPUT}
-  COMMAND ${FDML_BUILD_CMD}
-  ARGS ${FDML_BUILD_ARGS}
-  DEPENDS ${FDML_BUILD_DEPENDS})
+  set (FDML_BUILD_OUTPUT_DIR "${FDML_LIB_DIR}/dist")
+  set (FDML_TAR ${FDML_BUILD_OUTPUT_DIR}/FDML-1.0.tar.gz)
+  set (FDML_WHL ${FDML_BUILD_OUTPUT_DIR}/FDML-1.0-py3-none-any.whl)
+  set (FDML_BUILD_OUTPUT ${FDML_TAR} ${FDML_WHL})
+  set (FDML_BUILD_CMD ${Python3_EXECUTABLE})
+  set (FDML_BUILD_ARGS -m build ${FDML_LIB_DIR})
+  set (FDML_BUILD_DEPENDS fdmlpy ${FDML_STUBS} ${FDML_SETUP_FILES})
+  add_custom_command(
+    OUTPUT ${FDML_BUILD_OUTPUT}
+    COMMAND ${FDML_BUILD_CMD}
+    ARGS ${FDML_BUILD_ARGS}
+    DEPENDS ${FDML_BUILD_DEPENDS})
 
-add_custom_target(FDML_BUILD ALL DEPENDS ${FDML_BUILD_OUTPUT})
+  add_custom_target(FDML_BUILD ALL DEPENDS ${FDML_BUILD_OUTPUT})
 endif()
 
 ################################################################################
 # Installation
 ################################################################################
-set_property(TARGET FDML PROPERTY INSTALL_RPATH_USE_LINK_PATH TRUE)
+set_property(TARGET fdml PROPERTY INSTALL_RPATH_USE_LINK_PATH TRUE)
 if (FDML_WITH_PYBINDINGS)
-  set_property(TARGET FDMLPY PROPERTY INSTALL_RPATH_USE_LINK_PATH TRUE)
+  set_property(TARGET fdmlpy PROPERTY INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
 set(FDML_FDML_INCLUDE_DIRS
@@ -190,7 +185,7 @@ foreach (dir ${FDML_FDML_INCLUDE_DIRS})
   list (APPEND FDML_PUBLIC_HEADERS ${FDML_TMP})
 endforeach()
 
-set_target_properties(FDML PROPERTIES PUBLIC_HEADER "${FDML_PUBLIC_HEADERS}")
+set_target_properties(fdml PROPERTIES PUBLIC_HEADER "${FDML_PUBLIC_HEADERS}")
 
 # Generate files suitable for preprocessor inclusion; these files contain
 # macros to be used in source code
@@ -206,7 +201,7 @@ install(FILES
   ${support_files}
   DESTINATION include/compilers)
 
-install(TARGETS FDML
+install(TARGETS fdml
   EXPORT FDMLTargets
   RUNTIME DESTINATION ${FDML_INSTALL_BIN_DIR} COMPONENT bin
   LIBRARY DESTINATION ${FDML_INSTALL_LIB_DIR} COMPONENT shlib
