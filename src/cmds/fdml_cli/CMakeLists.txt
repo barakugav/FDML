@@ -1,9 +1,10 @@
 # Add source files
-set(FDML_DAEMON_SOURCE_FILES ${FDML_DAEMON_SOURCE_FILES} fdml.cpp)
+set(FDML_CLI_SOURCE_FILES ${FDML_CLI_SOURCE_FILES} fdml_cli.cpp)
+set(FDML_CLI_SOURCE_FILES ${FDML_CLI_SOURCE_FILES} ../../libs/fdml/lib/json_utils.cpp)
 
 ###############################################################################
 
-add_executable(fdml_cli ${FDML_DAEMON_SOURCE_FILES})
+add_executable(fdml_cli ${FDML_CLI_SOURCE_FILES})
 
 ###############################################################################
 
@@ -24,13 +25,6 @@ if (FDML_USE_STATIC_LIBS)
 endif()
 
 ################################################################################
-
-# Handle generated files
-
-set (GENERATED_BASE_DIR "${CMAKE_BINARY_DIR}/src/libs/FDML")
-set (GENERATED_DIR "${CMAKE_BINARY_DIR}/src/libs/FDML/generated")
-set (GENERATED_LIB_DIR "${GENERATED_BASE_DIR}/lib/generated")
-set (GENERATED_INC_DIR "${GENERATED_BASE_DIR}/include/generated")
 
 # Add definitions
 
@@ -56,6 +50,7 @@ else ()
 endif()
 
 include_directories(../../libs/fdml/include)
+include_directories(${CMAKE_BINARY_DIR}/src/libs/fdml/include)
 include_directories(${Boost_INCLUDE_DIR})
 
 # Link
@@ -64,7 +59,7 @@ if (FDML_USE_STATIC_LIBS)
   set(CMAKE_EXE_LINKER_FLAGS "-static")
 endif()
 target_link_libraries(fdml_cli PRIVATE
-  FDML
+  fdml
   ${Boost_LIBRARIES})
 
 if (NOT FDML_USE_STATIC_LIBS)

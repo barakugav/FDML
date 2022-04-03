@@ -1,6 +1,7 @@
 #ifndef FDML_LOCATOR_DAEMON_HPP
 #define FDML_LOCATOR_DAEMON_HPP
 
+#include "fdml/config.hpp"
 #include "fdml/locator.hpp"
 
 namespace FDML {
@@ -8,7 +9,7 @@ namespace FDML {
 /**
  * @brief Wrapper daemon for the Locator class. Provide files communication with another proccess.
  */
-class LocatorDaemon {
+class FDML_FDML_DECL LocatorDaemon {
 private:
   /* file used to pass commands to the daemon */
   std::string cmd_filename;

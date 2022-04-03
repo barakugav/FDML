@@ -25,13 +25,6 @@ endif()
 
 ################################################################################
 
-# Handle generated files
-
-set (GENERATED_BASE_DIR "${CMAKE_BINARY_DIR}/src/libs/FDML")
-set (GENERATED_DIR "${CMAKE_BINARY_DIR}/src/libs/FDML/generated")
-set (GENERATED_LIB_DIR "${GENERATED_BASE_DIR}/lib/generated")
-set (GENERATED_INC_DIR "${GENERATED_BASE_DIR}/include/generated")
-
 # Add definitions
 
 if (BUILD_SHARED_LIBS)
@@ -46,6 +39,7 @@ endif()
 # Add include dirs
 
 include_directories(../../libs/fdml/include)
+include_directories(${CMAKE_BINARY_DIR}/src/libs/fdml/include)
 include_directories(${Boost_INCLUDE_DIR})
 
 # Link
@@ -54,7 +48,7 @@ if (FDML_USE_STATIC_LIBS)
   set(CMAKE_EXE_LINKER_FLAGS "-static")
 endif()
 target_link_libraries(fdml_daemon PRIVATE
-  FDML
+  fdml
   ${Boost_LIBRARIES})
 
 if (NOT FDML_USE_STATIC_LIBS)

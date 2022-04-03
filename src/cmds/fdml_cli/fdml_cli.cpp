@@ -7,7 +7,7 @@
 
 namespace FDML {
 
-int fdml_main(int argc, const char* argv[]) {
+int fdml_cli_main(int argc, const char* argv[]) {
   try {
     std::string scenefile, cmd;
     std::string resfile;
@@ -88,5 +88,5 @@ int fdml_main(int argc, const char* argv[]) {
 } // namespace FDML
 
 int main(int argc, const char* argv[]) {
-  FDML::fdml_main(argc, argv);
+  FDML::fdml_cli_main(argc, argv);
 }

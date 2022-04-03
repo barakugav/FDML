@@ -1,6 +1,7 @@
 #ifndef FDML_LOCATOR_HPP
 #define FDML_LOCATOR_HPP
 
+#include "fdml/config.hpp"
 #include "fdml/defs.hpp"
 #include "fdml/trapezoider.hpp"
 
@@ -13,7 +14,7 @@ namespace FDML {
  * sensor might be in the room given one or two measeraments.
  *
  */
-class Locator {
+class FDML_FDML_DECL Locator {
 private:
   struct TrapezoidOpening {
     Kernel::FT min;
