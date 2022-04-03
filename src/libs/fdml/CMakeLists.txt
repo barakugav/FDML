@@ -12,6 +12,9 @@ endif()
 
 ################################################################################
 
+# Generate version.hpp
+configure_file(version.hpp.in include/fdml/version.hpp)
+
 # The source files:
 set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/json_utils.cpp)
 set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/locator.cpp)
@@ -90,8 +93,8 @@ endif()
 ###############################################################################
 
 # Add include directories
-include_directories(include/)
-include_directories(include/fdml)
+include_directories(include)
+include_directories(${CMAKE_BINARY_DIR}/src/libs/fdml/include)
 include_directories(${Boost_INCLUDE_DIR})
 
 # Add defines
@@ -105,8 +108,8 @@ add_definitions(-DFDML_LIB)
 # endif(WIN32)
 
 set_target_properties(fdml PROPERTIES
-  VERSION "${FDML_SOVERSION}"
-  SOVERSION "${FDML_SONAME_VERSION}")
+  VERSION "${CMAKE_PROJECT_VERSION}"
+  SOVERSION "${CMAKE_PROJECT_VERSION_MAJOR}")
 
 # Add links
 # if (NOT WIN32)
@@ -143,7 +146,7 @@ if (FDML_WITH_PYBINDINGS)
   set (FDML_SRC_SETUP_DIR "${CMAKE_CURRENT_LIST_DIR}")
   configure_file(${FDML_SRC_SETUP_DIR}/setup.py ${FDML_LIB_DIR}/setup.py)
   configure_file(${FDML_SRC_SETUP_DIR}/README.rst ${FDML_LIB_DIR}/README.rst)
-  set (FDML_SETUP_FILES ${FDML_LIB_DIR}/setup.py ${FDML_LIB_DIR}/README)
+  set (FDML_SETUP_FILES ${FDML_LIB_DIR}/setup.py ${FDML_LIB_DIR}/README.rst)
 endif()
 
 ################################################################################

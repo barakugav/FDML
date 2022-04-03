@@ -1,10 +1,13 @@
 from distutils.core import setup
 package_data = {'': ['fdml.so', 'fdml.pyi']}
 setup(name='fdml',
-      version='1.0',
+      version='@CMAKE_PROJECT_VERSION_MAJOR@.@CMAKE_PROJECT_VERSION_MINOR@',
+      description='Few Distance Measurements Robot Localization Library',
       py_modules=['fdml'],
       packages=[''],
-      author='Barak Ugav',
-      author_email='barakugav@gmail.com',
-      url='https://barakugav.com',
-      package_data=package_data)
+      platforms=['any'],
+      author='@FDML_PROJECT_AUTHORS@',
+      author_email='@FDML_PROJECT_EMAILS@',
+      url='@FDML_PROJECT_URL@',
+      package_data=package_data,
+      license='GPLv3+')
