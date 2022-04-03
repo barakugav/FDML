@@ -38,7 +38,6 @@ source_group(src FILES ${FDML_SRC_FILES} ${FDML_HDR_FILES})
 
 if (BUILD_SHARED_LIBS)
   add_definitions(-DFDML_ALL_DYN_LINK)
-    set (CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
   add_library(fdml SHARED ${FDML_SRC_FILES})
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set (CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
@@ -91,13 +90,26 @@ if (FDML_WITH_PYBINDINGS)
   # don't prepend wrapper library name with lib
   set_target_properties(fdmlpy PROPERTIES PREFIX "")
   set_target_properties(fdmlpy PROPERTIES OUTPUT_NAME fdml)
+  set (FDMLPY_LIBRARY_SUFFIX ".so")
+  if(WIN32)
+    set (FDMLPY_LIBRARY_SUFFIX ".pyd")
+    set_target_properties(fdmlpy PROPERTIES SUFFIX ".pyd")
+  elseif(APPLE)
+    set (FDMLPY_LIBRARY_SUFFIX ".so")
+    set_target_properties(fdmlpy PROPERTIES BUNDLE ON)
+  endif()
+  # Use a generator expression to get rid of per-configuration subdirectory appended by
+  # Multi-configuration generators (e.g Visual Studio)
+  # https://cmake.org/cmake/help/latest/prop_tgt/LIBRARY_OUTPUT_DIRECTORY.html
+  set_target_properties(fdmlpy PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${FDML_LIB_DIR}/$<0:>)
+  set (FDMLPY_TARGET_LINKER_FILE "fdml${FDMLPY_LIBRARY_SUFFIX}")
 endif()
 
 ###############################################################################
 
 # Add include directories
 include_directories(include)
-include_directories(${CMAKE_BINARY_DIR}/src/libs/fdml/include)
+include_directories(${FDML_LIB_DIR}/include)
 include_directories(${Boost_INCLUDE_DIR})
 
 # Add defines

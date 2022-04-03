@@ -1,5 +1,5 @@
 from distutils.core import setup
-package_data = {'': ['fdml.so', 'fdml.pyi']}
+package_data = {'': ['@FDMLPY_TARGET_LINKER_FILE@', 'fdml.pyi']}
 setup(name='fdml',
       version='@CMAKE_PROJECT_VERSION_MAJOR@.@CMAKE_PROJECT_VERSION_MINOR@',
       description='Few Distance Measurements Robot Localization Library',
