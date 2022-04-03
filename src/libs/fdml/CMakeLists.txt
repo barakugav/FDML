@@ -45,10 +45,6 @@ endif()
 
 # Find packages
 
-if (FDML_USE_STATIC_LIBS)
-  set_target_properties(FDML PROPERTIES LINK_SEARCH_START_STATIC 1)
-endif()
-
 find_package(Boost ${FDML_BOOST_MIN_VERSION} REQUIRED COMPONENTS system thread filesystem program_options json)
 
 if (FDML_USE_STATIC_LIBS)
@@ -59,7 +55,7 @@ endif()
 
 CHECK_LIBRARY_EXISTS(m sin "" HAVE_LIB_M)
 if (HAVE_LIB_M)
-    set(EXTRA_LIBS ${EXTRA_LIBS} m)
+  set(EXTRA_LIBS ${EXTRA_LIBS} m)
 endif (HAVE_LIB_M)
 
 ###############################################################################
@@ -214,7 +210,7 @@ install(TARGETS FDML
   EXPORT FDMLTargets
   RUNTIME DESTINATION ${FDML_INSTALL_BIN_DIR} COMPONENT bin
   LIBRARY DESTINATION ${FDML_INSTALL_LIB_DIR} COMPONENT shlib
-  PUBLIC_HEADER DESTINATION "${FDML_INSTALL_INC_DIR}/FDML" COMPONENT dev
+  PUBLIC_HEADER DESTINATION "${FDML_INSTALL_INC_DIR}/fdml" COMPONENT dev
   ARCHIVE DESTINATION ${FDML_INSTALL_LIB_DIR})
 
 if (FDML_WITH_PYBINDINGS)
