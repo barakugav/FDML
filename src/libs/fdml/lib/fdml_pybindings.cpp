@@ -32,6 +32,14 @@ void export_kernel() {
   export_ft<FT>(ftc);
 }
 
+bp::list query1(const FDML::Locator& locator, const FDML::Kernel::FT& d) {
+  std::vector<FDML::Polygon> pgns;
+  bp::list lst;
+  locator.query(d, pgns);
+  for (auto pgn : pgns) lst.append(pgn);
+  return lst;
+}
+
 BOOST_PYTHON_MODULE(fdml) {
   typedef FDML::Kernel::FT      FT;
   typedef FDML::Polygon         Polygon;
@@ -49,12 +57,13 @@ BOOST_PYTHON_MODULE(fdml) {
     export_polygon_with_holes_2();
   };
 
-  using Query1 = void(Locator::*)(const FT& d, std::vector<Polygon>& res) const;
-  using Query2 = void(Locator::*)(const FT& d1, const FT& d2, std::vector<Segment>& res) const;
+  // using Query1 = void(Locator::*)(const FT& d, std::vector<Polygon>& res) const;
+  // using Query2 = void(Locator::*)(const FT& d1, const FT& d2, std::vector<Segment>& res) const;
 
   bp::class_<FDML::Locator>("Locator", bp::init<>())
     .def("init", &Locator::init)
-    .def<Query1>("query1", &Locator::query)
-    .def<Query2>("query2", &Locator::query)
+    .def("query1", &query1)
+    // .def<Query1>("query1", &Locator::query)
+    // .def<Query2>("query2", &Locator::query)
     ;
 }
