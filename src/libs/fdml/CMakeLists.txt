@@ -80,7 +80,10 @@ if (FDML_WITH_PYBINDINGS)
 
   include_directories(${PYTHON_INCLUDE_DIRS})
   add_definitions(-DFDML_BUILD_PYBINDINGS)
-  add_library(fdmlpy SHARED ${FDML_SOURCE_FILES} lib/fdml_pybindings.cpp)
+  add_library(fdmlpy SHARED ${FDML_SOURCE_FILES}
+    lib/fdml_pybindings.cpp
+    lib/export_polygon.cpp
+    lib/export_polygon_with_holes.cpp)
   target_link_libraries(fdmlpy PRIVATE
     fdml
     ${Boost_LIBRARIES}

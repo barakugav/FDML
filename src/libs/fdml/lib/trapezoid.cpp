@@ -199,7 +199,7 @@ void Trapezoid::calc_result_m1(const Kernel::FT& d, std::vector<Polygon>& res) c
     }
 
     /* intersect the result polygon with the trapezoids bound and add the result to the output */
-    std::vector<CGAL::Polygon_with_holes_2<Kernel>> res_bounded;
+    std::vector<Polygon_with_holes> res_bounded;
     CGAL::intersection(trapezoid_bounds, res_unbounded, std::back_inserter(res_bounded));
     fdml_debugln("\ttrapezoid result:");
     for (const auto& res_cell : res_bounded) {
