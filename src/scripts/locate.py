@@ -16,7 +16,7 @@ else:
 CGALPY = importlib.import_module(lib)
 
 Locator = fdml.Locator
-ker = CGALPY.ker
+ker = CGALPY.Ker
 Point = ker.Point_2
 FT = ker.FT
 l = Locator()
@@ -26,7 +26,7 @@ l.init(boundary)
 pgns = l.query1(FT(1))
 print(len(pgns))
 
-PS = CGALPY.bso2.Polygon_set_2
+PS = CGALPY.Bso2.Polygon_set_2
 ps = PS()
 ps.insert(pgns, [])
 arr = ps.arrangement()
