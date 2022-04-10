@@ -64,10 +64,12 @@ if __name__ == "__main__":
 
   with open(fullname, 'r') as inp:
     boundary = read_polygon(inp)
+    print(boundary)
+
     l.init(boundary)
     pgns = l.query1(FT(1))
     print(len(pgns))
-    print(pgns)
+    # print(pgns)
 
     PS = CGALPY.Bso2.Polygon_set_2
     ps = PS()
