@@ -402,9 +402,8 @@ void Trapezoider::init_trapezoids_with_regular_vertical_decomposition() {
 
         // Edge below the vertex
         fdml_debugln("[Trapezoider] New trapezoid: down (" << v->point() << ')');
-        if (!find_edge_left_from_vertex(v, MinMax::Max, top_edge))
+        if (!find_edge_left_from_vertex(v, MinMax::Max, top_edge) && !find_edge_vertical(v, CGAL::POSITIVE, top_edge))
           throw std::logic_error("failed to find top edge for down trapezoid");
-
         auto left_v = most_right_vertex.at(top_edge);
         create_trapezoid(top_edge, v_decomp_data.edge_below, left_v, v);
       }
