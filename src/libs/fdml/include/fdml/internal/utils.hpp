@@ -53,10 +53,6 @@ public:
     double y = CGAL::to_double(dir.dy());
     return (int)(std::atan2(y, x) * 180 / M_PI);
   }
-
-  static inline bool is_free(const Face& face) {
-    return !face->is_unbounded();
-  }
 };
 
 } // namespace FDML

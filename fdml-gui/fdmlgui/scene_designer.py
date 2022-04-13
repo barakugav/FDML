@@ -374,8 +374,13 @@ class SceneDesignerGUI:
         self._save_scene(self.gui.get_field('scene_save'))
 
     def _save_scene(self, filename):
+        if len(self.polygon_obstacles) != 1:
+            self._display_print("invalid scene")
+            return
+
         self.gui.set_field('scene_save', filename)
-        d = {'obstacles': self.polygon_obstacles}
+        # TODO support holes
+        d = {'scene_boundary': self.polygon_obstacles[0]}
         try:
             with open(filename, 'w') as f:
                 f.write(json.dumps(d, indent=4, sort_keys=True))

@@ -49,7 +49,7 @@ void LocatorDaemon::load_scene(const std::string& scene_filename) {
     if (locator)
       locator.reset();
 
-    Polygon scene = JsonUtils::read_scene(scene_filename);
+    Polygon_with_holes scene = JsonUtils::read_scene(scene_filename);
     locator = std::make_unique<Locator>();
     locator->init(scene);
 

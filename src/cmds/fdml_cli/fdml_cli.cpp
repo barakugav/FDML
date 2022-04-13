@@ -56,7 +56,7 @@ int fdml_cli_main(int argc, const char* argv[]) {
       return FDML_RETCODE_UNKNOWN_ARGS;
     }
 
-    Polygon scene = JsonUtils::read_scene(scenefile);
+    Polygon_with_holes scene = JsonUtils::read_scene(scenefile);
 
     Locator locator;
     locator.init(scene);

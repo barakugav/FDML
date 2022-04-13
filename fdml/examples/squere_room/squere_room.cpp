@@ -10,7 +10,7 @@ int main() {
   scene.push_back(Point(10, 10));
   scene.push_back(Point(10, 0));
 
-  /* locator is initiated with simple polygon scene */
+  /* locator is initiated with a polygon scene */
   Locator locator;
   locator.init(scene);
 

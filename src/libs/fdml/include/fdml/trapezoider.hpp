@@ -8,7 +8,7 @@
 namespace FDML {
 
 /**
- * @brief The Trapezoider class is an object used to calculate all trapezoids within a given polygon simple room. It
+ * @brief The Trapezoider class is an object used to calculate all trapezoids within a given polygon room. It
  * should be held in memory as long as the trapezoids are used, as the trapezoids reference to the stored arrangement.
  */
 class Trapezoider {
@@ -25,13 +25,15 @@ private:
     Trapezoid::ID top_right_trapezoid;
     Trapezoid::ID bottom_left_trapezoid;
     Trapezoid::ID bottom_right_trapezoid;
-    std::set<Halfedge, Closer_edge> ray_edges;
+    std::set<Halfedge, Closer_edge<Arrangement>> ray_edges;
     VertexData() {}
     VertexData(const Point& v, const Arrangement::Geometry_traits_2* geom_traits);
   };
 
-  /* Arrangement of the simple polygon room, built from the input points */
-  Arrangement arr;
+  /* Polygon set of the scene, built from the input points */
+  General_polygon_set_2 scene_set;
+  /* Map of 'face' -> is free */
+  std::unordered_map<Face, bool> is_free_faces;
   /* The calculated trapezoids within the room, indexed by their id */
   TrapezoidContainer trapezoids;
   /* map containing the data associated with each vertex during the parallel rotational sweep */
@@ -42,9 +44,9 @@ public:
   /**
    * @brief Calculates all the trapezoids that exists in the given room
    *
-   * @param scene simple polygon scene
+   * @param scene polygon scene
    */
-  void calc_trapezoids(const Polygon& scene);
+  void calc_trapezoids(const Polygon_with_holes& scene);
 
   TrapezoidIterator trapezoids_begin() const;
   TrapezoidIterator trapezoids_end() const;
@@ -52,6 +54,8 @@ public:
   TrapezoidIterator get_trapezoid(Trapezoid::ID id) const;
 
 private:
+  void init_poly_set(const Polygon_with_holes& scene);
+  bool is_free(const Face& face);
   Trapezoid::ID create_trapezoid(const Halfedge& top_edge, const Halfedge& bottom_edge, const Vertex& left_vertex,
                                  const Vertex& right_vertex);
   void finalize_trapezoid(const Trapezoid& trapezoid);

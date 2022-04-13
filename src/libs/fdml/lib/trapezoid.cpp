@@ -96,7 +96,6 @@ void Trapezoid::calc_result_m1(const Kernel::FT& d, std::vector<Polygon>& res) c
   Direction a_begin = -angle_begin, a_end = -angle_end;
   assert(Line({0, 0}, a_begin).oriented_side({a_end.dx(), a_end.dy()}) == CGAL::ON_POSITIVE_SIDE);
   Direction top_edge_direction = edge_direction(top_edge);
-  assert(Utils::is_free(top_edge->face()));
 
   /* Calculate the trapezoid bounds. Will be used to intersect each result entry. */
   const Polygon trapezoid_bounds = get_bounds_2d();

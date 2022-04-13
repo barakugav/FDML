@@ -10,7 +10,7 @@
 namespace FDML {
 
 /**
- * @brief The locator class is used to preproccess a simple polygon room, and to query the possible positions a
+ * @brief The locator class is used to preproccess a polygon room, and to query the possible positions a
  * sensor might be in the room given one or two measeraments.
  *
  */
@@ -44,11 +44,11 @@ public:
   Locator() {}
 
   /**
-   * @brief Init the locator with a simple polygon room
+   * @brief Init the locator with a polygon room
    *
-   * @param scene simple polygon scene
+   * @param scene polygon scene
    */
-  void init(const Polygon& scene);
+  void init(const Polygon_with_holes& scene);
 
   /**
    * @brief Calculate all the points in the room a sensor might be after it measure d at some wall

@@ -15,7 +15,7 @@ public:
    * @param filename path to scene file
    * @return parsed scene as a polygon object
    */
-  static Polygon read_scene(const std::string& filename);
+  static Polygon_with_holes read_scene(const std::string& filename);
 
   /**
    * @brief Write polygons into a JSON file

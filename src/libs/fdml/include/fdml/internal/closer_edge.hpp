@@ -11,9 +11,11 @@ namespace FDML {
  * @brief "Less" object used in a map during a rotational sweep to keep track of the closer edges intersection an
  * imaginary ray comming out of a point 'q'
  */
-class Closer_edge : public CGAL::cpp98::binary_function<Halfedge, Halfedge, bool> {
-  typedef Halfedge EH;
-  typedef Arrangement::Geometry_traits_2 Geometry_traits_2;
+template <typename _Arrangement>
+class Closer_edge : public CGAL::cpp98::binary_function<typename _Arrangement::Halfedge_const_handle,
+                                                        typename _Arrangement::Halfedge_const_handle, bool> {
+  typedef typename _Arrangement::Halfedge_const_handle EH;
+  typedef typename _Arrangement::Geometry_traits_2 Geometry_traits_2;
   typedef typename Geometry_traits_2::Point_2 Point_2;
 
   const Geometry_traits_2* geom_traits;

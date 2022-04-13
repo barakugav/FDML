@@ -3,7 +3,7 @@
 
 namespace FDML {
 
-void Locator::init(const Polygon& scene) {
+void Locator::init(const Polygon_with_holes& scene) {
   fdml_infoln("[Locator] init...");
   sorted_by_max.clear();
   rtree.clear();

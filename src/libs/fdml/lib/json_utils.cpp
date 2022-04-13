@@ -9,6 +9,10 @@
 #include <boost/json/src.hpp>
 #endif
 
+#include <CGAL/Boolean_set_operations_2.h>
+#include <CGAL/Boolean_set_operations_2/Gps_polygon_validation.h>
+#include <CGAL/Polygon_with_holes_2.h>
+
 namespace FDML {
 
 static boost::json::value parse_file(std::string filename) {
@@ -65,31 +69,84 @@ template <typename JsonObj> static void validate_size(const JsonObj& obj, unsign
     ERR("Unexpected number of elements in \"" << obj_name << "\" Json object: " << obj.size() << " != " << size);
 }
 
-Polygon JsonUtils::read_scene(const std::string& filename) {
+static Polygon parse_polygon(const boost::json::array& poly_obj) {
+  std::vector<Point> points;
+
+  for (auto points_it = poly_obj.begin(); points_it != poly_obj.end(); ++points_it) {
+    const auto& point = get_array(*points_it, "point");
+    validate_size(point, 2, "point");
+
+    double x = get_double(point[0], "x");
+    double y = get_double(point[1], "y");
+    points.push_back({x, y});
+  }
+
+  Polygon poly(points.begin(), points.end());
+  CGAL::Gps_default_traits<Polygon>::Traits poly_traits;
+  if (!CGAL::has_valid_orientation_polygon(poly, poly_traits)) {
+    std::reverse(points.begin(), points.end());
+    poly = Polygon(points.begin(), points.end());
+  }
+  assert(CGAL::has_valid_orientation_polygon(poly, poly_traits));
+  return poly;
+}
+
+Polygon_with_holes JsonUtils::read_scene(const std::string& filename) {
   fdml_debugln("[JsonUtils] parsing scene from file: " << filename);
   const auto j = parse_file(filename);
-  Polygon scene;
+  Polygon scene_boundary;
+  std::vector<Polygon> holes;
+  CGAL::Gps_default_traits<Polygon>::Traits poly_traits;
 
   const auto& obj = get_object(j, "top_level");
-  validate_size(obj, 1, "top_level");
   for (auto obj_it = obj.begin(); obj_it != obj.end(); ++obj_it) {
-    const auto& obstacles_key = obj_it->key().to_string();
-    if (std::string(obstacles_key) == "obstacles") {
-      const auto& obstacles = get_array(obj_it->value(), "obstacles");
-      validate_size(obstacles, 1, "obstacles");
+    const auto& obj_key = obj_it->key().to_string();
 
-      const auto& obstacle = get_array(obstacles[0], "obstacle");
-      for (auto obs_it = obstacle.begin(); obs_it != obstacle.end(); ++obs_it) {
-        const auto& point = get_array(*obs_it, "point");
-        validate_size(point, 2, "point");
+    if (std::string(obj_key) == "scene_boundary") {
+      scene_boundary = parse_polygon(get_array(obj_it->value(), "scene_boundary"));
 
-        double x = get_double(point[0], "x");
-        double y = get_double(point[1], "y");
-        scene.push_back({x, y});
-      }
-    } else
-      ERR("Unknown Json tag: " << obstacles_key);
+    } else if (std::string(obj_key) == "holes") {
+      const auto& holes_obj = get_array(obj_it->value(), "holes");
+
+      /* parse holes */
+      for (auto holes_it = holes_obj.begin(); holes_it != holes_obj.end(); ++holes_it)
+        holes.push_back(parse_polygon(get_array(*holes_it, "hole")));
+
+    } else {
+      ERR("Unknown Json tag: " << obj_key);
+    }
   }
+
+  fdml_debugln("[JsonUtils] parsed scene:");
+  fdml_debugln("\tscene_boundary:");
+  fdml_debug("\t\t");
+  for (auto vit = scene_boundary.vertices_begin(); vit != scene_boundary.vertices_end(); ++vit)
+    fdml_debug(" (" << *vit << ")");
+  fdml_debug("\n");
+  fdml_debugln("\tholes:");
+  for (const auto& hole : holes) {
+    fdml_debug("\t\t");
+    for (auto vit = hole.vertices_begin(); vit != hole.vertices_end(); ++vit)
+      fdml_debug(" (" << *vit << ")");
+    fdml_debug("\n");
+  }
+
+  /* construct polygon with holes result */
+  Polygon_with_holes scene(scene_boundary);
+  assert(CGAL::has_valid_orientation_polygon_with_holes(scene, poly_traits));
+  for (auto& hole : holes) {
+    assert(CGAL::has_valid_orientation_polygon(hole, poly_traits));
+    /* reverse hole vertices order. When CGAL checks for a polygon with hole validity, it expect the output boundary to
+     * be in the usual orientation (vertices order), but the holes order should be reversed as they OUTER edges list is
+     * checked rather than their inner edges list which is the usual polygon orientation */
+    std::vector<Point> holes_points(hole.vertices_begin(), hole.vertices_end());
+    std::reverse(holes_points.begin(), holes_points.end());
+    hole = Polygon(holes_points.begin(), holes_points.end());
+    assert(!CGAL::has_valid_orientation_polygon(hole, poly_traits));
+    scene.add_hole(hole);
+  }
+
+  assert(CGAL::has_valid_orientation_polygon_with_holes(scene, poly_traits));
   return scene;
 }
 
