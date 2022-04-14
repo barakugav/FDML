@@ -65,7 +65,8 @@ void LocatorDaemon::query(double d, const std::string& outfile) const {
   check_state();
 
   std::vector<Polygon> polygons;
-  locator->query(d, polygons);
+  for (const auto& res : locator->query(d))
+    polygons.push_back(std::move(res.pos));
   JsonUtils::write_polygons(polygons, outfile);
 }
 
@@ -74,7 +75,8 @@ void LocatorDaemon::query(double d1, double d2, const std::string& outfile) cons
   check_state();
 
   std::vector<Segment> segments;
-  locator->query(d1, d2, segments);
+  for (const auto& res : locator->query(d1, d2))
+    segments.insert(segments.end(), res.pos.begin(), res.pos.end());
   JsonUtils::write_segments(segments, outfile);
 }
 

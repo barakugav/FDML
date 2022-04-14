@@ -46,26 +46,28 @@ void Locator::init(const Polygon_with_holes& scene) {
   }
 }
 
-void Locator::query(const Kernel::FT& d, std::vector<Polygon>& res) const {
+std::vector<Locator::Res1d> Locator::query(const Kernel::FT& d) const {
   /* Single measurement query. Perform binary search on the sorted array for output sensitive running time */
   fdml_infoln("[Locator] Single measurement query (d = " << d << "):");
   auto it = std::lower_bound(sorted_by_max.begin(), sorted_by_max.end(), d,
                              [this](const auto& t_id, const auto& d) { return openings.at(t_id).max < d; });
 
-  std::vector<Polygon> res_local;
+  std::vector<Locator::Res1d> res;
   for (; it != sorted_by_max.end(); ++it) {
     const auto& trapezoid = *trapezoider.get_trapezoid(*it);
     const auto& opening = openings.at(trapezoid.get_id());
     fdml_debugln("\tT" << trapezoid.get_id() << " [" << opening.min << ", " << opening.max << "]");
-    trapezoid.calc_result_m1(d, res_local);
-  }
-  fdml_infoln("[Locator] result consist of " << res_local.size() << " polygons.");
 
-  for (auto& p : res_local)
-    res.push_back(std::move(p));
+    std::pair<Point, Point> edge_pair({trapezoid.top_edge->source()->point(), trapezoid.top_edge->target()->point()});
+    for (const Polygon& res_p : trapezoid.calc_result_m1(d))
+      res.emplace_back(edge_pair, res_p);
+  }
+
+  fdml_infoln("[Locator] result consist of " << res.size() << " polygons.");
+  return res;
 }
 
-void Locator::query(const Kernel::FT& d1, const Kernel::FT& d2, std::vector<Segment>& res) const {
+std::vector<Locator::Res2d> Locator::query(const Kernel::FT& d1, const Kernel::FT& d2) const {
   /* Double measurement query. Use the interval tree for output sensitive running time */
   fdml_infoln("[Locator] Double measurement query (d1 = " << d1 << ", d2 = " << d2 << "):");
   const Kernel::FT d = d1 + d2;
@@ -74,12 +76,20 @@ void Locator::query(const Kernel::FT& d1, const Kernel::FT& d2, std::vector<Segm
   std::vector<TrapezoidRTreeValue> res_vals;
   rtree.query(boost::geometry::index::intersects(query_interval), std::back_inserter(res_vals));
 
+  std::vector<Locator::Res2d> res;
   for (const TrapezoidRTreeValue& rtree_val : res_vals) {
     const auto& trapezoid = *trapezoider.get_trapezoid(rtree_val.second);
     const auto& opening = openings.at(rtree_val.second);
     fdml_debugln("\tT" << rtree_val.second << " [" << opening.min << ", " << opening.max << "]");
-    trapezoid.calc_result_m2(d1, d2, res);
+
+    std::pair<Point, Point> top_edge_pair(
+        {trapezoid.top_edge->source()->point(), trapezoid.top_edge->target()->point()});
+    std::pair<Point, Point> bottom_edge_pair(
+        {trapezoid.bottom_edge->source()->point(), trapezoid.bottom_edge->target()->point()});
+    res.emplace_back(top_edge_pair, bottom_edge_pair, trapezoid.calc_result_m2(d1, d2));
   }
+
+  return res;
 }
 
 } // namespace FDML

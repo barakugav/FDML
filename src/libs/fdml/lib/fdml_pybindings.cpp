@@ -33,10 +33,10 @@ void export_kernel() {
 }
 
 bp::list query1(const FDML::Locator& locator, const FDML::Kernel::FT& d) {
-  std::vector<FDML::Polygon> pgns;
+  std::vector<FDML::Locator::Res1d> pgns = locator.query(d);
   bp::list lst;
-  locator.query(d, pgns);
-  for (auto pgn : pgns) lst.append(pgn);
+  /* TODO return to python the measured edge along with the possible position polygon */
+  for (auto pgn : pgns) lst.append(pgn.pos);
   return lst;
 }
 

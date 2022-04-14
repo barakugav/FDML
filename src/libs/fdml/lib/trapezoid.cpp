@@ -88,7 +88,7 @@ static Direction edge_direction(const Halfedge& edge) {
   return Direction(t.x() - s.x(), t.y() - s.y());
 }
 
-void Trapezoid::calc_result_m1(const Kernel::FT& d, std::vector<Polygon>& res) const {
+std::vector<Polygon> Trapezoid::calc_result_m1(const Kernel::FT& d) const {
   if (d <= 0)
     throw std::invalid_argument("distance measurement must be positive.");
   fdml_debugln("[Trapezoid] calculating single measurement result...");
@@ -110,6 +110,8 @@ void Trapezoid::calc_result_m1(const Kernel::FT& d, std::vector<Polygon>& res) c
                                      {begin_before_mid ? mid_angle : a_begin, end_after_mid ? a_end : mid_angle}};
 
   fdml_debugln("\ttop edge (" << top_edge->curve() << ") bottom edge (" << bottom_edge->curve() << ')');
+
+  std::vector<Polygon> res;
 
   /* calculate result for each angle interval */
   for (unsigned int internal_idx = 0; internal_idx < 2; internal_idx++) {
@@ -207,18 +209,22 @@ void Trapezoid::calc_result_m1(const Kernel::FT& d, std::vector<Polygon>& res) c
       fdml_debugln("\t\t" << res_cell.outer_boundary());
     }
   }
+
+  return res;
 }
 
 static double atan2(const Kernel::FT& y, const Kernel::FT& x) {
   return std::atan2(CGAL::to_double(y), CGAL::to_double(x));
 }
 
-void Trapezoid::calc_result_m2(const Kernel::FT& d1, const Kernel::FT& d2, std::vector<Segment>& res) const {
+std::vector<Segment> Trapezoid::calc_result_m2(const Kernel::FT& d1, const Kernel::FT& d2) const {
   if (d1 <= 0 || d2 <= 0)
     throw std::invalid_argument("distance measurements must be positive.");
   fdml_debugln("[Trapezoid] calculating double measurement result...");
   Line top_line = top_edge->curve().line();
   Line bottom_line = bottom_edge->curve().line();
+
+  std::vector<Segment> res;
 
   if (CGAL::do_intersect(top_line, bottom_line)) { /* top and bottom edges are not parallel */
     Point inter_point = intersection(top_line, bottom_line);
@@ -296,6 +302,8 @@ void Trapezoid::calc_result_m2(const Kernel::FT& d1, const Kernel::FT& d2, std::
       res.emplace_back(points[0], points[1]);
     }
   }
+
+  return res;
 }
 
 void Trapezoid::calc_min_max_openings(Kernel::FT& opening_min, Kernel::FT& opening_max) const {

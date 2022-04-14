@@ -66,11 +66,13 @@ int fdml_cli_main(int argc, const char* argv[]) {
 
     switch (command_type) {
     case CMD_QUERY1:
-      locator.query(d, polygons);
+      for (const auto& res : locator.query(d))
+        polygons.push_back(std::move(res.pos));
       JsonUtils::write_polygons(polygons, resfile);
       break;
     case CMD_QUERY2:
-      locator.query(d1, d2, segments);
+      for (const auto& res : locator.query(d1, d2))
+        segments.insert(segments.end(), res.pos.begin(), res.pos.end());
       JsonUtils::write_segments(segments, resfile);
       break;
     default:

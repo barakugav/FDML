@@ -49,9 +49,9 @@ public:
    * @brief Calculates all the points a sensor might be within the trapezoid measering distance 'd' at the top edge
    *
    * @param d the measurement value
-   * @param res output result
+   * @return polygons representing areas a sensor might and measure the trapezoid top edge
    */
-  void calc_result_m1(const Kernel::FT& d, std::vector<Polygon>& res) const;
+  std::vector<Polygon> calc_result_m1(const Kernel::FT& d) const;
 
   /**
    * @brief Calculates all the points a sensor might be within the trapezoid measering distance 'd1' at top edge and
@@ -59,9 +59,10 @@ public:
    *
    * @param d1 the measurement value to the top edge
    * @param d2 the measurement value to the bottom edge
-   * @param res output result
+   * @return segments representing segments a sensor might be and measure d1,d2 at the trapezoid top and bottom edges
+   * respectively
    */
-  void calc_result_m2(const Kernel::FT& d1, const Kernel::FT& d2, std::vector<Segment>& res) const;
+  std::vector<Segment> calc_result_m2(const Kernel::FT& d1, const Kernel::FT& d2) const;
 
   /**
    * @brief Calculate the minimum and maximum opening of this trapezoid

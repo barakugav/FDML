@@ -41,6 +41,35 @@ private:
   TrapezoidRTree rtree;
 
 public:
+  /* A result entry struct from a single measurement query. The struct represent the possible area in the 2D space a
+   * sensor might be in the scene and measure the query distance at a specific edge. */
+  struct Res1d {
+    /* The edge the sensor might measure */
+    std::pair<Point, Point> edge;
+    /* The area representing the position in the 2D space a sensor might be and measure the query distance of measuring
+     * the edge */
+    Polygon pos;
+
+    Res1d(const std::pair<Point, Point>& edge, const Polygon& pos) : edge(edge), pos(pos) {}
+  };
+
+  /* A result entry struct from a double measurement query. The struct represent the possible positions in the 2D space
+   * a sensor might be in the scene and measure the first query distance d1 at a first edge and the second query
+   * distance d2 at a second edge. */
+  struct Res2d {
+    /* The edge the sensor might measure d1 distance to */
+    std::pair<Point, Point> edge1;
+    /* The edge the sensor might measure d2 distance to */
+    std::pair<Point, Point> edge2;
+    /* A collection of segments representing the positions a sensor might be and measure d1,d2 at edge1,edge2
+     * respectively */
+    std::vector<Segment> pos;
+
+    Res2d(const std::pair<Point, Point>& edge1, const std::pair<Point, Point>& edge2, const std::vector<Segment>& pos)
+        : edge1(edge1), edge2(edge2), pos(pos) {}
+  };
+
+public:
   Locator() {}
 
   /**
@@ -54,9 +83,10 @@ public:
    * @brief Calculate all the points in the room a sensor might be after it measure d at some wall
    *
    * @param d the single measurement value
-   * @param res collections of polygons representing all the possible points in the room a sensor might be at
+   * @return collection of result entries, each representing possible positions a sensor might be and measure distance
+   * d at a specific edge
    */
-  void query(const Kernel::FT& d, std::vector<Polygon>& res) const;
+  std::vector<Res1d> query(const Kernel::FT& d) const;
 
   /**
    * @brief Calculate all the points in the room a sensor might be after it measured d1 in a single direction and d2
@@ -64,9 +94,10 @@ public:
    *
    * @param d1 the first measurement value
    * @param d2 the second measurement value
-   * @param res collection of segments representing all the possible points in the room a sensor might be at
+   * @return collection of result entries, each representing possible positions a sensor might be and measure d1,d2 at
+   * some specific edges e1,e2
    */
-  void query(const Kernel::FT& d1, const Kernel::FT& d2, std::vector<Segment>& res) const;
+  std::vector<Res2d> query(const Kernel::FT& d1, const Kernel::FT& d2) const;
 };
 
 } // namespace FDML
