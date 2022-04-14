@@ -25,6 +25,8 @@ bp::scope module_scope = module;
 
 void export_polygon_2();
 void export_polygon_with_holes_2();
+void export_point_2();
+void export_vector_2();
 
 void export_kernel() {
   typedef FDML::Kernel::FT      FT;
@@ -49,6 +51,8 @@ BOOST_PYTHON_MODULE(fdml) {
   {
     SET_SCOPE("ker")
     export_kernel();
+    export_point_2();
+    export_vector_2();
   }
 
   {

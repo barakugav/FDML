@@ -18,4 +18,6 @@ typedef bp::return_value_policy<bp::reference_existing_object>
 typedef bp::return_value_policy<bp::copy_non_const_reference>
   Copy_non_const_reference;
 
+typedef Return_by_value                                   Kernel_return_value_policy;
+
 #endif
