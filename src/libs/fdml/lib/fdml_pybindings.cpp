@@ -38,7 +38,13 @@ bp::list query1(const FDML::Locator& locator, const FDML::Kernel::FT& d) {
   std::vector<FDML::Locator::Res1d> pgns = locator.query(d);
   bp::list lst;
   /* TODO return to python the measured edge along with the possible position polygon */
-  for (auto pgn : pgns) lst.append(pgn.pos);
+  for (auto pgn : pgns) {
+    bp::tuple edge = bp::make_tuple(pgn.edge.first, pgn.edge.second);
+    bp::list res;
+    res.append(pgn.pos);
+    res.append(edge);
+    lst.append(res);
+  }
   return lst;
 }
 
@@ -49,14 +55,14 @@ BOOST_PYTHON_MODULE(fdml) {
   typedef FDML::Locator         Locator;
 
   {
-    SET_SCOPE("ker")
+    SET_SCOPE("Ker")
     export_kernel();
     export_point_2();
     export_vector_2();
   }
 
   {
-    SET_SCOPE("pol2")
+    SET_SCOPE("Pol2")
     export_polygon_2();
     export_polygon_with_holes_2();
   };

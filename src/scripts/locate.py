@@ -28,6 +28,14 @@ def read_polygon(inp):
     pgn.push_back(p)
   return pgn
 
+def read_polygon_with_holes(imp):
+  boundary = read_polygon(imp)
+  pgnwh = Polygon_with_holes_2(boundary)
+  n = int(inp.readline())
+  for i in range(n):
+    pgnwh.add_hole(read_polygon(imp))
+  return pgnwh
+
 # Main function
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Self locate.')
@@ -53,26 +61,27 @@ if __name__ == "__main__":
 
   lib = args.library
   print('Library name:', lib)
-  CGALPY = importlib.import_module(lib)
+  # CGALPY = importlib.import_module(lib)
 
   Locator = fdml.Locator
-  ker = CGALPY.Ker
-  Point = ker.Point_2
-  FT = ker.FT
+  Ker = fdml.Ker
+  Point = Ker.Point_2
+  FT = Ker.FT
   l = Locator()
-  Polygon = fdml.pol2.Polygon_2
+  Polygon = fdml.Pol2.Polygon_2
+  Polygon_with_holes_2 = fdml.Pol2.Polygon_with_holes_2
 
   with open(fullname, 'r') as inp:
-    boundary = read_polygon(inp)
-    print(boundary)
+    pgnwh = read_polygon_with_holes(inp)
+    print(pgnwh)
 
-    l.init(boundary)
-    pgns = l.query1(FT(1))
-    print(len(pgns))
+    l.init(pgnwh)
+    res = l.query1(FT(1))
+    print(len(res))
     # print(pgns)
 
-    PS = CGALPY.Bso2.Polygon_set_2
-    ps = PS()
-    ps.insert(pgns, [])
-    arr = ps.arrangement()
-    print(arr.number_of_vertices(), arr.number_of_halfedges(), arr.number_of_faces())
+    # PS = CGALPY.Bso2.Polygon_set_2
+    # ps = PS()
+    # ps.insert(pgns, [])
+    # arr = ps.arrangement()
+    # print(arr.number_of_vertices(), arr.number_of_halfedges(), arr.number_of_faces())
