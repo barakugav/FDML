@@ -49,6 +49,7 @@ void export_polygon_with_holes_2() {
                                                              &pol2::holes_end))
     .def("number_of_holes", &Polygon_with_holes::number_of_holes)
     .def("bbox", &Polygon_with_holes::bbox)
+    .def("add_hole", &Polygon_with_holes::add_hole)
     .def(bp::self_ns::str(bp::self_ns::self))
     .def(bp::self_ns::repr(bp::self_ns::self))
     .def(bp::self == bp::self)
