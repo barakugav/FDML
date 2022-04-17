@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
   lib = args.library
   print('Library name:', lib)
-  # CGALPY = importlib.import_module(lib)
+  CGALPY = importlib.import_module(lib)
 
   Locator = fdml.Locator
   Ker = fdml.Ker
@@ -80,8 +80,11 @@ if __name__ == "__main__":
     print(len(res))
     # print(pgns)
 
-    # PS = CGALPY.Bso2.Polygon_set_2
-    # ps = PS()
-    # ps.insert(pgns, [])
-    # arr = ps.arrangement()
-    # print(arr.number_of_vertices(), arr.number_of_halfedges(), arr.number_of_faces())
+    PS = CGALPY.Bso2.Polygon_set_2
+    ps = PS()
+    l = []
+    for r in res:
+      l.append(r[0])
+    ps.insert(l, [])
+    arr = ps.arrangement()
+    print(arr.number_of_vertices(), arr.number_of_halfedges(), arr.number_of_face)
