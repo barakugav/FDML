@@ -1,6 +1,5 @@
 # Add source files
 set(FDML_CLI_SOURCE_FILES ${FDML_CLI_SOURCE_FILES} fdml_cli.cpp)
-set(FDML_CLI_SOURCE_FILES ${FDML_CLI_SOURCE_FILES} ../../libs/fdml/lib/json_utils.cpp)
 
 ###############################################################################
 

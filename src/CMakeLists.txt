@@ -9,9 +9,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 add_compile_options(-fno-builtin)
 
-if (FDML_USE_STATIC_LIBS)
-  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-endif()
+# if (FDML_USE_STATIC_LIBS)
+#   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+#     set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+#   endif()
+# endif()
 
 # Set minimal required versions
 set(FDML_PY_MIN_VERSION 3.8)

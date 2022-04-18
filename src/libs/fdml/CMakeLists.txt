@@ -43,6 +43,9 @@ if (BUILD_SHARED_LIBS)
     set (CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
   endif()
 else()
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "-fPIC")
+  endif()
   add_library(fdml STATIC ${FDML_SRC_FILES})
 endif()
 
@@ -66,53 +69,6 @@ CHECK_LIBRARY_EXISTS(m sin "" HAVE_LIB_M)
 if (HAVE_LIB_M)
   set(EXTRA_LIBS ${EXTRA_LIBS} m)
 endif (HAVE_LIB_M)
-
-###############################################################################
-######## Add Python bindings
-if (FDML_WITH_PYBINDINGS)
-  #### Add Packages
-  find_package(Python3 ${FDML_PY_MIN_VERSION} COMPONENTS Interpreter Development)
-  set (FDML_PY_MAJOR_DOT_MINOR_VERSION
-    "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
-  set(FDML_PY_MAJOR_MINOR_VERSION
-    "${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}")
-
-  find_package(PythonLibs ${FDML_PY_MAJOR_DOT_MINOR_VERSION} EXACT REQUIRED)
-  find_package(Boost ${FDML_BOOST_MIN_VERSION} REQUIRED COMPONENTS
-    system thread program_options
-    python${FDML_PY_MAJOR_MINOR_VERSION} numpy${FDML_PY_MAJOR_MINOR_VERSION})
-
-  include_directories(${PYTHON_INCLUDE_DIRS})
-  add_definitions(-DFDML_BUILD_PYBINDINGS)
-  add_library(fdmlpy SHARED ${FDML_SOURCE_FILES}
-    lib/fdml_pybindings.cpp
-    lib/export_polygon_2.cpp
-    lib/export_point_2.cpp
-    lib/export_vector_2.cpp
-    lib/export_polygon_with_holes_2.cpp)
-  target_link_libraries(fdmlpy PRIVATE
-    fdml
-    ${Boost_LIBRARIES}
-    ${PYTHON_LIBRARIES}
-    ${CMAKE_DL_LIBS}
-    ${EXTRA_LIBS} boost_python38)
-  # don't prepend wrapper library name with lib
-  set_target_properties(fdmlpy PROPERTIES PREFIX "")
-  set_target_properties(fdmlpy PROPERTIES OUTPUT_NAME fdml)
-  set (FDMLPY_LIBRARY_SUFFIX ".so")
-  if(WIN32)
-    set (FDMLPY_LIBRARY_SUFFIX ".pyd")
-    set_target_properties(fdmlpy PROPERTIES SUFFIX ".pyd")
-  elseif(APPLE)
-    set (FDMLPY_LIBRARY_SUFFIX ".so")
-    set_target_properties(fdmlpy PROPERTIES BUNDLE ON)
-  endif()
-  # Use a generator expression to get rid of per-configuration subdirectory appended by
-  # Multi-configuration generators (e.g Visual Studio)
-  # https://cmake.org/cmake/help/latest/prop_tgt/LIBRARY_OUTPUT_DIRECTORY.html
-  set_target_properties(fdmlpy PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${FDML_LIB_DIR}/$<0:>)
-  set (FDMLPY_TARGET_LINKER_FILE "fdml${FDMLPY_LIBRARY_SUFFIX}")
-endif()
 
 ###############################################################################
 
@@ -150,57 +106,10 @@ target_link_libraries(fdml PRIVATE
   ${EXTRA_LIBS})
 
 ################################################################################
-# Stubs (Type Annotation)
-################################################################################
-# Copy stubs
-if (FDML_WITH_PYBINDINGS)
-  set (FDML_SRC_STUBS_DIR "${CMAKE_CURRENT_LIST_DIR}/stubs")
-  set (FDML_STUBS_SRC_FILES fdml.pyi)
-  foreach(name IN LISTS FDML_STUBS_SRC_FILES)
-    set (FDML_STUBS ${FDML_STUBS} ${FDML_LIB_DIR}/${name})
-    configure_file(${FDML_SRC_STUBS_DIR}/${name} ${FDML_LIB_DIR}/${name})
-  endforeach()
-endif()
-
-################################################################################
-# Setup
-################################################################################
-# Copy setup
-if (FDML_WITH_PYBINDINGS)
-  set (FDML_SRC_SETUP_DIR "${CMAKE_CURRENT_LIST_DIR}")
-  configure_file(${FDML_SRC_SETUP_DIR}/setup.py ${FDML_LIB_DIR}/setup.py)
-  configure_file(${FDML_SRC_SETUP_DIR}/README.rst ${FDML_LIB_DIR}/README.rst)
-  set (FDML_SETUP_FILES ${FDML_LIB_DIR}/setup.py ${FDML_LIB_DIR}/README.rst)
-endif()
-
-################################################################################
-# Post build
-################################################################################
-# Setup application
-if (FDML_WITH_PYBINDINGS)
-  set (FDML_BUILD_OUTPUT_DIR "${FDML_LIB_DIR}/dist")
-  set (FDML_TAR ${FDML_BUILD_OUTPUT_DIR}/FDML-1.0.tar.gz)
-  set (FDML_WHL ${FDML_BUILD_OUTPUT_DIR}/FDML-1.0-py3-none-any.whl)
-  set (FDML_BUILD_OUTPUT ${FDML_TAR} ${FDML_WHL})
-  set (FDML_BUILD_CMD ${Python3_EXECUTABLE})
-  set (FDML_BUILD_ARGS -m build ${FDML_LIB_DIR})
-  set (FDML_BUILD_DEPENDS fdmlpy ${FDML_STUBS} ${FDML_SETUP_FILES})
-  add_custom_command(
-    OUTPUT ${FDML_BUILD_OUTPUT}
-    COMMAND ${FDML_BUILD_CMD}
-    ARGS ${FDML_BUILD_ARGS}
-    DEPENDS ${FDML_BUILD_DEPENDS})
-
-  add_custom_target(FDML_BUILD ALL DEPENDS ${FDML_BUILD_OUTPUT})
-endif()
-
-################################################################################
 # Installation
 ################################################################################
+
 set_property(TARGET fdml PROPERTY INSTALL_RPATH_USE_LINK_PATH TRUE)
-if (FDML_WITH_PYBINDINGS)
-  set_property(TARGET fdmlpy PROPERTY INSTALL_RPATH_USE_LINK_PATH TRUE)
-endif()
 
 set(FDML_FDML_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -234,7 +143,3 @@ install(TARGETS fdml
   LIBRARY DESTINATION ${FDML_INSTALL_LIB_DIR} COMPONENT shlib
   PUBLIC_HEADER DESTINATION "${FDML_INSTALL_INC_DIR}/fdml" COMPONENT dev
   ARCHIVE DESTINATION ${FDML_INSTALL_LIB_DIR})
-
-if (FDML_WITH_PYBINDINGS)
-install(FILES ${FDML_STUBS} DESTINATION ${FDML_INSTALL_PYTHON_DIR})
-endif()

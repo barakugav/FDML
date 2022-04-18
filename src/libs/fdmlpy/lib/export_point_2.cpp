@@ -23,6 +23,13 @@ void export_point_2() {
   typedef FDML::Kernel::Point_2         Point_2;
   typedef FDML::Kernel::Vector_2        Vector_2;
 
+  // const bp::type_info info = bp::type_id<Point_2>();
+  // const auto* reg = bp::converter::registry::query(info);
+  // if ((reg != nullptr) && ((*reg).m_to_python != nullptr)) {
+  //   bp::scope().attr("Point_2") = bp::handle<>(reg->m_class_object);
+  //   return;
+  // }
+
   bp::class_<Point_2>("Point_2")
     .def(bp::init<>())
     .def(bp::init<double, double>())
