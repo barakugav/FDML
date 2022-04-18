@@ -68,8 +68,8 @@ if __name__ == "__main__":
   Point = Ker.Point_2
   FT = Ker.FT
   l = Locator()
-  Polygon = fdml.Pol2.Polygon_2
-  Polygon_with_holes_2 = fdml.Pol2.Polygon_with_holes_2
+  Polygon = CGALPY.Pol2.Polygon_2
+  Polygon_with_holes_2 = CGALPY.Pol2.Polygon_with_holes_2
 
   with open(fullname, 'r') as inp:
     pgnwh = read_polygon_with_holes(inp)
@@ -84,7 +84,17 @@ if __name__ == "__main__":
     ps = PS()
     l = []
     for r in res:
-      l.append(r[0])
+      pgn = Polygon()
+      it = r[0].vertices()
+      last = next(it)
+      first = last
+      for p in it:
+        if p != last:
+          pgn.push_back(p)
+          last = p
+        if first != last:
+          pgn.push_back(first)
+      l.append(pgn)
     ps.insert(l, [])
     arr = ps.arrangement()
-    print(arr.number_of_vertices(), arr.number_of_halfedges(), arr.number_of_face)
+    print(arr.number_of_vertices(), arr.number_of_halfedges(), arr.number_of_faces())
