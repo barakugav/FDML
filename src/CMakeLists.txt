@@ -37,10 +37,6 @@ endif()
 # Use dynamic link for all FDML libraries
 add_definitions(-DFDML_ALL_DYN_LINK)
 
-if (FDML_TRACE)
-  add_definitions(-DFDML_TRACE)
-endif()
-
 # Installation
 if (FDML_WIN32_CMAKE_ON_CYGWIN)
   exec_program(cygpath ARGS -w "${CMAKE_INSTALL_PREFIX}"

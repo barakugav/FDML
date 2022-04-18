@@ -1,7 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
-if(POLICY CLS0011)
-  cmake_policy(SET CLS0011 NEW)
-endif()
+cmake_minimum_required(VERSION 3.14...3.22)
 project(FDML VERSION "1.0.0" LANGUAGES CXX)
 
 # General options
