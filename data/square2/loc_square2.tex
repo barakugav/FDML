@@ -15,6 +15,17 @@
   \node[point=#4] (#3) at (1,1) {};
   \draw[#4] (#1)--(#2)--(#3);
 }
+\NewDocumentCommand\crvb{}{%
+  \def\a{-0.618034}
+  \def\b{-1.61803}
+  \def\c{.52573}
+  \def\s{.85065}
+  \draw[c1,parametric,variable=\t,smooth,
+    domain=1:2.6,
+    samples=60]
+  plot
+  ({\a*cos(\t r)*\c-\b*sin(\t r)*\s},{\a*cos(\t r)*\s+\b*sin(\t r)*\c});
+}
 \NewDocumentCommand\crv{}{%
   \begin{scope}[shift={(1,-1)},rotate=270]\coordinate (q1) at (1,0);\end{scope}
   \begin{scope}[shift={(1.06,-.721)},rotate=250]\coordinate (q2) at (1,0);\end{scope}
@@ -58,10 +69,14 @@
   \begin{scope}[shift={(2,-1)},rotate=180]\sights[p5][q5][r5][c2!100!black]\end{scope}
   %%
   %% \draw plot [smooth] coordinates {(q1)(q2)(q3)(q4)(q5)};
-  \begin{scope}[shift={(0,0)},rotate=0]\crv\end{scope}
-  \begin{scope}[shift={(-3,-2)},rotate=90]\crv\end{scope}
-  \begin{scope}[shift={(0,0)},rotate=180]\crv\end{scope}
-  \begin{scope}[shift={(3,2)},rotate=270]\crv\end{scope}
+  %% \begin{scope}[shift={(0,0)},rotate=0]\crv\end{scope}
+  %% \begin{scope}[shift={(-3,-2)},rotate=90]\crvb\end{scope}
+  %% \begin{scope}[shift={(0,0)},rotate=180]\crvb\end{scope}
+  %% \begin{scope}[shift={(3,2)},rotate=270]\crvb\end{scope}
+  \begin{scope}[shift={(-2,2)},rotate=0]\crvb\end{scope}
+  \begin{scope}[shift={(-2,-2)},rotate=90]\crvb\end{scope}
+  \begin{scope}[shift={(2,-2)},rotate=180]\crvb\end{scope}
+  \begin{scope}[shift={(2,2)},rotate=270]\crvb\end{scope}
   %%
   \node[point=c1] (n0) at (a0) {};
   \node[point=c1] (n1) at (a1) {};
@@ -73,3 +88,23 @@
   \node[point=c1] (n7) at (a7) {};
 \end{tikzpicture}
 \end{document}
+
+% x^4 + 4*y^4 - 2*x^2 - 4*y^2 + 1 = 0;
+% eq1: x^2 + 2xy + 2y^2 = 1
+% eq1: x^2 - 2xy + 2y^2 = 1
+
+% Curve((a*cos(x)*c-b*sin(x)*s,a*cos(x)*s+b*sin(x)*c), x, 0, 2pi)
+
+%% cos(t)^2/a^2 + sin(t)^2/b^2 = 1,
+%% sin(t)^2/a^2 + cos(t)^2/b^2 = 2,
+%% 2*cos(t)*sin(t)*(1/a^2-1/b^2) = -2
+
+%% a = -1.61803
+%% b = -0.618034
+%% t = 2 * (pi * n - 0.276787) = .553574
+%% s = .52573
+%% c = .85065
+
+%% c(t)^2/a^2 + s(t)^2/b^2 = 1,
+%% s(t)^2/a^2 + c(t)^2/b^2 = 2,
+%% 2*c(t)*s(t)*(1/a^2-1/b^2) = -2
