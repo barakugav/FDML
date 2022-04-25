@@ -53,9 +53,6 @@ class Locator:
 
     @staticmethod
     def get_daemon_exe(verbose=False):
-
-        return '/home/efif/build/fdml/release/src/cmds/fdml_daemon/fdml_daemon'
-
         fdml_core_top = os.path.abspath(os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "..", "..", "fdml"))
         fdml_daemon_dir = os.path.join(fdml_core_top, "bin", "fdml_daemon")
