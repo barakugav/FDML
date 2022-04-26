@@ -3,11 +3,12 @@
 
 #include <vector>
 
+#include "fdml/config.hpp"
 #include "fdml/defs.hpp"
 
 namespace FDML {
 
-class JsonUtils {
+class FDML_FDML_DECL JsonUtils {
 public:
   /**
    * @brief Parse a scene from a JSON file

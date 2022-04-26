@@ -100,7 +100,7 @@ Polygon_with_holes JsonUtils::read_scene(const std::string& filename) {
 
   const auto& obj = get_object(j, "top_level");
   for (auto obj_it = obj.begin(); obj_it != obj.end(); ++obj_it) {
-    const auto& obj_key = obj_it->key().to_string();
+    auto obj_key = obj_it->key();
 
     if (std::string(obj_key) == "scene_boundary") {
       scene_boundary = parse_polygon(get_array(obj_it->value(), "scene_boundary"));
