@@ -1,0 +1,11 @@
+{
+	"dependencies": {
+		"boost_inc": "/home/user/code/fdml/libs/boost/boost_1_79_0/",
+		"boost_lib": "/home/user/code/fdml/libs/boost/boost_1_79_0_bin/lib",
+		"gmp_inc": "/home/user/code/fdml/libs/gmp/gmp-6.2.1_installed/include",
+		"gmp_lib": "/home/user/code/fdml/libs/gmp/gmp-6.2.1_installed/lib",
+		"mpfr_inc": "/home/user/code/fdml/libs/mpfr/mpfr-4.1.0_installed/include",
+		"mpfr_lib": "/home/user/code/fdml/libs/mpfr/mpfr-4.1.0_installed/lib",
+		"cgal_dir": "/home/user/code/fdml/libs/cgal"
+	}
+}
