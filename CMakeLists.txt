@@ -9,7 +9,7 @@ option(FDML_USE_STATIC_LIBS "Link with static libraries" OFF)
 # Options
 set(FDML_PROJECT_AUTHORS "Barak Ugav")
 set(FDML_PROJECT_EMAILS "barakugav@gmail.com")
-set(FDML_PROJECT_URL "http://barakugav.com")
+set(FDML_PROJECT_URL "https://github.com/barakugav/FDML")
 set(FDML_MODULES_REL_DIR cmake/modules)
 set(FDML_MODULE_DIR ${CMAKE_SOURCE_DIR}/${FDML_MODULES_REL_DIR})
 set(CMAKE_MODULE_PATH ${FDML_MODULE_DIR})
