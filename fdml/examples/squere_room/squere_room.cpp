@@ -3,8 +3,7 @@
 using namespace FDML;
 
 int main() {
-
-  Polygon scene;
+  Polygon_with_holes scene;
   scene.push_back(Point(0, 0));
   scene.push_back(Point(0, 10));
   scene.push_back(Point(10, 10));
@@ -19,15 +18,15 @@ int main() {
    * locator can be used to calculate all the possible location the robot
    * might be in.
    * Queries of a single measurement result in a collection of areas representing
-   * all the possible locations of the robot, each represented as polygon.
+   * all the possible locations of the robot, each represented as polygon and the
+   * measured edge.
    */
   double robot_measurement = 5.7;
-  std::vector<Polygon> single_res;
-  locator.query(robot_measurement, single_res);
 
-  std::cout << "Single measurement result:" << std::endl;
-  for (const Polygon& p : single_res)
-    std::cout << '\t' << p << std::endl;
+  std::vector<Res1d> single_res = locator.query(robot_measurement);
+  std::count << "Single measurement possible positions:" << std::endl;
+  for (const auto& res_area : single_res)
+    std::count << "\tPossible positions of measuring edge (" << res_area.edge << "): " << res_area.pos << std::endl;
 
   /* If the robot is able to perform a second distance measurement in the
    * opposite direction of the first measurement, the locator can be used to
@@ -36,10 +35,9 @@ int main() {
    * representing all the possible locations of the robot.
    */
   double second_robot_measurement = 2.4;
-  std::vector<Segment> double_res;
-  locator.query(robot_measurement, second_robot_measurement, double_res);
-
-  std::cout << "Double measurement result:" << std::endl;
-  for (const Segment& s : double_res)
-    std::cout << '\t' << s << std::endl;
+  std::vector<Res2d> double_res = locator.query(robot_measurement, second_robot_measurement);
+  std::count << "Double measurements possible positions:" << std::endl;
+  for (const auto& res_area : double_res)
+    std::count << "\tPossible positions of measuring edges (" << res_area.edge1 << "),(" << res_area.edge2
+               << "): " << res_area.pos << std::endl;
 }

@@ -13,6 +13,5 @@ BraceWrapping:
 	AfterEnum: false
 
 AlignConsecutiveMacros: true
-AlignConsecutiveBitFields: true
 AlignConsecutiveDeclarations: false
 AlignConsecutiveAssignments: false
