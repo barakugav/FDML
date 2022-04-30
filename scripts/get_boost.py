@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
 
-import argparse
+import sys
 import os
-import subprocess
-import get_python
-import common
 import shutil
-import click
-import re
+import subprocess
 import platform
 import multiprocessing
+import re
+import argparse
+import click
+
+FDML_TOP = os.path.abspath(os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), ".."))
+if FDML_TOP not in sys.path:
+    sys.path.insert(0, FDML_TOP)
+from scripts import get_python
+from scripts import common
 
 
-BOOST_VER_REQUIRED = (1, 78, 0)
+VERSION_REQUIRED = (1, 78, 0)
 
 
 def get_download_url(version):
@@ -36,6 +42,7 @@ def download_sources(version, output_dir):
 
     print("Extracting boost sources into:", output_dir)
     common.tar_extract_with_progressbar(zip_filename, output_dir)
+    os.remove(zip_filename)
 
     # boost contains another directory within the zip, move all files one dir up
     inner_dir = os.path.join(output_dir, boost_ver_format)
@@ -51,7 +58,7 @@ def download_sources(version, output_dir):
 
 def _user_config_str(python_exe, python_version):
     if " " in python_exe:
-        raise ValueError(
+        raise common.ConfigError(
             "Boost can handle only python interperter with no spaces in their path.", python_exe)
     return """import toolset ;
 
@@ -62,11 +69,11 @@ using python : %d.%d : %s ;
 
 def build(source_dir, build_dir, bin_dir, python_exe=None, numpy_enable=False):
     if not os.path.exists(source_dir):
-        raise ValueError("provided sources dir doesn't exists", source_dir)
+        raise common.ConfigError("provided sources dir doesn't exists", source_dir)
     if python_exe is None and numpy_enable:
-        raise ValueError("numpy can be enable only if python is provided")
+        raise common.ConfigError("numpy can be enable only if python is provided")
     if numpy_enable and not get_python.is_numpy_enable(python_exe):
-        raise ValueError("numpy was not found in python:", python_exe)
+        raise common.ConfigError("numpy was not found in python:", python_exe)
 
     if python_exe is not None:
         python_version = get_python.get_version(python_exe)
@@ -94,7 +101,7 @@ def build(source_dir, build_dir, bin_dir, python_exe=None, numpy_enable=False):
     elif machine_name in arm_machine_names:
         arch = "arm"
     else:
-        raise ValueError("could not determine architecture:", machine_name)
+        raise common.ConfigError("could not determine architecture:", machine_name)
 
     b2_file = os.path.join(source_dir, "b2")
     args = [b2_file, "--user-config=%s" % user_config.name,
@@ -103,22 +110,22 @@ def build(source_dir, build_dir, bin_dir, python_exe=None, numpy_enable=False):
                 64 if common.is_64bit() else 32),
             "-j%d" % multiprocessing.cpu_count(), "link=static,shared",
             "--variant=debug,release", "--debug-configuration"]
-    if not common.is_linux(): # windows
+    if not common.is_linux():  # windows
         args += ["runtime-link=static,shared"]
     subprocess.run(args, cwd=source_dir).check_returncode()
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Get boost")
     source_dir_default = "{boost_top}/boost_{ver_maj}_{ver_min}_{ver_patch}"
-    build_dir_default = "{boost_top}/build"
-    bin_dir_default = "{boost_top}/bin"
+    build_dir_default = "{boost_top}/boost_{ver_maj}_{ver_min}_{ver_patch}_build"
+    bin_dir_default = "{boost_top}/boost_{ver_maj}_{ver_min}_{ver_patch}_bin"
     parser.add_argument(
         "--cmd", choices=["download", "build", "all"], required=True, help="command type")
     parser.add_argument("--version", type=str, default="1.79.0",
                         help="Version of boost to download, for example 1.78.0 (necessary for download)")
     parser.add_argument("--boost-top", type=str,
-                        help="top directory for sources, build and binaries dirs. "
+                        help="top directory for sources, build and binaries dirs. For example './libs/boost'"
                         "can be used instead of other arguments")
     parser.add_argument("--source-dir", type=str,
                         default=source_dir_default, help="directory for boost sources")
@@ -137,28 +144,30 @@ if __name__ == "__main__":
 
     ver_re = re.findall("([0-9]+)\.([0-9]+)\.([0-9]+)", args.version)
     if len(ver_re) != 1:
-        raise ValueError("Invalid version", args.version)
+        raise common.ConfigError("Invalid version", args.version)
     ver = tuple([int(x) for x in ver_re[0]])
+    if ver < VERSION_REQUIRED:
+        raise common.ConfigError("Minimum version is:", VERSION_REQUIRED)
 
     if args.source_dir == source_dir_default and args.boost_top is None:
-        raise ValueError("Source dir or boost top dir is required")
+        raise common.ConfigError("Source dir or boost top dir is required")
     else:
         source_dir = args.source_dir if args.source_dir != source_dir_default else os.path.join(
             args.boost_top, "boost_%d_%d_%d" % ver)
     source_dir = os.path.abspath(source_dir)
 
     if build_en and args.build_dir == build_dir_default and args.boost_top is None:
-        raise ValueError("Build dir or boost top dir is required")
+        raise common.ConfigError("Build dir or boost top dir is required")
     else:
         build_dir = args.build_dir if args.build_dir != build_dir_default else os.path.join(
-            args.boost_top, "build")
+            args.boost_top, "boost_%d_%d_%d_build" % ver)
     build_dir = os.path.abspath(build_dir)
 
     if build_en and args.bin_dir == bin_dir_default and args.boost_top is None:
-        raise ValueError("Bin dir or boost top dir is required")
+        raise common.ConfigError("Bin dir or boost top dir is required")
     else:
         bin_dir = args.bin_dir if args.bin_dir != bin_dir_default else os.path.join(
-            args.boost_top, "bin")
+            args.boost_top, "boost_%d_%d_%d_bin" % ver)
     bin_dir = os.path.abspath(bin_dir)
 
     python_en = args.python is not None
@@ -178,3 +187,7 @@ if __name__ == "__main__":
         print("Error was encountered:", str(e))
     except common.SilentExit:
         pass
+
+if __name__ == "__main__":
+    main()
+

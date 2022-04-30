@@ -37,7 +37,7 @@ def read_polygon_with_holes(imp):
     return pgnwh
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description='Self locate.')
     parser.add_argument('filename', metavar="filename", nargs='?',
                         help='the input file name', default='./locate_pgn.txt')
@@ -99,3 +99,7 @@ if __name__ == "__main__":
         arr = ps.arrangement()
         print(arr.number_of_vertices(),
               arr.number_of_halfedges(), arr.number_of_faces())
+
+if __name__ == "__main__":
+    main()
+

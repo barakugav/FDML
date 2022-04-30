@@ -4,3 +4,5 @@ build/
 libs/
 *.bak
 *.swp
+dependencies.cmake
+config.json

@@ -13,16 +13,16 @@ The FDML library support these types of queries. For two distance measurements, 
 
 The library is written in CPP, but bindings exists for Python, and an additional GUI application.
 
-## FDML-core
+# FDML-core
 
 The FDML-core is the CPP heart of the library and contains all the logic. It can be used as a CPP library, from Python using the bindings, or using command line application (basic CLI, daemon with communication through files). It's built on top of [CGAL](https://www.cgal.org/), which depends on [boost](https://www.boost.org/), [gmp](https://gmplib.org/) and [mpfr](https://www.mpfr.org/).
 
-### Installation
+## Installation
 
 - Clone the repository:
 	`git clone https://github.com/barakugav/FDML.git`
-- Install all the dependencies (see dependencies section) and set environment variables for `cmake`:
-	- TODO
+- Install all the dependencies and create `config.json` file (see dependencies section), and run the `configure` script:
+	`./configure --config ./config.json`
 - Build FDML
 	- Linux
 		```bash
@@ -39,11 +39,15 @@ The FDML-core is the CPP heart of the library and contains all the logic. It can
 		cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DFDML_USE_STATIC_LIBS:BOOL=ON -DFDML_WITH_PYBINDINGS:BOOL=ON -DCMAKE_BUILD_TYPE=Release {FDML_SRC_DIR}
 		```
 	- Windows
-		The configuration is doe via [cmake-gui](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html)
-		TODO
-		Compile using Visual Studio. open /build/fdml.sln, "Build -> Build Solution".
+		Initialize the build directory using [cmake-gui](https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html):
+		- Run `cmake-gui` in windows shell, and click `Configure`
+		- Verify dependencies path are correct
+		- Set `FDML_WITH_PYBINDINGS` if Python bindings are needed
+		- Click `Generate`
 
-### Usage
+		Open `{BUILD_DIR}/fdml.sln` with Visual Studio, "Build -> Build Solution".
+
+## Usage
 
 ```cpp
 Polygon_with_holes scene;
@@ -85,9 +89,9 @@ for (const auto& res_area : double_res)
              << "): " << res_area.pos << std::endl;
 ```
 
-## FDML-GUI
+# FDML-GUI
 
-### Installation
+## Installation
 
 FDML-core is required, see FDML-core section.
 In the future, FDML-py, the Python bindings, will be required as well.
@@ -95,7 +99,7 @@ In the future, FDML-py, the Python bindings, will be required as well.
 Install python dependencies:
 `pip install -r ./fdml-gui/requirements.txt`
 
-### Usage
+## Usage
 
 TODO
 
@@ -106,22 +110,37 @@ python fdml-gui/fdmlgui/locator_gui.py
 
 
 
-## Dependencies
+# Dependencies
 
-The dependencies can be installed globally on the machine, by defining the `cmake` variables as environment variables. Alternatively, one can create a directory `fdml/libs` add download all dependencies to it (this is also the default of *get_boost.py*), and define the `cmake` variable before building FDML.
+The dependencies of the library are [Boost](https://www.boost.org/), [GMP](https://gmplib.org/), [MPFR](https://www.mpfr.org/) and [CGAL](https://www.cgal.org/), along with some use of [Python3](https://www.python.org/).
+This section provide a guide on how to install all of these. The dependencies can be installed globally on the machine, or alternatively, one can create a directory `fdml/libs` for the dependencies, if there are multiple versions of these dependencies on the machine. The scripts *get_boost.py*, *get_mpfr.py* and *get_gmp.py* can be used to download these dependencies into the local `libs` directory.
 
-### Python
+After installing all dependencies, any dependency which was not installed globally, should be specified in a *config.json* file:
+```json
+{
+	"dependencies": {
+		"boost_inc": "/home/user/code/fdml/libs/boost/boost_1_79_0/",
+		"boost_lib": "/home/user/code/fdml/libs/boost/boost_1_79_0_bin/lib",
+		"cgal_dir": "/home/user/code/fdml/libs/cgal"
+	}
+}
+```
+
+The following configurations are supported:
+- `dependencies` which specifies paths to dependencies. The supported keys are:
+	- `gmp_inc`, `gmp_lib`, `mpfr_inc`, `mpfr_lib`, `boost_inc`, `boost_lib`, `cgal_dir`
+
+Before initializing the project with `cmake` and building, the `configure` script should be run to read the `config.json` file:
+`./configure.py --config ./config.json`
+ Any dependencies which are not found in the config file, will be searched globally.
+
+## Python
 
 Python3 is used as the main scripting language of the library, the GUI application and the library Python bindings. Not all of the following are required for some uses of the library, dependencies  can be installed the only for the used module.
 
 - Install [python](https://www.python.org/) and [pip](https://pypi.org/project/pip/):
-
-	- Linux:
-		`sudo apt-install python3 python3-pip`
-
-	- Windows:
-	Download python from the [official website](https://www.python.org/downloads/) and install pip:
-	`python -m ensurepip`
+	- Linux: `sudo apt-install python3 python3-pip`
+	- Windows: download Python from the [official website](https://www.python.org/downloads/) and install pip: `python -m ensurepip`
 
 - Scripts dependencies:
 	`pip install -r ./scripts/requirements.txt`
@@ -132,36 +151,40 @@ Python3 is used as the main scripting language of the library, the GUI applicati
 - Python bindings dependencies:
 	For Python bindings, [boost-python](https://www.boost.org/doc/libs/1_70_0/libs/python/doc/html/index.html) and [boost-numpy](https://www.boost.org/doc/libs/1_64_0/libs/python/doc/html/numpy/index.html) are required, and boost should be built with some special flags, more on that in the boost section. Before building boost, [numpy](https://numpy.org/) installation is needed:
 		`pip install numpy`
-	In addition, install additional python packages
-	`pip install -r ./fdml-py/requirements.txt`
+	In addition, some additional packages are required:
+	```bash
+	pip install -r ./fdml-py/requirements.txt
+	sudo apt-get install python3.8-venv
+	```
 
 
-### Installing A Development Environment and  `cmake`
+## Installing a Development Environment and  `cmake`
 
 A compiler and `cmake` should be installed.
 - Linux:
 	```bash
-	sudo apt-get install build-essential checkinstall g++ cmake
+	sudo apt-get install build-essential checkinstall m4 g++ cmake
 	```
-- Windows
-	Install MSVC from the [official website]()
+- Windows:
+	Install MSVC compiler from the [official website](https://visualstudio.microsoft.com/downloads/).
+	Install `cmake` from [here](https://cmake.org/download/).
 
-### Boost
+## Boost
 
 Boost is a dependency of CGAL and FDML-core, and it's also used to generate the Python bindings. If the Python bindings are required, python (3.8+) should be installed, along with numpy before boost is built.
 
 To install boost, you have a few options:
-1. Use the get_boost.py script in fdml/scripts
+1. Use the *get_boost.py* script in *fdml/scripts*
 	- Linux:
-	```bash
-	./scripts/get_boost.py --cmd download --boost-top ./libs/boost
-	./scripts/get_boost.py --cmd build --boost-top ./libs/boost --python /usr/bin/python3.8
-	```
+		```bash
+		./scripts/get_boost.py --cmd download --boost-top ./libs/boost
+		./scripts/get_boost.py --cmd build --boost-top ./libs/boost --python /usr/bin/python3.8
+		```
 	- Windows
-	```bash
-	.\scripts\get_boost.py --cmd download --boost-top .\libs\boost\
-	.\scripts\get_boost.py --cmd build --boost-top .\libs\boost\ --python C:\programs\Python39\python.exe
-	```
+		```bash
+		.\scripts\get_boost.py --cmd download --boost-top .\libs\boost\
+		.\scripts\get_boost.py --cmd build --boost-top .\libs\boost\ --python C:\programs\Python39\python.exe
+		```
 
 	The path to the Python executable **should not contains spaces**! Boost configuration doesn't handle these space well. This is a usually mistake in Windows, as Python is usually installed at `C:\Program Files\Python\`.
 	If the Python bindings are not required, `--python {Python executable path}` should be omitted.
@@ -169,18 +192,18 @@ To install boost, you have a few options:
 2. Download and install boost manually
 	- Download boost archive and extract it
 		- Linux:
-		```bash
-		wget -O boost_1_79_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.79.0/boost_1_79_0.tar.gz/download
-		tar xzvf boost_1_79_0.tar.gz
-		rm boost_1_79_0.tar.gz
-		```
+			```bash
+			wget -O boost_1_79_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.79.0/boost_1_79_0.tar.gz/download
+			tar xzvf boost_1_79_0.tar.gz
+			rm boost_1_79_0.tar.gz
+			```
 
 		- Windows:
-		```bash
-		curl -o boost_1_79_0.zip https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.zip
-		Expand-Archive -LiteralPath boost_1_79_0.zip -DestinationPath boost_1_79_0
-		rm boost_1_79_0.zip
-		```
+			```bash
+			curl -o boost_1_79_0.zip https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.zip
+			Expand-Archive -LiteralPath boost_1_79_0.zip -DestinationPath boost_1_79_0
+			rm boost_1_79_0.zip
+			```
 
 	- If Python bindings are required, create a configuration file *user-config.jam* which will tell boost where to find Python. The file should contain the following (spaces matter!):
 		```bash
@@ -203,16 +226,82 @@ To install boost, you have a few options:
 		./b2 --user-config={path to user-config.jam} --build-dir=./build --stagedir=./bin architecture=x86 address-model=64 link=static,shared runtime-link=static,shared --variant=debug,release --debug-configuration
 		```
 
+If Python binding are required, to verify `boost-numpy` was installed successfully, you can look for "NumPy enabled" (instead of "NumPy disabled. Reason:...") during the build. Alternatively, you can look for *boost_numpy...dll* in the boost lib directory.
 
-### gmp
-TODO
 
-### mpfr
-TODO
+## GMP (GNU Multiple Precision arithmetic library)
 
-### CGAL
-CGAL is a header only library, therefore there is no to do anything except cloning the repository
+- Linux:
+	To install [GMP](https://gmplib.org/), you have a few options:
+	1. Install via *apt-get*
+	```bash
+	sudo apt-get install libgmp3-dev
+	```
+	2. Use the *get_gmp.py* script in *fdml/scripts*
+	```bash
+	./scripts/get_gmp.py --cmd download --gmp-top ./libs/gmp
+	./scripts/get_gmp.py --cmd build --gmp-top ./libs/gmp
+	```
+
+	3. Download and install GMP manually
+	```bash
+	mkdir $FDML_TOP/libs/gmp
+	cd $FDML_TOP/libs/gmp
+	wget -O gmp-6.2.1.tar.xz https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz
+	tar xf gmp-6.2.1.tar.xz
+	rm gmp-6.2.1.tar.xz
+
+	cd gmp-6.2.1
+	./configure --prefix=$FDML_TOP/libs/gmp/gmp-6.2.1_installed
+	make all
+	make check
+	make install
+	```
+
+- Windows:
+	The way to build GMP on windows is clumsy, therefore it's easier to download binaries directly. GMP and MPFR can be downloaded together by using the script *get_gmp.py* in *fdml/scripts*:
+	```bash
+	.\scripts\get_gmp.py --top-dir .\libs\gmp_mpfr
+	```
+	Alternatively, you can download the binaries manually from [CGAL releases page](https://github.com/CGAL/cgal/releases).
+
+
+## MPFR (Multiple-Precision Floating-point Reliable library)
+
+- Linux:
+	To install [MPFR](https://www.mpfr.org/), you have a few options:
+	1. Install via *apt-get*
+	```bash
+	sudo apt-get install libmpfr-dev libmpfr-doc
+	```
+	2. Use the *get_mpfr.py* script in *fdml/scripts*
+	```bash
+	./scripts/get_mpfr.py --cmd download --mpfr-top ./libs/mpfr
+	./scripts/get_mpfr.py --cmd build --mpfr-top ./libs/mpfr --gmp-dir $FDML_TOP/libs/gmp/gmp-6.2.1_installed/
+	```
+
+	3. Download and install MPFR manually
+	```bash
+	mkdir $FDML_TOP/libs/mpfr
+	cd $FDML_TOP/libs/mpfr
+	wget -O mpfr-4.1.0.tar.gz.xz https://www.mpfr.org/mpfr-current/mpfr-4.1.0.tar.gz
+	tar xf mpfr-4.1.0.tar.gz
+	rm mpfr-4.1.0.tar.gz
+
+	cd mpfr-4.1.0
+	./configure --prefix=$FDML_TOP/libs/mpfr/mpfr-4.1.0_installed --with-gmp=$FDML_TOP/libs/gmp/gmp-6.2.1_installed/
+	make all
+	make check
+	make install
+	```
+
+- Windows:
+	The way to build MPFR on windows is clumsy, therefore it's easier to download binaries directly. GMP and MPFR can be downloaded together. See the GMP section.
+
+
+## CGAL
+CGAL is a header only library, therefore there is no need to do anything except cloning the repository
 ```bash
+cd $FDML_TOP/libs/
 git clone https://github.com/CGAL/cgal.git
 ```
-The `cmake` variable required for CGAL is `CGAL_DIR`, which should point to the root of the CGAL repository.

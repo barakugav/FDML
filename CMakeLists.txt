@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.14...3.22)
 project(FDML VERSION "1.0.0" LANGUAGES CXX)
 
+# Dependencies makefile
+set(dependencies_file dependencies.cmake)
+include(${dependencies_file} OPTIONAL RESULT_VARIABLE dependencies_file_found)
+if(${dependencies_file_found} STREQUAL "NOTFOUND")
+  message(STATUS "Dependencies file was not found, using globaly installed libraries. consider running ./configure")
+endif()
+
 # General options
 option(BUILD_SHARED_LIBS "Build shared libs instead of static libs" ON)
 option(FDML_WITH_PYBINDINGS "With python bindings" OFF)

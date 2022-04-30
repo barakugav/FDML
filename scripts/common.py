@@ -4,6 +4,7 @@
 import platform
 import os
 import sys
+import zipfile
 import tarfile
 import tqdm
 import urllib.request
@@ -34,7 +35,7 @@ def download_with_progressbar(url, out_filename):
     def reporthook(block_index, block_size, total_size):
         if reporthook.progressbar is None:
             reporthook.progressbar = iter(
-                tqdm.tqdm(range(total_size), unit='B', unit_scale=True, unit_divisor=1024))
+                tqdm.tqdm(range(total_size), unit='B', unit_scale=True, unit_divisor=1024, desc="Downloading"))
         bytes_num = block_index * block_size
         for i in reporthook.progressbar:
             if i >= bytes_num:
@@ -52,5 +53,11 @@ def download_with_progressbar(url, out_filename):
 
 def tar_extract_with_progressbar(tar_filename, output_dir):
     with tarfile.open(tar_filename, 'r') as tar_file:
-        for member in tqdm.tqdm(tar_file.getmembers()):
+        for member in tqdm.tqdm(tar_file.getmembers(), desc="Extracting"):
             tar_file.extract(member, path=output_dir)
+
+
+def zip_extract_with_progressbar(zip_filename, output_dir):
+    with zipfile.ZipFile(zip_filename) as zip_file:
+        for member in tqdm.tqdm(zip_file.infolist(), desc="Extracting"):
+            zip_file.extract(member, output_dir)

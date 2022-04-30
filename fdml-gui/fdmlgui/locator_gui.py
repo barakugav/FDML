@@ -400,7 +400,7 @@ class LocatorGUI:
         return self._app.exec_()
 
 
-if __name__ == "__main__":
+def main():
     if not (sys.platform == "linux" or sys.platform == "linux2"):
         fdml_gui_appid = u'fdml.fdml_gui.locator'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
@@ -409,3 +409,6 @@ if __name__ == "__main__":
     gui = LocatorGUI(sys.argv)
     ret = gui.run()
     sys.exit(ret)
+
+if __name__ == "__main__":
+    main()
