@@ -20,6 +20,11 @@
 #include <string>
 #include <vector>
 
+#define DBG_PRINT_LINE()                                                                                               \
+  do {                                                                                                                 \
+    std::cout << "line " << __LINE__ << std::endl;                                                                     \
+  } while (0)
+
 namespace po = boost::program_options;
 
 // default triangulation for Surface_mesher
@@ -67,7 +72,6 @@ void load_poly_to_arrangement(std::string& filename, Arrangement* arr) {
     Segment s(p, q);
     segments.push_back(s);
   }
-
   CGAL::insert(*arr, segments.begin(), segments.end());
 }
 
@@ -121,46 +125,65 @@ struct MeshingOptions {
   bool single_measurement;
 };
 
-int main(int argc, char** argv) {
+template <typename ManifoldFunc>
+static void write_grid_to_csv(ManifoldFunc manifold_func, unsigned int grid_size, const std::string& outfile) {
+  std::ofstream grid_file(outfile);
+  for (unsigned int x = 0; x < grid_size; x++) {
+    std::cout << x << std::endl;
+    for (unsigned int y = 0; y < grid_size; y++) {
+      for (unsigned int t = 0; t < grid_size; t++) {
+        double val = manifold_func(
+            Point_3((x / (FT)grid_size - 0.5) * 2.0, (y / (FT)grid_size - 0.5) * 2.0, (t / (FT)grid_size)));
+        grid_file << x << "," << y << "," << t << "," << val << std::endl;
+      }
+    }
+  }
+}
 
+int main(int argc, char** argv) {
   /*
    * Load arguments
    */
   MeshingOptions mo;
   po::options_description desc("Robot localization with implicit manifolds");
-  desc.add_options()("help", "display help message")
+  desc.add_options()("help", "display help message");
 
-      ("filename", po::value<std::string>(&mo.filename), "file name of input polygon")(
-          "out-filename", po::value<std::string>(&mo.out_filename), "file name of output mesh (in *.off format)")
+  desc.add_options()("filename", po::value<std::string>(&mo.filename), "file name of input polygon");
+  desc.add_options()("out-filename", po::value<std::string>(&mo.out_filename),
+                     "file name of output mesh (in *.off format)");
+  desc.add_options()("angle-bound", po::value<FT>(&mo.angle_bound)->default_value(30.),
+                     "Angle bound for mesh generation");
+  desc.add_options()("distance-bound", po::value<FT>(&mo.distance_bound)->default_value(.04),
+                     "Distance bound for mesh generation");
+  desc.add_options()("radius-bound", po::value<FT>(&mo.radius_bound)->default_value(.04),
+                     "Radius bound for mesh generation");
 
-          ("angle-bound", po::value<FT>(&mo.angle_bound)->default_value(30.), "Angle bound for mesh generation")(
-              "distance-bound", po::value<FT>(&mo.distance_bound)->default_value(.04),
-              "Distance bound for mesh generation")("radius-bound", po::value<FT>(&mo.radius_bound)->default_value(.04),
-                                                    "Radius bound for mesh generation")
+  desc.add_options()("d1", po::value<FT>(&mo.d1), "First measurement d1 to wall in room");
+  desc.add_options()("d2", po::value<FT>(&mo.d2)->default_value(-INFTY),
+                     "Second measurement d2 to wall in room (optional)");
+  desc.add_options()("alpha", po::value<FT>(&mo.alpha)->default_value(-INFTY),
+                     "Alpha rotation for achieving second measurement (optional)");
+  desc.add_options()("delta", po::value<FT>(&mo.delta)->default_value(-INFTY),
+                     "Delta cutoff for curve intersection (optional)");
 
-              ("d1", po::value<FT>(&mo.d1),
-               "First measurement d1 to wall in room")("d2", po::value<FT>(&mo.d2)->default_value(-INFTY),
-                                                       "Second measurement d2 to wall in room (optional)")(
-                  "alpha", po::value<FT>(&mo.alpha)->default_value(-INFTY),
-                  "Alpha rotation for achieving second measurement (optional)")(
-                  "delta", po::value<FT>(&mo.delta)->default_value(-INFTY),
-                  "Delta cutoff for curve intersection (optional)")
+  desc.add_options()("sphere-x", po::value<FT>(&mo.sphere_x)->default_value(0),
+                     "Bounding sphere x coordinate (optional, default is origin)");
+  desc.add_options()("sphere-y", po::value<FT>(&mo.sphere_y)->default_value(0),
+                     "Bounding sphere y coordinate (optional, default is origin)");
+  desc.add_options()("sphere-z", po::value<FT>(&mo.sphere_z)->default_value(0),
+                     "Bounding sphere z coordinate (optional, default is origin)");
+  desc.add_options()("sphere-r", po::value<FT>(&mo.sphere_r)->default_value(2.0),
+                     "Bounding sphere radius (optional, default is 2.0 units)");
 
-                  ("sphere-x", po::value<FT>(&mo.sphere_x)->default_value(0),
-                   "Bounding sphere x coordinate (optional, default is origin)")(
-                      "sphere-y", po::value<FT>(&mo.sphere_y)->default_value(0),
-                      "Bounding sphere y coordinate (optional, default is origin)")(
-                      "sphere-z", po::value<FT>(&mo.sphere_z)->default_value(0),
-                      "Bounding sphere z coordinate (optional, default is origin)")(
-                      "sphere-r", po::value<FT>(&mo.sphere_r)->default_value(2.0),
-                      "Bounding sphere radius (optional, default is 2.0 units)")
-
-                      ("single-measurement", po::value<bool>(&mo.single_measurement)->default_value(true),
-                       "If true then take into account only the single d1 measurement");
+  desc.add_options()("single-measurement", po::value<bool>(&mo.single_measurement)->default_value(true),
+                     "If true then take into account only the single d1 measurement");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
+
+  // if (mo.alpha < 0)
+  //   throw ...
 
   // Display help message
   if (vm.count("help") || !vm.count("filename") || !vm.count("out-filename") || !vm.count("d1")) {
@@ -177,32 +200,39 @@ int main(int argc, char** argv) {
   Tr tr;
   C2t3 c2t3(tr);
 
+  // Single measurement implicit manifold
+  auto single_measurement_func = [&arr, &pl, mo](Point_3 p) {
+    FT theta = p.z() * 2 * PI;
+    if (theta < 0 || theta > 2 * PI)
+      return INFTY;
+    return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(theta), sin(theta)) - mo.d1);
+  };
+
+  // Double measurement implicit manifold
+  auto double_measurement_func = [&arr, &pl, mo](Point_3 p) {
+    FT theta = p.z() * 2 * PI;
+    if (theta < 0 || theta > 2 * PI)
+      return INFTY;
+
+    FT theta_plus = theta + mo.alpha;
+    if (theta_plus >= 2 * PI)
+      theta_plus -= 2 * PI;
+
+    FT f_d1 = shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(theta), sin(theta)) - mo.d1;
+    FT f_d2 = shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(theta_plus), sin(theta_plus)) - mo.d2;
+
+    return (FT)(std::abs(f_d1) + std::abs(f_d2) - mo.delta);
+  };
+
+  auto manifold_func = [&](Point_3 p) {
+    if (mo.single_measurement)
+      return single_measurement_func(p);
+    else
+      return double_measurement_func(p);
+  };
+
   // Generate the implicit surface and make surface mesh to c2t3
-  Surface_3 surface(
-      [&arr, &pl, mo](Point_3 p) {
-        if (mo.single_measurement) {
-          // Single measurement implicit manifold
-          FT theta = p.z() * 2 * PI;
-          if (theta < 0 || theta > 2 * PI)
-            return INFTY;
-          return shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(theta), sin(theta)) - mo.d1;
-        } else {
-          // Double measurement implicit manifold
-          FT theta = p.z() * 2 * PI;
-          if (theta < 0 || theta > 2 * PI)
-            return INFTY;
-
-          FT theta_plus = p.z() * 2 * PI + mo.alpha;
-          if (theta_plus < 0 || theta_plus > 2 * PI)
-            return INFTY;
-
-          FT f_d1 = shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(theta), sin(theta)) - mo.d1;
-          FT f_d2 = shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(theta_plus), sin(theta_plus)) - mo.d2;
-
-          return (f_d1 * f_d1) + (f_d2 * f_d2) - mo.delta;
-        }
-      },
-      Sphere_3(Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r));
+  Surface_3 surface(manifold_func, Sphere_3(Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r));
 
   CGAL::Surface_mesh_default_criteria_3<Tr> criteria(mo.angle_bound, mo.radius_bound, mo.distance_bound);
   CGAL::make_surface_mesh(c2t3, surface, criteria, CGAL::Non_manifold_tag());

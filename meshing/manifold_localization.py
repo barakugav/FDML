@@ -180,7 +180,7 @@ if __name__ == "__main__":
     crit = lambda x, y: is_point_inside(polygon, x, y)
 
     N = 100
-    d1 = 0.3
+    d1 = 1.7
     d2 = 1.5
     # r = 0.1
     beta = math.pi
