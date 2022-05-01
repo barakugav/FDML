@@ -6,3 +6,4 @@ libs/
 *.swp
 dependencies.cmake
 config.json
+.DS_Store
