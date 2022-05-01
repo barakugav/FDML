@@ -1,4 +1,3 @@
-
 # FDML: Few Distance Measurements robot Localization
 
 <div align="center">
@@ -49,6 +48,24 @@ The FDML-core is the CPP heart of the library and contains all the logic. It can
 
 ## Usage
 
+The library interface is done via `Locator` object which support three functions:
+
+```cpp
+class Locator {
+  Locator();
+  void init(const Polygon_with_holes& scene);
+  std::vector<Res1d> query(const Kernel::FT& d) const;
+  std::vector<Res2d> query(const Kernel::FT& d1, const Kernel::FT& d2) const;
+}
+```
+- `void init(scene)`
+	Perform preprocessing on the given polygon scene
+- `vector<Res> query(d)`
+	Calculates all the positions in the scene a sensor might be, given the information it performed a single distance measurement with a value of `d`.
+- `vector<Res> query(d1, d2)`
+	Calculates all the positions in the scene a sensor might be, given the information it performed two distance measurements with a values of `d1,d2`.
+
+A simple square scene example:
 ```cpp
 Polygon_with_holes scene;
 scene.push_back(Point(0, 0));
@@ -186,7 +203,7 @@ To install boost, you have a few options:
 		.\scripts\get_boost.py --cmd build --boost-top .\libs\boost\ --python C:\programs\Python39\python.exe
 		```
 
-	The path to the Python executable **should not contains spaces**! Boost configuration doesn't handle these space well. This is a usually mistake in Windows, as Python is usually installed at `C:\Program Files\Python\`.
+	The path to the Python executable **should not contains spaces**! Boost configuration doesn't handle these space well. This is a usual mistake in Windows, as Python is usually installed at `C:\Program Files\Python\`.
 	If the Python bindings are not required, `--python {Python executable path}` should be omitted.
 
 2. Download and install boost manually
@@ -212,51 +229,50 @@ To install boost, you have a few options:
 		# using python : {ver_maj}.{ver_min} : "{path to python executable}" ;
 		using python : 3.9 : "C:\\programs\\Python\\Python39\\python.exe" ;
 		```
-		The above example is for Windows, but should be identical for Linux except the path to the Python executable.
-- Build boost:
-	Run the build commands from the newly downloaded boost source directory.
-	- Linux:
-		```bash
-		./bootstrap.sh --with-python={Python executable path} --with-python-version={ver_maj}.{ver_min}
-		./b2 --user-config={path to user-config.jam} --build-dir=./build --stagedir=./bin architecture=x86 address-model=64 link=static,shared --variant=debug,release --debug-configuration
-		```
-	- Windows:
-		```bash
-		./bootstrap.bat--with-python={Python executable path} --with-python-version={ver_maj}.{ver_min}
-		./b2 --user-config={path to user-config.jam} --build-dir=./build --stagedir=./bin architecture=x86 address-model=64 link=static,shared runtime-link=static,shared --variant=debug,release --debug-configuration
-		```
+		The above example is for Windows, but should be identical for Linux except the Python executable path.
+	- Build boost:
+		Run the build commands from the newly downloaded boost source directory.
+		- Linux:
+			```bash
+			./bootstrap.sh --with-python={Python executable path} --with-python-version={ver_maj}.{ver_min}
+			./b2 --user-config={path to user-config.jam} --build-dir=./build --stagedir=./bin architecture=x86 address-model=64 link=static,shared --variant=debug,release --debug-configuration
+			```
+		- Windows:
+			```bash
+			./bootstrap.bat--with-python={Python executable path} --with-python-version={ver_maj}.{ver_min}
+			./b2 --user-config={path to user-config.jam} --build-dir=./build --stagedir=./bin architecture=x86 address-model=64 link=static,shared runtime-link=static,shared --variant=debug,release --debug-configuration
+			```
 
-If Python binding are required, to verify `boost-numpy` was installed successfully, you can look for "NumPy enabled" (instead of "NumPy disabled. Reason:...") during the build. Alternatively, you can look for *boost_numpy...dll* in the boost lib directory.
-
+		If Python binding are required, to verify `boost-numpy` was installed successfully, you can look for "NumPy enabled" (instead of "NumPy disabled. Reason:...") during the build. Alternatively, you can look for *boost_numpy...dll* in the boost lib directory.
 
 ## GMP (GNU Multiple Precision arithmetic library)
 
 - Linux:
 	To install [GMP](https://gmplib.org/), you have a few options:
 	1. Install via *apt-get*
-	```bash
-	sudo apt-get install libgmp3-dev
-	```
+		```bash
+		sudo apt-get install libgmp3-dev
+		```
 	2. Use the *get_gmp.py* script in *fdml/scripts*
-	```bash
-	./scripts/get_gmp.py --cmd download --gmp-top ./libs/gmp
-	./scripts/get_gmp.py --cmd build --gmp-top ./libs/gmp
-	```
+		```bash
+		./scripts/get_gmp.py --cmd download --gmp-top ./libs/gmp
+		./scripts/get_gmp.py --cmd build --gmp-top ./libs/gmp
+		```
 
 	3. Download and install GMP manually
-	```bash
-	mkdir $FDML_TOP/libs/gmp
-	cd $FDML_TOP/libs/gmp
-	wget -O gmp-6.2.1.tar.xz https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz
-	tar xf gmp-6.2.1.tar.xz
-	rm gmp-6.2.1.tar.xz
+		```bash
+		mkdir $FDML_TOP/libs/gmp
+		cd $FDML_TOP/libs/gmp
+		wget -O gmp-6.2.1.tar.xz https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz
+		tar xf gmp-6.2.1.tar.xz
+		rm gmp-6.2.1.tar.xz
 
-	cd gmp-6.2.1
-	./configure --prefix=$FDML_TOP/libs/gmp/gmp-6.2.1_installed
-	make all
-	make check
-	make install
-	```
+		cd gmp-6.2.1
+		./configure --prefix=$FDML_TOP/libs/gmp/gmp-6.2.1_installed
+		make all
+		make check
+		make install
+		```
 
 - Windows:
 	The way to build GMP on windows is clumsy, therefore it's easier to download binaries directly. GMP and MPFR can be downloaded together by using the script *get_gmp.py* in *fdml/scripts*:
@@ -271,29 +287,29 @@ If Python binding are required, to verify `boost-numpy` was installed successful
 - Linux:
 	To install [MPFR](https://www.mpfr.org/), you have a few options:
 	1. Install via *apt-get*
-	```bash
-	sudo apt-get install libmpfr-dev libmpfr-doc
-	```
+		```bash
+		sudo apt-get install libmpfr-dev libmpfr-doc
+		```
 	2. Use the *get_mpfr.py* script in *fdml/scripts*
-	```bash
-	./scripts/get_mpfr.py --cmd download --mpfr-top ./libs/mpfr
-	./scripts/get_mpfr.py --cmd build --mpfr-top ./libs/mpfr --gmp-dir $FDML_TOP/libs/gmp/gmp-6.2.1_installed/
-	```
+		```bash
+		./scripts/get_mpfr.py --cmd download --mpfr-top ./libs/mpfr
+		./scripts/get_mpfr.py --cmd build --mpfr-top ./libs/mpfr --gmp-dir $FDML_TOP/libs/gmp/gmp-6.2.1_installed/
+		```
 
 	3. Download and install MPFR manually
-	```bash
-	mkdir $FDML_TOP/libs/mpfr
-	cd $FDML_TOP/libs/mpfr
-	wget -O mpfr-4.1.0.tar.gz.xz https://www.mpfr.org/mpfr-current/mpfr-4.1.0.tar.gz
-	tar xf mpfr-4.1.0.tar.gz
-	rm mpfr-4.1.0.tar.gz
+		```bash
+		mkdir $FDML_TOP/libs/mpfr
+		cd $FDML_TOP/libs/mpfr
+		wget -O mpfr-4.1.0.tar.gz.xz https://www.mpfr.org/mpfr-current/mpfr-4.1.0.tar.gz
+		tar xf mpfr-4.1.0.tar.gz
+		rm mpfr-4.1.0.tar.gz
 
-	cd mpfr-4.1.0
-	./configure --prefix=$FDML_TOP/libs/mpfr/mpfr-4.1.0_installed --with-gmp=$FDML_TOP/libs/gmp/gmp-6.2.1_installed/
-	make all
-	make check
-	make install
-	```
+		cd mpfr-4.1.0
+		./configure --prefix=$FDML_TOP/libs/mpfr/mpfr-4.1.0_installed --with-gmp=$FDML_TOP/libs/gmp/gmp-6.2.1_installed/
+		make all
+		make check
+		make install
+		```
 
 - Windows:
 	The way to build MPFR on windows is clumsy, therefore it's easier to download binaries directly. GMP and MPFR can be downloaded together. See the GMP section.
