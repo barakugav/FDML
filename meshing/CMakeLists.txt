@@ -1,6 +1,3 @@
-# Created by the script cgal_create_cmake_script
-# This is the CMake script for compiling a CGAL application.
-
 cmake_minimum_required(VERSION 3.1...3.22)
 project(Localization_with_surface_meshing)
 
@@ -15,9 +12,6 @@ add_executable( meshing
 add_to_cached_list(CGAL_EXECUTABLE_TARGETS)
 target_link_libraries(meshing PRIVATE CGAL::CGAL)
 target_link_libraries(meshing PRIVATE ${Boost_LIBRARIES})
-
-
-
 
 
 # create a target per cppfile
