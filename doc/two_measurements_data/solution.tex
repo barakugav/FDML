@@ -27,41 +27,105 @@
   (x_2 - x_1)^2 + (m_2 x_2 - m_1 x_1)^2 & = d_1^2 + d_2^2 - 2 k
 \end{align*}
 \begin{align*}
-  x^2 + x_1^2 - 2 x x_1 + y^2 + m_1^2x_1^2 - 2 y m_1 x_1 &= d_1^2\\
-  (1 + m_1^2) x_1^2 - 2 (x + y m_1) x_1  + x^2 + y^2  &= d_1^2\\
-  (1 + m_2^2) x_2^2 - 2 (x + y m_2) x_2  + x^2 + y^2  &= d_2^2\\
+  x^2 + x_1^2 - 2 x x_1 + y^2 + m_1^2x_1^2 - 2 m_1 y x_1 &= d_1^2\\
+  (1 + m_1^2) x_1^2 - 2 (x + m_1 y) x_1  + x^2 + y^2  &= d_1^2\\
+  (1 + m_2^2) x_2^2 - 2 (x + m_2 y) x_2  + x^2 + y^2  &= d_2^2\\
   x_2^2 + x_1^2 - 2 x_1 x_2 + m_1^2 x_1^2 + m_2^2 x_2^2 - 2 m_1 m_2 x_1 x_2 &= d_1^2 + d_2^2 - 2 k\\
-  (1 + m_1^2) x_1^2 + (1 + m_2^2) x_2^2 - 2 (1 - m_1 m_2) x_1 x_2 &= d_1^2 + d_2^2 - 2 k\\
+  (1 + m_1^2) x_1^2 + (1 + m_2^2) x_2^2 - 2 (1 + m_1 m_2) x_1 x_2 &= d_1^2 + d_2^2 - 2 k\\
 \end{align*}
 \begin{align*}
-  x_1 &= \frac{x + y m_1 \pm \sqrt{(x + y m_1)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)}}{1 + m_1^2}\\
-  x_2 &= \frac{x + y m_2 \pm \sqrt{(x + y m_2)^2 - (1 + m_2^2)(x^2 + y^2 - d_2^2)}}{1 + m_2^2}\\
+  x_1 &= \frac{x + m_1 y \pm \sqrt{(x + m_1 y)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)}}{1 + m_1^2}\\
+  x_2 &= \frac{x + m_2 y \pm \sqrt{(x + m_2 y)^2 - (1 + m_2^2)(x^2 + y^2 - d_2^2)}}{1 + m_2^2}\\
 \end{align*}
 \begin{align*}
-  2 (1 - m_1 m_2) x_1 x_2 - 2 (x + y m_1) x_1 - 2 (x + y m_2) x_2 + 2 x^2 + 2 y^2 &= 2 k\\
-  (1 - m_1 m_2) x_1 x_2 - (x + y m_1) x_1 - (x + y m_2) x_2 + x^2 + y^2 - k &= 0\\
-  (1 - m_1 m_2)
-  (\frac{x + y m_1 \pm \sqrt{(x + y m_1)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)}}{1 + m_1^2})\\
-  (\frac{x + y m_2 \pm \sqrt{(x + y m_2)^2 - (1 + m_2^2)(x^2 + y^2 - d_2^2)}}{1 + m_2^2})\\
-  - (x + y m_1)
-  (\frac{x + y m_1 \pm \sqrt{(x + y m_1)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)}}{1 + m_1^2})\\
-  - (x + y m_2)
-  (\frac{x + y m_2 \pm \sqrt{(x + y m_2)^2 - (1 + m_2^2)(x^2 + y^2 - d_2^2)}}{1 + m_2^2})\\
+  2 (1 + m_1 m_2) x_1 x_2 - 2 (x + m_1 y) x_1 - 2 (x + m_2 y) x_2 + 2 x^2 + 2 y^2 &= 2 k\\
+  (1 + m_1 m_2) x_1 x_2 - (x + m_1 y) x_1 - (x + m_2 y) x_2 + x^2 + y^2 - k &= 0\\
+\end{align*}
+%% Symbolic
+\section{Symbolic}
+\begin{align*}
+  x_1 &= r_1 \pm \sqrt{s_1}\\
+  x_2 &= r_2 \pm \sqrt{s_2}\\
+\end{align*}
+\begin{align*}
+  (1 + m_1 m_2) (r_1 \pm \sqrt{s_1}) (r_2 \pm \sqrt{s_2}) - (x + m_1 y) (r_1 \pm \sqrt{s_1}) - (x + m_2 y) (r_2 \pm \sqrt{s_2}) + x^2 + y^2 - k &= 0\\
+\end{align*}
+\begin{align*}
+  (1 + m_1 m_2) (r_1 r_2 \pm r_1 \sqrt{s_2} \pm r_2 \sqrt{s_1} + \sqrt{s_1 s_2})\\
+  - r_1 (x + m_1 y) \mp (x + m_1 y)\sqrt{s_1}\\
+  - r_2 (x + m_2 y) \mp (x + m_2 y)\sqrt{s_2}\\
   + x^2 + y^2 - k &= 0\\
-  %
-  (1 - m_1 m_2) (1 + m_1^2)(1 + m_2^2)
-  (x + y m_1 \pm \sqrt{(x + y m_1)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)})\\
-  (x + y m_2 \pm \sqrt{(x + y m_2)^2 - (1 + m_2^2)(x^2 + y^2 - d_2^2)})\\
-  - (x + y m_1) (1 + m_2^2)
-  (x + y m_1 \pm \sqrt{(x + y m_1)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)})\\
-  - (x + y m_2) (1 + m_2^2)
-  (x + y m_2 \pm \sqrt{(x + y m_2)^2 - (1 + m_2^2)(x^2 + y^2 - d_2^2)})\\
-  + (1 + m_1^2)(1 + m_2^2)(x^2 + y^2 - k) &= 0\\
-  %
-  %% (1 - m_1 m_2) (1 + m_1^2)(1 + m_2^2)
-  %% ((x + y m_1) (x + y m_2) +
-  %% (x + y m_1) \sqrt{(x + y m_1)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)} +
-  %% (x + y m_2) \sqrt{(x + y m_1)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)} +
+\end{align*}
+\begin{align*}
+  \pm r_1 (1 + m_1 m_2) \sqrt{s_2}
+  \mp (x + m_2 y)\sqrt{s_2}\\
+  \pm r_2 (1 + m_1 m_2) \sqrt{s_1}
+  \mp (x + m_1 y)\sqrt{s_1}\\
+  + (1 + m_1 m_2) \sqrt{s_1 s_2}
+  - r_1 (x + m_1 y) \\
+  - r_2 (x + m_2 y) \\
+  + x^2 + y^2 - k &= 0\\
+\end{align*}
+\begin{align*}
+  \pm (r_1 + r_1 m_1 m_2 - x - m_2 y) \sqrt{s_2} \pm (r_2 + r_2 m_1 m_2 - x - m_1 y) \sqrt{s_1} &=\\
+  + (1 + m_1 m_2) \sqrt{s_1 s_2} - r_1 (x + m_1 y) - r_2 (x + m_2 y) + x^2 + y^2 - k\\
+\end{align*}
+\begin{align*}
+  (r_1 + r_1 m_1 m_2 - x - m_2 y)^2 s_2 +  (r_2 + r_2 m_1 m_2 - x - m_1 y)^2 s_1\\
+  + 2 ((r_1 + r_1 m_1 m_2 - x - m_2 y) (r_2 + r_2 m_1 m_2 - x - m_1 y) \sqrt{s_1} \sqrt{s_2}) &= \\
+  + (1 + m_1 m_2)^2 s_1 s_2 + (x^2 + y^2 - r_1 (x + m_1 y) - r_2 (x + m_2 y) - k)^2\\
+  + 2 (- r_1 (x + m_1 y) - r_2 (x + m_2 y) + x^2 + y^2 - k) (1 + m_1 m_2) \sqrt{s_1 s_2}\\
+\end{align*}
+\begin{align*}
+  + 2 ((r_1 + r_1 m_1 m_2 - x - m_2 y) (r_2 + r_2 m_1 m_2 - x - m_1 y) \sqrt{s_1 s_2})\\
+  + 2 (r_1 (x + m_1 y) + r_2 (x + m_2 y) - x^2 - y^2 + k) (1 + m_1 m_2) \sqrt{s_1 s_2} &= \\
+  + (1 + m_1 m_2)^2 s_1 s_2 + (x^2 + y^2 - r_1 (x + m_1 y) - r_2 (x + m_2 y) - k)^2\\
+  - (r_1 + r_1 m_1 m_2 - x - m_2 y)^2 s_2
+  - (r_2 + r_2 m_1 m_2 - x - m_1 y)^2 s_1\\
+\end{align*}
+\begin{align*}
+  + 2 ((r_1 + r_1 m_1 m_2 - x - m_2 y) (r_2 + r_2 m_1 m_2 - x - m_1 y) \sqrt{s_1 s_2})\\
+  + 2 (r_1 (x + m_1 y) + r_2 (x + m_2 y) - x^2 - y^2 + k) (1 + m_1 m_2) \sqrt{s_1 s_2} &= \\
+  + (1 + m_1 m_2)^2 s_1 s_2 + (x^2 + y^2 - r_1 (x + m_1 y) - r_2 (x + m_2 y) - k)^2\\
+  - (r_1 + r_1 m_1 m_2 - x - m_2 y)^2 s_2
+  - (r_2 + r_2 m_1 m_2 - x - m_1 y)^2 s_1\\
+\end{align*}
+%% x-Axis Aligned
+\section{$x$-Axis Aligned}
+\begin{align*}
+  (r_1 \pm \sqrt{s_1}) (r_2 \pm \sqrt{s_2}) - x (r_1 \pm \sqrt{s_1}) - (x + m_2 y) (r_2 \pm \sqrt{s_2}) + x^2 + y^2 - k &= 0\\
+\end{align*}
+\begin{align*}
+  r_1 r_2 \pm r_1 \sqrt{s_2} \pm r_2 \sqrt{s_1} + \sqrt{s_1 s_2}
+  - x r_1 \mp x \sqrt{s_1} - r_2 (x + m_2 y) \mp (x + m_2 y) \sqrt{s_2}) + x^2 + y^2 - k &= 0\\
+\end{align*}
+\begin{align*}
+  + \sqrt{s_1 s_2}
+  + r_1 r_2 - x r_1 - r_2 (x + m_2 y)
+  + x^2 + y^2 - k &=
+  \mp r_2 \sqrt{s_1}
+  \pm x \sqrt{s_1}
+  \mp r_1 \sqrt{s_2}
+  \pm (x + m_2 y) \sqrt{s_2})
+\end{align*}
+\begin{align*}
+  + \sqrt{s_1 s_2}
+  + r_1 r_2 - x r_1 - r_2 (x + m_2 y) + x^2 + y^2 - k &=
+  \pm (x - r_2) \sqrt{s_1}
+  \pm (x + m_2 y - r_1) \sqrt{s_2}
+\end{align*}
+\begin{align*}
+  + s_1 s_2 + (r_1 r_2 - x r_1 - r_2 (x + m_2 y) + x^2 + y^2 - k)^2
+  + 2 (r_1 r_2 - x r_1 - r_2 (x + m_2 y) + x^2 + y^2 - k) \sqrt{s_1 s_2} &=\\
+  + (x - r_2)^2 s_1 + (x + m_2 y - r_1)^2 s_2 + 2 (x - r_2) (x + m_2 y - r_1) \sqrt{s_1 s_2}\\
+\end{align*}
+\begin{align*}
+  + s_1 s_2 + (r_1 r_2 - x r_1 - r_2 (x + m_2 y) + x^2 + y^2 - k)^2 - (x - r_2)^2 s_1 - (x + m_2 y - r_1)^2 s_2 &=\\
+  + 2 \sqrt{s_1 s_2} (r_2 x - r_1 x - y^2 + m_2 x y + k)\\
+\end{align*}
+\begin{align*}
+  + (s_1 s_2 + (r_1 r_2 - r_1 x - r_2 x - r_2 m_2 y + x^2 + y^2 - k)^2 - (x - r_2)^2 s_1 - (x + m_2 y - r_1)^2 s_2)^2 &=\\
+  + 4 (r_2 x - r_1 x - y^2 + m_2 x y + k)^2 s_1 s_2 \\
 \end{align*}
 %% Axis Aligned
 \section{Axis Aligned}
@@ -129,7 +193,7 @@
   (1 + m_2^2) x_2^2 - 2 (x + m_2 y) x_2  + x^2 + y^2 - d_2^2 &= 0\\
 \end{align*}
 \begin{align*}
-  x_1 &= \frac{x + m_1 y + \sqrt{(x + y m_1)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)}}{1 + m_1^2}\\
+  x_1 &= \frac{x + m_1 y + \sqrt{(x + m_1 y)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)}}{1 + m_1^2}\\
       &= \frac{x + m_1 y + \sqrt{x^2 + y^2 m_1^2 + 2 m_1 x y - x^2 - y^2 + d_1^2 - m_1^2 x^2 - m_1^2 y^2 + m_1^2 d_1^2}}{1 + m_1^2}\\
       &= \frac{x + m_1 y + \sqrt{2 m_1 x y - y^2 + d_1^2 - m_1^2 x^2 + m_1^2 d_1^2}}{1 + m_1^2}\\
   x_2 &= \frac{x + m_2 y + \sqrt{2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + m_2^2 d_2^2}}{1 + m_2^2}\\
