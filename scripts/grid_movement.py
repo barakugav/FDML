@@ -2,8 +2,30 @@
 
 import sys
 import random
+from enum import Enum
 from sortedcontainers import SortedList
 import argparse
+
+
+class Direction(Enum):
+    Xp = 0,
+    Xn = 1,
+    Yp = 2,
+    Yn = 3
+
+    def opposite(self):
+        if self == Direction.Xp:
+            return Direction.Xn
+        elif self == Direction.Xn:
+            return Direction.Xp
+        elif self == Direction.Yp:
+            return Direction.Yn
+        elif self == Direction.Yn:
+            return Direction.Yp
+        raise ValueError()
+
+    def is_positive(self):
+        return self == Direction.Xp or self == Direction.Yp
 
 
 class Position:
@@ -11,10 +33,20 @@ class Position:
         self.x = x
         self.y = y
 
-    # def __eq__(self, other):
-    #     if not isinstance(other, Position):
-    #         return False
-    #     return self.x == other.x and self.y == other.y
+    def add(self, direction):
+        if direction == Direction.Xp:
+            return Position(self.x + 1, self.y)
+        if direction == Direction.Xn:
+            return Position(self.x - 1, self.y)
+        if direction == Direction.yp:
+            return Position(self.x, self.y + 1)
+        if direction == Direction.yn:
+            return Position(self.x, self.y - 1)
+        raise ValueError("Unknown direction ", direction)
+
+    @staticmethod
+    def distance(p1, p2):
+        return abs(p1.x - p2.x) + abs(p1.y - p2.y)
 
     def _cmp(self, other):
         if self.x != other.x:
@@ -170,10 +202,15 @@ class Robot:
         self.goal = goal
         self.pos = start
 
-        self.succr_xp = None
-        self.succr_xn = None
-        self.succr_yp = None
-        self.succr_yn = None
+        self.succr = [None] * len(Direction)
+
+    def get_goal_direction(self):
+        if self.pos == self.goal:
+            return None
+        if self.pos.x == self.goal.x:
+            return Direction.Yp if self.pos.y < self.goal.y else Direction.Yn
+        else:
+            return Direction.Xp if self.pos.x < self.goal.x else Direction.Xn
 
     def __repr__(self):
         return "{%s, %s, %s}" % (self.pos, self.start, self.goal)
@@ -216,14 +253,14 @@ def print_board(board, print_successors=False):
     if print_successors:
         print(" ID: X+ X- Y+ Y-")
         for robot in robots:
-            successors = [robot.succr_xp, robot.succr_xn,
-                          robot.succr_yp, robot.succr_yn]
             ids = [
-                "--" if r is None else "{:02}".format(r.id) for r in successors]
+                "--" if r is None else "{:02}".format(r.id) for r in robot.succr]
             print("R{:02}: {} {} {} {} {}".format(robot.id, *ids, robot))
 
 
 def solve_scene(scene):
+    # TODO validate scene
+
     board = Board(scene)
     moves = []
 
@@ -243,8 +280,8 @@ def solve_scene(scene):
         # Check if last robot was exactly below (negative y, yn) current robot
         if prev_col_robot is not None and robot.pos.x == prev_col_robot.pos.x:
             assert robot.pos.y > prev_col_robot.pos.y
-            prev_col_robot.succr_yp = robot
-            robot.succr_yn = prev_col_robot
+            prev_col_robot.succr[Direction.Yp] = robot
+            robot.succr[Direction.Yn] = prev_col_robot
         prev_col_robot = robot
 
         # Check if there is some robot exactly to the left (negative x, xn) of the current robot
@@ -254,8 +291,8 @@ def solve_scene(scene):
         prev_row_robot = prev_row_robot if prev_row_robot is not None and prev_row_robot.pos.y == robot.pos.y else None
         if prev_row_robot is not None:
             assert robot.pos.x > prev_row_robot.pos.x
-            prev_row_robot.succr_xp = robot
-            robot.succr_xn = prev_row_robot
+            prev_row_robot.succr[Direction.Xp] = robot
+            robot.succr[Direction.Xn] = prev_row_robot
             visible_robots.remove(prev_row_robot)
         visible_robots.add(robot)
     visible_robots.clear()
@@ -265,20 +302,12 @@ def solve_scene(scene):
     def get_blocking_robot(robot):
         if robot.pos == robot.goal:
             return None
-        if robot.pos.x == robot.goal.x:
-            # column robot
-            assert robot.pos.y != robot.goal.y
-            if robot.pos.y < robot.goal.y:
-                return None if robot.succr_yp == None or robot.goal.y < robot.succr_yp.pos.y else robot.succr_yp
-            else:
-                return None if robot.succr_yn == None or robot.goal.y > robot.succr_yn.pos.y else robot.succr_yn
-        else:
-            # row robot
-            assert robot.pos.x != robot.goal.x
-            if robot.pos.x < robot.goal.x:
-                return None if robot.succr_xp == None or robot.goal.x < robot.succr_xp.pos.x else robot.succr_xp
-            else:
-                return None if robot.succr_xn == None or robot.goal.x > robot.succr_xn.pos.x else robot.succr_xn
+        blocking_r = robot.succr[robot.get_goal_direction()]
+        if blocking_r is None:
+            return None
+        block_dis = Position.distance(robot.pos, robot.goal)
+        goal_dis = Position.distance(robot.pos, blocking_r.pos)
+        return blocking_r if block_dis <= goal_dis else None
 
     def has_clear_path(robot):
         return get_blocking_robot(robot) is None
@@ -296,26 +325,26 @@ def solve_scene(scene):
                 # update near robots' successors attributes
                 if robot.start.x == robot.goal.x:
                     # column robot
-                    if robot.succr_xp is not None:
-                        robot.succr_xp.succr_xn = robot.succr_xn
-                        queue.append(robot.succr_xp)
-                    if robot.succr_xn is not None:
-                        robot.succr_xn.succr_xp = robot.succr_xp
-                        queue.append(robot.succr_xn)
+                    if robot.succr[Direction.Xp] is not None:
+                        robot.succr[Direction.Xp].succr[Direction.Xn] = robot.succr[Direction.Xn]
+                        queue.append(robot.succr[Direction.Xp])
+                    if robot.succr[Direction.Xn] is not None:
+                        robot.succr[Direction.Xn].succr[Direction.Xp] = robot.succr[Direction.Xp]
+                        queue.append(robot.succr[Direction.Xn])
                 else:
                     # row robot
-                    if robot.succr_yp is not None:
-                        robot.succr_yp.succr_yn = robot.succr_yn
-                        queue.append(robot.succr_yp)
-                    if robot.succr_yn is not None:
-                        robot.succr_yn.succr_yp = robot.succr_yp
-                        queue.append(robot.succr_yn)
+                    if robot.succr[Direction.Yp] is not None:
+                        robot.succr[Direction.Yp].succr[Direction.Yn] = robot.succr[Direction.Yn]
+                        queue.append(robot.succr[Direction.Yp])
+                    if robot.succr[Direction.Yn] is not None:
+                        robot.succr[Direction.Yn].succr[Direction.Yp] = robot.succr[Direction.Yp]
+                        queue.append(robot.succr[Direction.Yn])
 
                 # Actual move
                 move_robot(robot, robot.goal)
 
                 # Clear successors
-                robot.succr_xp = robot.succr_xn = robot.succr_yp = robot.succr_yn = None
+                robot.succr = [None] * len(Direction)
 
     # Start by moving all robots with clear path to their target
     advance_robots_with_clear_path()
@@ -338,64 +367,163 @@ def solve_scene(scene):
             assert robot is not None
         cycles.append(cycle)
 
+    class Intersection:
+        def __init__(self, column_robot, row_robot):
+            self.column_r = column_robot
+            self.row_r = row_robot
+            self.inter_vertex = None
+
     # Solve each cycle independently
     for cycle in cycles:
-        assert cycle >= 4
+        assert len(cycle) >= 4
+
+        # Calculate all intersection
+        intersections = [[] for _ in range(len(board.robots))]
+        for idx, robot in enumerate(cycle):
+            if robot.pos.x != robot.goal.x:
+                continue  # arbitrary choose to iterate only on column robots
+            assert robot.pos != robot.goal
+            prev_robot = cycle[(idx - 1) % len(cycle)]
+            next_robot = cycle[(idx + 1) % len(cycle)]
+            robot_path = [robot.pos, next_robot.pos]
+
+            for idx_other, robot_other in enumerate(cycle):
+                if robot_other in [prev_robot, robot, next_robot]:
+                    continue
+                next_robot_other = cycle[(idx_other + 1) % len(cycle)]
+                robot_other_path = [robot_other.pos, next_robot_other.pos]
+                if is_paths_intersect(robot_path, robot_other_path):
+                    intersection = Intersection(robot, robot_other_path)
+                    intersections[robot.id].append(intersection)
+                    intersections[robot_other.id].append(intersection)
+
+        # Search for an empty position which is not an intersection
+        empty_pos = None
         for idx, robot in enumerate(cycle):
             assert robot.pos != robot.goal
             next_robot = cycle[(idx + 1) % len(cycle)]
             robot_path = [robot.pos, next_robot.pos]
+            robot_direction = robot.get_goal_direction()
 
-            intersecting_robots = []
-            for idx_other, robot_other in enumerate(cycle):
-                next_robot_other = cycle[(idx_other + 1) % len(cycle)]
-                robot_other_path = [robot_other.pos, next_robot_other.pos]
-                if is_paths_intersect(robot_path, robot_other_path):
-                    intersecting_robots.append(robot_other)
+            intersections[robot.id].sort(
+                key=(lambda v: v.row_r.pos.y if robot.pos.x ==
+                     robot.goal.x else v.column_r.pos.x),
+                reverse=not robot_direction.is_positive())
 
-            empty_pos = None
-            if robot.pos.x == robot.goal.x:
-                # column robot
-                movement_sign = sign(robot.goal.y - robot.pos.y)
-                empty_y = robot.pos.y + movement_sign
-                for robot_other in sorted(intersecting_robots, key=lambda r: r.y, reverse=movement_sign < 0):
-                    if empty_y != robot_other.y:
-                        break
-                    empty_y += movement_sign
-                if empty_y != next_robot.pos.y:
-                    empty_pos = Position(robot.pos.x, empty_y)
-
-            else:
-                # row robot
-                movement_sign = sign(robot.goal.y - robot.pos.y)
-                empty_x = robot.pos.x + movement_sign
-                for robot_other in sorted(intersecting_robots, key=lambda r: r.x, reverse=movement_sign < 0):
-                    if empty_x != robot_other.x:
-                        break
-                    empty_x += movement_sign
-                if empty_x != next_robot.pos.y:
-                    empty_pos = Position(empty_x, robot.pos.y)
-            if empty_pos is not None:
-                # Found empty position. Advance a robot to the empty position, and all other robots to their
-                # cycle's target position, solving the cycle.
-                prev_pos = robot.pos
-                move_robot(robot, empty_pos)
-
-                idx = (idx - 1) % len(cycle)
-                while True:
-                    r = cycle[idx]
-                    pprev_pos = r.pos
-                    move_robot(r, prev_pos)
-                    prev_pos = pprev_pos
-                    if r == robot:
-                        break
-                    idx = (idx - 1) % len(cycle)
+            maybe_empty_pos = robot.pos.add(robot_direction)
+            for robot_other in intersections[robot.id]:
+                if maybe_empty_pos != robot_other.pos:
+                    break
+                maybe_empty_pos.add(robot_direction)
+            if maybe_empty_pos != next_robot.pos:
+                empty_pos = maybe_empty_pos
                 break
-        else:
-            # no empty position found
-            pass
 
-            # After resolving all the cycles, the board should be solvable with only naive movements
+        if empty_pos is not None:
+            # Found empty position. Advance a robot to the empty position, and all other robots to their
+            # cycle's target position, solving the cycle.
+            prev_pos = robot.pos
+            move_robot(robot, empty_pos)
+
+            idx = (idx - 1) % len(cycle)
+            while True:
+                r = cycle[idx]
+                pprev_pos = r.pos
+                move_robot(r, prev_pos)
+                prev_pos = pprev_pos
+                if r == robot:
+                    break
+                idx = (idx - 1) % len(cycle)
+        else:
+            # No empty position found. Build the intersection graph and try to solve it
+
+            class IntersectionVertex:
+                def __init__(self):
+                    self.edge = [None] * len(Direction)
+
+            class Edge:
+                def __init__(self):
+                    self.source = None
+                    self.target = None
+                    self.source_dir = None
+                    self.targer_dir = None
+
+                    self._robots = []
+                    self._merge = None
+
+                def add(self, robot):
+                    self._robots.append(robot)
+
+                @staticmethod
+                def from_merge(e1, e2_self, e3, v):
+                    edge = Edge()
+
+                    edge.source = e1.source
+                    edge.source_dir = e1.source_dir
+                    edge.source.edge[e1.source_dir] = edge
+
+                    edge.target = e1.target
+                    edge.target_dir = e3.target_dir
+                    edge.target.edge[e3.target_dir] = edge
+
+                    edge._merge = (e1, e2_self, e3, v)
+
+            # Find first robot with intersections
+            first_robot_with_inters = None
+            for idx, robot in enumerate(cycle):
+                if len(intersections[robot.id]) > 0:
+                    first_robot_idx_with_inters = idx
+                    break
+            if first_robot_idx_with_inters is None:
+                raise ValueError("Cycle with no gaps! No solution")
+
+            # Build intersection graph
+            current_edge = None
+            idx = first_robot_idx_with_inters
+            while True:
+                robot = cycle[idx]
+                direction = robot.get_goal_direction()
+
+                for inter in intersections[robot.id]:
+                    if inter.inter_vertex is None:
+                        inter.inter_vertex = IntersectionVertex()
+                    vertex = inter.inter_vertex
+
+                    if current_edge is not None:
+                        current_edge.targer_dir = direction.opposite()
+                        vertex.edge[current_edge.targer_dir] = current_edge
+                        current_edge.target = vertex
+                    current_edge = Edge()
+                    current_edge.source_dir = direction
+                    vertex.edge[current_edge.source_dir] = current_edge
+                    current_edge.source = vertex
+
+                    init_edge = current_edge # arbitrary edge, used to start a traversal
+
+                idx = (idx + 1) % len(cycle)
+                current_edge.add(robot = cycle[idx])
+                if idx == first_robot_idx_with_inters:
+                    break
+
+            # Contract all loops
+            edge = init_edge
+            while True:
+                if edge.target is None:
+                    raise ValueError("Contracted cycle until a single loop! No solution")
+                next_edge = edge.target.edge[edge.targer_dir.opposite()]
+                if next_edge.source == next_edge.target:
+                    # Found self loop, contract
+                    next_next_edge = next_edge.target.edge[next_edge.targer_dir.opposite()]
+                    # TODO merge
+
+                else:
+                    edge = next_edge
+
+            # Expand graph and calculate all movement
+            # TODO
+
+
+    # After resolving all the cycles, the board should be solvable with only naive movements
     advance_robots_with_clear_path()
 
     return moves
