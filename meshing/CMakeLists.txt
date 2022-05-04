@@ -6,6 +6,11 @@ find_package(Boost REQUIRED COMPONENTS program_options)
 
 add_executable( meshing
   ${CMAKE_CURRENT_SOURCE_DIR}/meshing.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/read_input.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/shoot_ray.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/single_measurement.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/meshing_options.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp
 )
 
 
