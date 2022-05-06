@@ -11,8 +11,7 @@ void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M
   while (Q.size()) {
     DeltaCube curr_cube = Q.back();
     Q.pop_back();
-    std::cout << curr_cube.size() << std::endl;
-    
+
     if (tree_1.any_intersected_primitive(curr_cube.to_bbox_3()) &&
         tree_2.any_intersected_primitive(curr_cube.to_bbox_3())) { // Intersect stuff
       if (curr_cube.size() > delta)

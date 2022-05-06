@@ -52,6 +52,6 @@ typedef CGAL::AABB_traits<Kernel, Primitive> AABB_Traits;
 typedef CGAL::AABB_tree<AABB_Traits> Tree;
 typedef CGAL::Bbox_3 Bbox_3;
 
-#define INFTY 1000.0
+#define INFTY 100000.0
 
 #endif
