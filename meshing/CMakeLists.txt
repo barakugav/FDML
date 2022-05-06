@@ -11,6 +11,7 @@ add_executable( meshing
   ${CMAKE_CURRENT_SOURCE_DIR}/single_measurement.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/meshing_options.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/manifold_intersection.cpp
 )
 
 
