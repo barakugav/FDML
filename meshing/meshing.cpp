@@ -53,8 +53,8 @@ int main(int argc, char** argv) {
 
     std::cout << "Computing M_d2..." << std::endl;
     start = std::chrono::steady_clock::now();
-    single_measurement(m_d2, arr, pl, mo.d2, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r,
-                       mo.angle_bound, mo.radius_bound, mo.distance_bound, rotate_alpha);
+    single_measurement_rotate_alpha(m_d2, arr, pl, mo.d2, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r,
+                       mo.angle_bound, mo.radius_bound, mo.distance_bound, mo.alpha);
     end = std::chrono::steady_clock::now();
     std::cout << "Done computing M_d2. Time took: "
               << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000.0 << "[sec]"

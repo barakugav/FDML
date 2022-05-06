@@ -9,8 +9,9 @@ void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, P
 
   auto implicit_func = [&arr, &pl, d](Point_3 p) {
     FT theta = p.z() * 2 * M_PI;
-    if (theta < 0 || theta > 2 * M_PI)
-      return INFTY;
+    //if (theta < 0 || theta > 2 * M_PI)
+    //  return FT(1);
+    //  return INFTY;
     return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(theta), sin(theta)) - d);
   };
 
@@ -22,6 +23,21 @@ void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, P
 
   // Convert the c2t3 mesh to a surface mesh
   CGAL::facets_in_complex_2_to_triangle_mesh(c2t3, sm);
+
+
+  // Clip angle value in [0, 2pi]
+  /*
+  CGAL::Polygon_mesh_processing::clip(sm, 
+      Plane_3(
+          Point_3(FT(0), FT(0), FT(0)), 
+          Vector_3(FT(0), FT(0), FT(-1))
+      ));
+  CGAL::Polygon_mesh_processing::clip(sm, 
+      Plane_3(
+          Point_3(FT(0), FT(0), FT(1)), 
+          Vector_3(FT(0), FT(0), FT(1))
+      ));
+  std::cout << "I'm here" << std::endl;*/
 }
 
 void single_measurement_rotate_alpha(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, Point_3 sphere_origin,
@@ -31,13 +47,7 @@ void single_measurement_rotate_alpha(Surface_mesh& sm, Arrangement& arr, Trap_pl
   C2t3 c2t3(tr);
 
   auto implicit_func = [&arr, &pl, d, alpha](Point_3 p) {
-    FT theta = p.z() + alpha / (2 * M_PI);
-    if (theta > 1.0)
-      theta -= 1.0;
-
-    theta *= 2 * M_PI;
-    if (theta < 0 || theta > 2 * M_PI)
-      return INFTY;
+    FT theta = p.z() * 2 * M_PI + alpha;
     return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(theta), sin(theta)) - d);
   };
 
@@ -49,6 +59,12 @@ void single_measurement_rotate_alpha(Surface_mesh& sm, Arrangement& arr, Trap_pl
 
   // Convert the c2t3 mesh to a surface mesh
   CGAL::facets_in_complex_2_to_triangle_mesh(c2t3, sm);
+
+  // Clip angle value in [alpha, 2pi+alpha]
+  /* CGAL::Polygon_mesh_processing::clip(
+      sm, Plane_3(Point_3(FT(0), FT(0), FT(alpha / (2.0 * M_PI))), Vector_3(FT(0), FT(0), FT(-1))));
+  CGAL::Polygon_mesh_processing::clip(
+      sm, Plane_3(Point_3(FT(0), FT(0), FT(1 + alpha / (2.0 * M_PI))), Vector_3(FT(0), FT(0), FT(1))));*/
 }
 
 void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, Point_3 sphere_origin, FT sphere_radius,

@@ -51,6 +51,8 @@ typedef CGAL::AABB_face_graph_triangle_primitive<Surface_mesh> Primitive;
 typedef CGAL::AABB_traits<Kernel, Primitive> AABB_Traits;
 typedef CGAL::AABB_tree<AABB_Traits> Tree;
 typedef CGAL::Bbox_3 Bbox_3;
+typedef Kernel::Plane_3 Plane_3;
+typedef Kernel::Vector_3 Vector_3;
 
 #define INFTY 100000.0
 

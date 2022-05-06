@@ -1,10 +1,13 @@
 #ifndef SINGLE_MEASUREMENT_H_
 #define SINGLE_MEASUREMENT_H_
 
+#define _USE_MATH_DEFINES
+
 #include "cgal_include.h"
+#include <CGAL/Polygon_mesh_processing/clip.h>
 #include <boost/function.hpp>
 #include <functional>
-#include <math.h>
+#include <cmath>
 
 /*
  * Get a room and a measured distance, and return (by reference) an approximating
