@@ -13,7 +13,6 @@ public:
   Bbox_3 to_bbox_3();
   FT size();
 
-private:
   Point_3 bottom_left, top_right;
 };
 
