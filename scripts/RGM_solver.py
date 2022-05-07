@@ -409,7 +409,7 @@ def solve_scene(scene, gui_hooks=None):
 
             # Expand graph and calculate all movement
             # 1. Start with an arbitrary edge with >0 robots
-            # 2. Advance all robots in the edge one step
+            # 2. Advance all robots in the edge
             # 3. Move to next edge, and go to 2.
 
             # Find an edge with >0 robots
@@ -421,7 +421,7 @@ def solve_scene(scene, gui_hooks=None):
 
             prev_last_robot = None
             while True:
-                # Advance all robots in edge by one tile
+                # Advance first robot to the junction, and all the following robots to the next robot position
                 if len(edge.robots) > 0:
                     prev_pos = None
                     for robot in reversed(edge.robots):
