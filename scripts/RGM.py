@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import json
-import random
 from enum import IntEnum
+import random
+import json
+import argparse
 
 
 class Direction(IntEnum):
@@ -41,6 +42,12 @@ class Position:
         if direction == Direction.Yn:
             return Position(self.x, self.y - 1)
         raise ValueError("Unknown direction ", direction)
+
+    @staticmethod
+    def is_in_bounds(x_bound, y_bound, x, y):
+        x1, x2 = min(x_bound[0], x_bound[1]), max(x_bound[0], x_bound[1])
+        y1, y2 = min(y_bound[0], y_bound[1]), max(y_bound[0], y_bound[1])
+        return x1 <= x and x < x2 and y1 <= y and y < y2
 
     @staticmethod
     def distance(p1, p2):
@@ -127,6 +134,7 @@ def parse_scene_from_file(filename):
 
     width, height = data["width"], data["height"]
     paths = [jsonobj_to_RobotPath(p) for p in data["paths"]]
+    random.shuffle(paths)
     return SceneDescription(width, height, paths)
 
 
@@ -201,4 +209,17 @@ def generate_random_scene(width, height, robot_num):
 
 
 if __name__ == "__main__":
-    pass
+    parser = argparse.ArgumentParser(
+        description="Robot Grid Movement scene generator")
+    parser.add_argument("--width", type=int, required=True,
+                        help="Width of the grid")
+    parser.add_argument("--height", type=int, required=True,
+                        help="Height of the grid")
+    parser.add_argument("--robots", type=int, required=True,
+                        help="Number of robots")
+    parser.add_argument("--out", type=str, required=True,
+                        help="Output filename")
+    args = parser.parse_args()
+
+    scene_desc = generate_random_scene(args.width, args.height, args.robots)
+    write_scene_to_file(scene_desc, args.out)

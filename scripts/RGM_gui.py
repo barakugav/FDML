@@ -1,28 +1,25 @@
 #!/usr/bin/env python3
 
-from PyQt5.QtGui import QColor
-from PyQt5.QtGui import QBrush, QPen
-import threading
-import time
-import RGM_gui_ui
 import sys
-import random
-import argparse
-from PyQt5.QtCore import Qt as Qt, QVariantAnimation, QPointF, pyqtSignal, QObject, QTimer
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene
 import math
-from RGM_solver import Scene
+import random
+import time
+import threading
 import RGM
 import RGM_solver
+import RGM_gui_ui
+from PyQt5.QtCore import Qt, QVariantAnimation, QPointF, pyqtSignal, QObject, QTimer
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QGraphicsScene, QGraphicsItem,
+                             QGraphicsRectItem, QGraphicsEllipseItem, QDialog, QFileDialog, QMessageBox)
+from PyQt5.QtGui import QColor, QBrush, QPen
 
 
-class RobotItem(QtWidgets.QGraphicsRectItem):
-    ANIMATION_DURATION = 1000
+class RobotItem(QGraphicsRectItem):
+    ANIMATION_DURATION = 500
 
     def __init__(self, cell_size):
         super().__init__(0, 0, cell_size, cell_size)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QGraphicsItem.ItemIsMovable, True)
 
         self.cell_size = cell_size
         self.color = QColor(*random.choices(range(256), k=3))
@@ -42,7 +39,7 @@ class RobotItem(QtWidgets.QGraphicsRectItem):
         self._animation.start()
 
 
-class TargetItem(QtWidgets.QGraphicsEllipseItem):
+class TargetItem(QGraphicsEllipseItem):
     def __init__(self, cell_size, color):
         super().__init__(0, 0, cell_size, cell_size)
         self.cell_size = cell_size
@@ -70,6 +67,12 @@ class GuiHooks(QObject):
         time.sleep(GuiHooks.CYCLE_IDENTIFY_DURATION / 1000)
 
 
+class PopoutErrHandler(QObject):
+    signal_popout_err = pyqtSignal(str)
+
+    def push(self, msg):
+        self.signal_popout_err.emit(msg)
+
 class RGMGui:
     def __init__(self):
         self.scene_desc = None
@@ -78,6 +81,9 @@ class RGMGui:
         self.ui = RGM_gui_ui.Ui_MainWindow()
         self.displayed_robots = {}
         self.displayed_targets = {}
+
+        self.popup_err = PopoutErrHandler()
+        self.popup_err.signal_popout_err.connect(self._popout_err_impl)
 
         self._solver_thread = None
         self.gui_hooks = GuiHooks()
@@ -91,18 +97,23 @@ class RGMGui:
 
     def _setup_actions(self):
         def action_open_func():
-            dialog = QtWidgets.QFileDialog(self.win)
+            dialog = QFileDialog(self.win)
             dialog.setWindowTitle("Open scene file")
             dialog.setNameFilter("(*.json)")
-            dialog.setFileMode(QtWidgets.QFileDialog.ExistingFile)
+            dialog.setFileMode(QFileDialog.ExistingFile)
             dialog_ret = dialog.exec_()
-            if dialog_ret != QtWidgets.QDialog.Accepted:
+            if dialog_ret != QDialog.Accepted:
                 return  # abort
             filenames = dialog.selectedFiles()
             if len(filenames) != 1:
-                print("only one file can be loaded")
+                self._popout_err("only one file can be loaded")
                 return
-            self._load_scene(RGM.parse_scene_from_file(filenames[0]))
+            try:
+                scene_desc = RGM.parse_scene_from_file(filenames[0])
+            except Exception as e:
+                self._popout_err("Failed to load scene", str(e))
+                return
+            self._load_scene(scene_desc)
         self.ui.action_open.triggered.connect(action_open_func)
 
         self.ui.solve_button.clicked.connect(self._solve_scene)
@@ -110,16 +121,22 @@ class RGMGui:
         self.ui.reset_button.clicked.connect(self._reset_scene)
 
     def _reset_scene(self):
+        if self._solver_thread is not None:
+            self._popout_err("last solving process was not finished yet")
+            return
         if self.scene_desc is None:
-            print("Scene wan't loaded yet")
-        else:
-            self._load_scene(self.scene_desc)
+            self._popout_err("Scene wan't loaded yet")
+            return
+        self._load_scene(self.scene_desc)
 
     def _load_scene(self, scene_description):
+        if self._solver_thread is not None:
+            self._popout_err("last solving process was not finished yet")
+            return
         self._clear()
 
         self.scene_desc = scene_description
-        self.scene = Scene(scene_description)
+        self.scene = RGM_solver.Scene(scene_description)
 
         for robot in self.scene.robots:
             robot_item = RobotItem(self.cell_size)
@@ -137,19 +154,21 @@ class RGMGui:
 
     def _solve_scene(self):
         if self._solver_thread is not None:
-            print("last solving process was not finished yet")
+            self._popout_err("last solving process was not finished yet")
+            return
+        if self.scene_desc is None:
+            self._popout_err("Scene wan't loaded yet")
             return
 
         def thread_target():
-            success, moves, failure_reason = RGM_solver.solve_scene(
+            success, _moves, failure_reason = RGM_solver.solve_scene(
                 self.scene, self.gui_hooks)
             if success:
                 pass
             else:
                 failed_cycle, failure_msg = failure_reason[0], failure_reason[1]
-                print("Failed to solve scene:")
-                print(failure_msg)
-                print(failed_cycle)
+                msg = "Failed to solve scene:\n" + failure_msg + "\n" + str(failed_cycle)
+                self._popout_err(msg)
             self._solver_thread = None
 
         self._solver_thread = threading.Thread(target=thread_target)
@@ -157,7 +176,8 @@ class RGMGui:
 
     def _clear(self):
         if self._solver_thread is not None:
-            self._solver_thread.join()
+            self._popout_err("last solving process was not finished yet")
+            return
         self.scene = None
         for robot_item in self.displayed_robots.values():
             self.scene_display.removeItem(robot_item)
@@ -177,11 +197,9 @@ class RGMGui:
             p1, p2 = r1.pos, r2.pos
             legnth = self.cell_size * RGM.Position.distance(p1, p2)
             if r1.is_column_robot():
-                line = QtWidgets.QGraphicsRectItem(
-                    0, 0, line_width, legnth + line_width)
+                line = QGraphicsRectItem(0, 0, line_width, legnth + line_width)
             else:  # row robot
-                line = QtWidgets.QGraphicsRectItem(
-                    0, 0, legnth + line_width, line_width)
+                line = QGraphicsRectItem(0, 0, legnth + line_width, line_width)
             x_pos = (min(p1.x, p2.x) + 0.5) * self.cell_size - line_width/2
             y_pos = (min(p1.y, p2.y) + 0.5) * self.cell_size - line_width/2
             line.setPos(x_pos, y_pos)
@@ -198,6 +216,17 @@ class RGMGui:
         timer.setSingleShot(True)
         timer.start(GuiHooks.CYCLE_IDENTIFY_DURATION)
 
+    def _popout_err(self, msg):
+        self.popup_err.push(msg)
+
+    def _popout_err_impl(self, msg):
+        print(msg) # log the error
+        dialog = QMessageBox()
+        dialog.setWindowTitle("Error")
+        dialog.setText(msg)
+        dialog.setIcon(QMessageBox.Critical)
+        dialog.exec_()
+
     def run(self, q_app_args=[sys.argv[0]]):
         app = QApplication(q_app_args)
         self.win = QMainWindow()
@@ -211,35 +240,5 @@ class RGMGui:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Robot Grid Movement")
-    parser.add_argument("--scene-gen", type=str,
-                        help="If provided, will generate a random scene into the provided file")
-    parser.add_argument(
-        "--width", type=int, help="Width of the grid. (only when random scene is generated)")
-    parser.add_argument(
-        "--height", type=int, help="Height of the grid. (only when random scene is generated)")
-    parser.add_argument(
-        "--robots", type=int, help="Number of robots. (only when random scene is generated)")
-    parser.add_argument("--scene-format", action="store_true",
-                        help="If provided, will print the scene file format")
-    args = parser.parse_args()
-
-    if args.scene_format:
-        print(""""n": 10,
-"m": 10,
-"paths": [
-    [[0,0], [0,8]],
-    [{start_pos}, {goal_pos}],
-    ...
-]
-""")
-    elif args.scene_gen:
-        if args.width is None or args.height is None or args.robots is None:
-            parser.error(
-                "--width, --height and --robots arguments are required to generate a random scene")
-            sys.exit(1)
-        scene = generate_random_scene(args.width, args.height, args.robots)
-        write_scene_to_file(scene, args.scene_gen)
-    else:
-        gui = RGMGui()
-        gui.run()
+    gui = RGMGui()
+    gui.run(sys.argv)

@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 from sortedcontainers import SortedList
+import RGM
 from RGM import Direction, Position
+import argparse
+import json
 
 
 # Robot Grid Movement (RGM) solver
@@ -95,15 +98,21 @@ def _print_scene(scene, print_successors=False):
             print("R{:02}: {} {} {} {} {}".format(robot.id, *ids, robot))
 
 
-class DefaultGuiHooks:
-    def __init__(self):
-        def empty_func(*_args): return None
-        self.robot_move = empty_func
-        self.cycle_identify = empty_func
+def solve_scene(scene, gui_hooks=None):
+    if gui_hooks is None:
+        class Object(object):
+            pass
+        gui_hooks = Object()
+        empty_func = lambda *_: None
+        gui_hooks.robot_move = empty_func
+        gui_hooks.cycle_identify = empty_func
 
-
-def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
     # TODO validate scene
+    for robot in scene.robots:
+        for p in [robot.start, robot.goal, robot.pos]:
+            if not Position.is_in_bounds([0, scene.width], [0, scene.height], p.x, p.y):
+                raise ValueError(
+                    "Invalid scene! robot is out of bounds", p, (scene.width, scene.height))
 
     moves = []
 
@@ -118,31 +127,37 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
         moves.append((robot.id, old_pos, new_pos))
         gui_hooks.robot_move(robot.id, old_pos, new_pos)
 
-    # Perform sweep to calculate successors x+,x-,y+,y- of all robots
-    # Running time is O(k log k)
-    scene.robots.sort(key=lambda r: r.start)
-    visible_robots = SortedList(key=lambda robot: robot.start.y)
-    prev_col_robot = None
-    for robot in scene.robots:
-        # Check if last robot was exactly below (negative y, yn) current robot
-        if prev_col_robot is not None and robot.pos.x == prev_col_robot.pos.x:
-            assert robot.pos.y > prev_col_robot.pos.y
-            prev_col_robot.succr[Direction.Yp] = robot
-            robot.succr[Direction.Yn] = prev_col_robot
-        prev_col_robot = robot
+    def calculate_successors():
+        for robot in scene.robots:
+            robot.succr = [None] * len(Direction)
+        # Perform sweep to calculate successors x+,x-,y+,y- of all robots
+        # Running time is O(k log k)
+        visible_robots = SortedList(key=lambda robot: robot.pos.y)
+        prev_col_robot = None
+        for robot in sorted(scene.robots, key=lambda r: r.pos):
+            # Check if last robot was exactly below (negative y, yn) current robot
+            if prev_col_robot is not None and robot.pos.x == prev_col_robot.pos.x:
+                assert robot.pos.y > prev_col_robot.pos.y
+                prev_col_robot.succr[Direction.Yp] = robot
+                robot.succr[Direction.Yn] = prev_col_robot
+            prev_col_robot = robot
 
-        # Check if there is some robot exactly to the left (negative x, xn) of the current robot
-        prev_row_robot_idx = visible_robots.bisect_left(robot)
-        prev_row_robot = visible_robots[prev_row_robot_idx] if prev_row_robot_idx < len(
-            visible_robots) else None
-        prev_row_robot = prev_row_robot if prev_row_robot is not None and prev_row_robot.pos.y == robot.pos.y else None
-        if prev_row_robot is not None:
-            assert robot.pos.x > prev_row_robot.pos.x
-            prev_row_robot.succr[Direction.Xp] = robot
-            robot.succr[Direction.Xn] = prev_row_robot
-            visible_robots.remove(prev_row_robot)
-        visible_robots.add(robot)
-    visible_robots.clear()
+            # Check if there is some robot exactly to the left (negative x, xn) of the current robot
+            prev_row_robot_idx = visible_robots.bisect_left(robot)
+            prev_row_robot = visible_robots[prev_row_robot_idx] if prev_row_robot_idx < len(
+                visible_robots) else None
+            prev_row_robot = prev_row_robot if prev_row_robot is not None and prev_row_robot.pos.y == robot.pos.y else None
+            if prev_row_robot is not None:
+                assert robot.pos.x > prev_row_robot.pos.x
+                prev_row_robot.succr[Direction.Xp] = robot
+                robot.succr[Direction.Xn] = prev_row_robot
+                visible_robots.remove(prev_row_robot)
+            visible_robots.add(robot)
+
+    # Calculate successors from start position
+    # During the algorithm, this method will be called again to calculate the successors,
+    # as it's harder to maintain these values than calculating them again
+    calculate_successors()
 
     def get_blocking_robot(robot):
         if robot.is_reached_goal():
@@ -198,6 +213,7 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
 
     # Start by moving all robots with clear path to their target
     advance_robots_with_clear_path()
+    calculate_successors()
 
     # Calculate all cycles
     cycles = []
@@ -352,9 +368,10 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
                 if idx == first_robot_idx_with_inters:
                     robot = cycle[idx]
                     direction = robot.get_goal_direction()
+                    vertex = intersections[robot.id][0].inter_vertex
                     current_edge.target_dir = direction.opposite()
                     vertex.edge[current_edge.target_dir] = current_edge
-                    current_edge.target = intersections[robot.id][0].inter_vertex
+                    current_edge.target = vertex
                     init_edge = current_edge  # arbitrary edge, used to start a traversal
                     break
 
@@ -406,9 +423,15 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
             while True:
                 # Advance all robots in edge by one tile
                 if len(edge.robots) > 0:
+                    prev_pos = None
                     for robot in reversed(edge.robots):
-                        move_robot(robot, robot.pos.add(
-                            robot.get_goal_direction()))
+                        curr_pos = robot.pos
+                        if prev_pos is None:
+                            move_robot(robot, robot.pos.add(
+                                robot.get_goal_direction()))
+                        else:
+                            move_robot(robot, prev_pos)
+                        prev_pos = curr_pos
                     prev_last_robot_new = edge.robots[len(edge.robots) - 1]
                 else:
                     prev_last_robot_new = prev_last_robot
@@ -423,6 +446,7 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
                     move_robot(prev_last_robot, prev_last_robot.pos.add(
                         prev_last_robot.get_goal_direction()))
                     break
+    calculate_successors()
 
     # After resolving all the cycles, the scene should be solvable with only naive movements
     advance_robots_with_clear_path()
@@ -431,9 +455,55 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
         if not robot.is_reached_goal():
             print("Robot", robot.id, "failed to reach it's goal position.")
             print("Either a scene that doesn't fit the requirements or a bug.")
+            return (False, None, ([], "invalid scene or bug"))
 
     return (True, moves, None)
 
 
+def main(scene_filename, out_filename=None):
+    scene_desc = RGM.parse_scene_from_file(scene_filename)
+    success, moves, failure_reason = solve_scene(Scene(scene_desc))
+    if not success:
+        failed_cycle, failure_msg = failure_reason[0], failure_reason[1]
+        print("Failed to solve scene:")
+        print(failure_msg)
+        print(failed_cycle)
+        return
+    if out_filename == None:
+        print("Solution moves:")
+        for move in moves:
+            start_pos, end_pos = move[1], move[2]
+            print(start_pos, end_pos)
+    else:
+        def position_to_jsonobj(p):
+            return [p.x, p.y]
+
+        def move_to_jsonobj(m):
+            return [m[0], position_to_jsonobj(m[1]), position_to_jsonobj(m[2])]
+        json_string = json.dumps([move_to_jsonobj(move) for move in moves])
+        with open(out_filename, "w") as outfile:
+            outfile.write(json_string)
+
+
 if __name__ == "__main__":
-    pass
+    parser = argparse.ArgumentParser(description="Robot Grid Movement solver")
+    parser.add_argument("--scene", type=str,
+                        help="Path to scene description to solve")
+    parser.add_argument("--out", type=str, default="_STDOUT_",
+                        help="Path to output file")
+    parser.add_argument("--scene-format", action="store_true",
+                        help="If provided, will print the scene file format")
+    args = parser.parse_args()
+
+    if args.scene_format:
+        print(""""width": 10,
+"height": 10,
+"paths": [
+    [[0,0], [0,8]],
+    [{start_pos}, {goal_pos}],
+    ...
+]""")
+    elif args.scene:
+        main(args.scene, args.out if args.out != "_STDOUT_" else None)
+    else:
+        parser.print_help()
