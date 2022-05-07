@@ -28,6 +28,9 @@ class Ui_MainWindow(object):
         self.solve_button = QtWidgets.QPushButton(self.horizontalLayoutWidget)
         self.solve_button.setObjectName("solve_button")
         self.verticalLayout.addWidget(self.solve_button)
+        self.reset_button = QtWidgets.QPushButton(self.horizontalLayoutWidget)
+        self.reset_button.setObjectName("reset_button")
+        self.verticalLayout.addWidget(self.reset_button)
         self.horizontalLayout.addLayout(self.verticalLayout)
         self.scene_view = QtWidgets.QGraphicsView(self.horizontalLayoutWidget)
         self.scene_view.setObjectName("scene_view")
@@ -54,6 +57,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "RGM solver"))
         self.solve_button.setText(_translate("MainWindow", "Solve"))
+        self.reset_button.setText(_translate("MainWindow", "Reset"))
         self.menuOpen.setTitle(_translate("MainWindow", "File"))
         self.action_open.setText(_translate("MainWindow", "Open"))
 

@@ -146,12 +146,18 @@ def order_range(a, b):
     return (a, b) if a <= b else (b, a)
 
 
-def sign(x):
-    if x < 0:
-        return -1
-    if x > 0:
-        return 1
-    return 0
+def get_paths_intersection(p1, p2):
+    x11, x12 = order_range(p1[0].x, p1[1].x)
+    y11, y12 = order_range(p1[0].y, p1[1].y)
+    x21, x22 = order_range(p2[0].x, p2[1].x)
+    y21, y22 = order_range(p2[0].y, p2[1].y)
+    if p1[0].x == p1[1].x:
+        assert p2[0].y == p2[1].y
+        return Position(p1[0].x, p2[0].y)
+    else:
+        assert p1[0].y == p1[1].y
+        assert p2[0].x == p2[1].x
+        return Position(p1[0].y, p2[0].x)
 
 
 def is_paths_intersect(p1, p2):
@@ -171,7 +177,7 @@ def generate_random_scene(width, height, robot_num):
     used_columns = set()
     used_rows = set()
 
-    for _ in range(k * 100):
+    for _ in range(robot_num * 100):
         # generate start position
         for _ in range(1000):
             start_pos = Position(random.randrange(
@@ -257,38 +263,38 @@ class Robot:
 
 
 class Scene:
-    def __init__(self, scene):
-        self.width = scene.width
-        self.height = scene.height
+    def __init__(self, description):
+        self.width = description.width
+        self.height = description.height
         self.robots = [Robot(id, r.start, r.goal)
-                       for id, r in enumerate(scene.paths)]
+                       for id, r in enumerate(description.paths)]
 
 
-def print_board(board, print_successors=False):
+def _print_scene(scene, print_successors=False):
     robots = sorted(
-        board.robots, key=lambda robot: robot.pos.x + robot.pos.y * board.width)
+        scene.robots, key=lambda robot: robot.pos.x + robot.pos.y * scene.width)
 
     def pos_next(pos):
-        return Position(pos.x + 1, pos.y) if pos.x < board.width - 1 else Position(0, pos.y+1)
+        return Position(pos.x + 1, pos.y) if pos.x < scene.width - 1 else Position(0, pos.y+1)
 
     def print_empty(from_pos, to_pos):
         while from_pos != to_pos:
             print("|  ", end="")
-            if from_pos.x == board.width - 1:
+            if from_pos.x == scene.width - 1:
                 print("|")
-                print("-" * (board.width * 3 + 1))
+                print("-" * (scene.width * 3 + 1))
             from_pos = pos_next(from_pos)
 
     printed_until = Position(0, 0)
-    print("-" * (board.width * 3 + 1))
+    print("-" * (scene.width * 3 + 1))
     for robot in robots:
         print_empty(printed_until, robot.pos)
         print("|{:02}".format(robot.id), end="")
-        if robot.pos.x == board.width - 1:
+        if robot.pos.x == scene.width - 1:
             print("|")
-            print("-" * (board.width * 3 + 1))
+            print("-" * (scene.width * 3 + 1))
         printed_until = pos_next(robot.pos)
-    print_empty(printed_until, Position(0, board.height))
+    print_empty(printed_until, Position(0, scene.height))
 
     if print_successors:
         print(" ID: X+ X- Y+ Y-")
@@ -353,12 +359,30 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
         blocking_r = robot.succr[robot.get_goal_direction()]
         if blocking_r is None:
             return None
-        block_dis = Position.distance(robot.pos, robot.goal)
-        goal_dis = Position.distance(robot.pos, blocking_r.pos)
+        block_dis = Position.distance(robot.pos, blocking_r.pos)
+        goal_dis = Position.distance(robot.pos, robot.goal)
         return blocking_r if block_dis <= goal_dis else None
 
     def has_clear_path(robot):
         return get_blocking_robot(robot) is None
+
+    def update_near_successors_on_leave(robot):
+        changed_robots = []
+        if robot.is_column_robot():
+            if robot.succr[Direction.Xp] is not None:
+                robot.succr[Direction.Xp].succr[Direction.Xn] = robot.succr[Direction.Xn]
+                changed_robots.append(robot.succr[Direction.Xp])
+            if robot.succr[Direction.Xn] is not None:
+                robot.succr[Direction.Xn].succr[Direction.Xp] = robot.succr[Direction.Xp]
+                changed_robots.append(robot.succr[Direction.Xn])
+        else:  # row robot
+            if robot.succr[Direction.Yp] is not None:
+                robot.succr[Direction.Yp].succr[Direction.Yn] = robot.succr[Direction.Yn]
+                changed_robots.append(robot.succr[Direction.Yp])
+            if robot.succr[Direction.Yn] is not None:
+                robot.succr[Direction.Yn].succr[Direction.Yp] = robot.succr[Direction.Yp]
+                changed_robots.append(robot.succr[Direction.Yn])
+        return changed_robots
 
     # After moving one robot, successors should be check if their path was cleared
     # Running time is O(k)
@@ -373,20 +397,7 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
                     continue
 
                 # update near robots' successors attributes
-                if robot.is_column_robot():
-                    if robot.succr[Direction.Xp] is not None:
-                        robot.succr[Direction.Xp].succr[Direction.Xn] = robot.succr[Direction.Xn]
-                        queue.append(robot.succr[Direction.Xp])
-                    if robot.succr[Direction.Xn] is not None:
-                        robot.succr[Direction.Xn].succr[Direction.Xp] = robot.succr[Direction.Xp]
-                        queue.append(robot.succr[Direction.Xn])
-                else:  # row robot
-                    if robot.succr[Direction.Yp] is not None:
-                        robot.succr[Direction.Yp].succr[Direction.Yn] = robot.succr[Direction.Yn]
-                        queue.append(robot.succr[Direction.Yp])
-                    if robot.succr[Direction.Yn] is not None:
-                        robot.succr[Direction.Yn].succr[Direction.Yp] = robot.succr[Direction.Yp]
-                        queue.append(robot.succr[Direction.Yn])
+                queue += update_near_successors_on_leave(robot)
 
                 # Actual move
                 move_robot(robot, robot.goal)
@@ -421,6 +432,11 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
             self.row_r = row_robot
             self.inter_vertex = None
 
+        def get_pos(self):
+            p1 = [self.column_r.pos, self.column_r.goal]
+            p2 = [self.row_r.pos, self.row_r.goal]
+            return get_paths_intersection(p1, p2)
+
     # Solve each cycle independently
     for cycle in cycles:
         gui_hooks.cycle_identify(cycle)
@@ -433,7 +449,7 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
         def next_cycle_idx(idx):
             return (idx + 1) % len(cycle)
 
-        # Calculate all intersection
+        # Calculate all intersections
         intersections = [[] for _ in range(len(scene.robots))]
         for idx, robot in enumerate(cycle):
             if not robot.is_column_robot():
@@ -449,7 +465,7 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
                 next_robot_other = cycle[next_cycle_idx(idx_other)]
                 robot_other_path = [robot_other.pos, next_robot_other.pos]
                 if is_paths_intersect(robot_path, robot_other_path):
-                    intersection = Intersection(robot, robot_other_path)
+                    intersection = Intersection(robot, robot_other)
                     intersections[robot.id].append(intersection)
                     intersections[robot_other.id].append(intersection)
 
@@ -458,7 +474,6 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
         for idx, robot in enumerate(cycle):
             assert not robot.is_reached_goal()
             next_robot = cycle[next_cycle_idx(idx)]
-            robot_path = [robot.pos, next_robot.pos]
             robot_direction = robot.get_goal_direction()
 
             intersections[robot.id].sort(
@@ -467,10 +482,10 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
                 reverse=not robot_direction.is_positive())
 
             maybe_empty_pos = robot.pos.add(robot_direction)
-            for robot_other in intersections[robot.id]:
-                if maybe_empty_pos != robot_other.pos:
+            for intersection in intersections[robot.id]:
+                if maybe_empty_pos != intersection.get_pos():
                     break
-                maybe_empty_pos.add(robot_direction)
+                maybe_empty_pos = maybe_empty_pos.add(robot_direction)
             if maybe_empty_pos != next_robot.pos:
                 empty_pos = maybe_empty_pos
                 break
@@ -502,11 +517,10 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
                     self.source = None
                     self.target = None
                     self.source_dir = None
-                    self.targer_dir = None
-
+                    self.target_dir = None
                     self.robots = []
 
-                def add(self, robot):
+                def addRobot(self, robot):
                     self.robots.append(robot)
 
             # Find first robot with intersections
@@ -532,8 +546,8 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
                     vertex = inter.inter_vertex
 
                     if current_edge is not None:
-                        current_edge.targer_dir = direction.opposite()
-                        vertex.edge[current_edge.targer_dir] = current_edge
+                        current_edge.target_dir = direction.opposite()
+                        vertex.edge[current_edge.target_dir] = current_edge
                         current_edge.target = vertex
                     current_edge = Edge()
                     current_edge.source_dir = direction
@@ -541,11 +555,16 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
                     current_edge.source = vertex
                     edges_num += 1
 
-                    init_edge = current_edge  # arbitrary edge, used to start a traversal
-
                 idx = next_cycle_idx(idx)
-                current_edge.add(robot=cycle[idx])
+                robot = cycle[idx]
+                current_edge.addRobot(robot)
                 if idx == first_robot_idx_with_inters:
+                    robot = cycle[idx]
+                    direction = robot.get_goal_direction()
+                    current_edge.target_dir = direction.opposite()
+                    vertex.edge[current_edge.target_dir] = current_edge
+                    current_edge.target = intersections[robot.id][0].inter_vertex
+                    init_edge = current_edge  # arbitrary edge, used to start a traversal
                     break
 
             # Contract all loops
@@ -554,11 +573,11 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
             edge = init_edge
             while True:
                 prev_edge = edge.source.edge[edge.source_dir.opposite()]
-                next_edge = edge.target.edge[edge.targer_dir.opposite()]
+                next_edge = edge.target.edge[edge.target_dir.opposite()]
                 if edge.source == edge.target:
                     # Found self loop, contract
                     if prev_edge == next_edge:
-                        return (False, None, (cycle, "Contracted cycle until a single loop! No solution"))
+                        return (False, None, (cycle, "Contracted intersection graph until a single loop achieved! No solution"))
                     assert prev_edge.source != prev_edge.target
                     assert next_edge.source != next_edge.target
 
@@ -614,8 +633,13 @@ def solve_scene(scene, gui_hooks=DefaultGuiHooks()):
                         prev_last_robot.get_goal_direction()))
                     break
 
-    # After resolving all the cycles, the board should be solvable with only naive movements
+    # After resolving all the cycles, the scene should be solvable with only naive movements
     advance_robots_with_clear_path()
+
+    for robot in scene.robots:
+        if not robot.is_reached_goal():
+            print("Robot", robot.id, "failed to reach it's goal position.")
+            print("Either a scene that doesn't fit the requirements or a bug.")
 
     return (True, moves, None)
 
@@ -654,7 +678,8 @@ class TargetItem(QtWidgets.QGraphicsEllipseItem):
         super().__init__(0, 0, cell_size, cell_size)
         self.cell_size = cell_size
         self.color = color
-        self.setBrush(QBrush(Qt.transparent))
+        self.setBrush(
+            QBrush(QColor(color.red(), color.green(), color.blue(), 100)))
         self.setPen(QPen(self.color))
 
     def init_pos(self, x, y):
@@ -678,6 +703,7 @@ class GuiHooks(QObject):
 
 class RGMGui:
     def __init__(self):
+        self.scene_desc = None
         self.scene = None
 
         self.ui = RGM.Ui_MainWindow()
@@ -712,10 +738,19 @@ class RGMGui:
 
         self.ui.solve_button.clicked.connect(self._solve_scene)
 
-    def _load_scene(self, scene):
+        self.ui.reset_button.clicked.connect(self._reset_scene)
+
+    def _reset_scene(self):
+        if self.scene_desc is None:
+            print("Scene wan't loaded yet")
+        else:
+            self._load_scene(self.scene_desc)
+
+    def _load_scene(self, scene_description):
         self._clear()
 
-        self.scene = Scene(scene)
+        self.scene_desc = scene_description
+        self.scene = Scene(scene_description)
 
         for robot in self.scene.robots:
             robot_item = RobotItem(self.cell_size)
@@ -803,11 +838,6 @@ class RGMGui:
         self._setup_actions()
 
         self.win.show()
-
-        # TODO remove
-        # self._load_scene(parse_scene_from_file("test2.json"))
-        self._load_scene(parse_scene_from_file("RGM_scenes/complex.json"))
-
         sys.exit(app.exec_())
 
 
