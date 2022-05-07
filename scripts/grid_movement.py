@@ -5,7 +5,7 @@ from PyQt5.QtGui import QBrush, QPen
 import threading
 import time
 import json
-import RGM
+import RGM_gui_ui
 import sys
 import random
 from enum import IntEnum
@@ -706,7 +706,7 @@ class RGMGui:
         self.scene_desc = None
         self.scene = None
 
-        self.ui = RGM.Ui_MainWindow()
+        self.ui = RGM_gui_ui.Ui_MainWindow()
         self.displayed_robots = {}
         self.displayed_targets = {}
 
