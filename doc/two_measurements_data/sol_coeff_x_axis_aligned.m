@@ -12,7 +12,7 @@ eq6 = C1*D2+C2*D1 == + 4*k^3*m2 + 4*k^3*m2^3 + 4*d1^4*d2^2*m2 - 4*d1^2*k^2*m2 + 
 eq7 = A1*B2 + A2*B1 + C1*C2 == + 6*d1^4*m2^2 + 4*k^2*m2^2 + 4*k^2*m2^4 - 12*d1^2*k*m2^2 + 2*d1^2*d2^2*m2^2 - 2*d1^2*d2^2*m2^4
 
 sol_c = solve([eq1, eq2, eq3, eq4, eq5, eq6, eq7],[A1, B1, C1, D1, A2, B2, C2, D2])
-fid = fopen('sol_c_oa.txt', 'wt')
+fid = fopen('sol_c_a.txt', 'wt')
 A1 = reduceRedundancies([sol_c.A1], [d1, d2, k, m2])
 fprintf(fid, 'A1 = %s\n', char(A1))
 B1 = reduceRedundancies([sol_c.B1], [d1, d2, k, m2])
