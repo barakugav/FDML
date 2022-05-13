@@ -16,8 +16,7 @@ void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M
         tree_2.any_intersected_primitive(curr_cube.to_bbox_3())) { // Intersect stuff
       if (curr_cube.size() > delta)
         curr_cube.split(Q);
-      //else if (true) // Validate
-      else if (curr_cube.bottom_left.z() >= FT(0.0) && curr_cube.top_right.z() <= FT(1.0)) // TODO: REMOVE
+      else if (true) // Validate
         curr_cube.to_surface_mesh(M_isect);
     }
   }

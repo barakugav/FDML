@@ -8,11 +8,7 @@ void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, P
   C2t3 c2t3(tr);
 
   auto implicit_func = [&arr, &pl, d](Point_3 p) {
-    FT theta = p.z() * 2 * M_PI;
-    //if (theta < 0 || theta > 2 * M_PI)
-    //  return FT(1);
-    //  return INFTY;
-    return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(theta), sin(theta)) - d);
+    return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z()), sin(p.z())) - d);
   };
 
   // Generate the implicit surface and make surface mesh to c2t3
@@ -47,8 +43,7 @@ void single_measurement_rotate_alpha(Surface_mesh& sm, Arrangement& arr, Trap_pl
   C2t3 c2t3(tr);
 
   auto implicit_func = [&arr, &pl, d, alpha](Point_3 p) {
-    FT theta = p.z() * 2 * M_PI + alpha;
-    return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(theta), sin(theta)) - d);
+    return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z() + alpha), sin(p.z() + alpha)) - d);
   };
 
   // Generate the implicit surface and make surface mesh to c2t3
