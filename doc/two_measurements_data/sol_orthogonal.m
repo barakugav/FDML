@@ -46,7 +46,7 @@ syms r1 s1 r2 s2 d1 d2 k m1 m2 x y real
 eqb = 4 * s1 * s2 * (x + m1 * y)^2 * (x + m2 * y)^2 == ((r1 * (x + m1 * y) + r2 * (x + m2 * y) - x^2 - y^2 + k)^2 - s1 * (x + m1 * y)^2 - s2 * (x + m2 * y)^2)^2
 
 eq = subs(eqb, [r1, s1, r2, s2], [((x + m1 * y) / (1 + m1^2)),(((x + m1 * y)^2 - (1 + m1^2) * (x^2 + y^2 - d1^2)) / (1 + m1^2)^2),((x + m2 * y) / (1 + m2^2)),(((x + m2 * y)^2 - (1 + m2^2) * (x^2 + y^2 - d2^2)) / (1 + m2^2)^2)])
-sol_o = reduceRedundancies([eq, m1 * m2 == -1], [x, y, m1])
+sol_o = reduceRedundancies([eq, m1 * m2 == -1], [x, y, m2])
 
 fid_o = fopen('sol_o.txt', 'wt')
 fprintf(fid_o, '%s\n', char(sol_o))

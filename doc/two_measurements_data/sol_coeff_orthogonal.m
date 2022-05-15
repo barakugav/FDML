@@ -14,16 +14,16 @@ p9 = -(k^4 + 2*k^4*m2^2 + k^4*m2^4)/(m2^2 + 1)^2			    					% free
 
 fid_c_o = fopen('sol_c_o.txt', 'wt')
 
-fprintf(fid_c_oa, '%s\n', p1)
-fprintf(fid_c_oa, '%s\n', p2)
-fprintf(fid_c_oa, '%s\n', p3)
-fprintf(fid_c_oa, '%s\n', p4)
-fprintf(fid_c_oa, '%s\n', p5)
-fprintf(fid_c_oa, '%s\n', p6)
-fprintf(fid_c_oa, '%s\n', p7)
-fprintf(fid_c_oa, '%s\n', p8)
-fprintf(fid_c_oa, '%s\n', p9)
-fprintf(fid_c_oa, '\n')
+fprintf(fid_c_o, '%s\n', p1)
+fprintf(fid_c_o, '%s\n', p2)
+fprintf(fid_c_o, '%s\n', p3)
+fprintf(fid_c_o, '%s\n', p4)
+fprintf(fid_c_o, '%s\n', p5)
+fprintf(fid_c_o, '%s\n', p6)
+fprintf(fid_c_o, '%s\n', p7)
+fprintf(fid_c_o, '%s\n', p8)
+fprintf(fid_c_o, '%s\n', p9)
+fprintf(fid_c_o, '\n')
 
 syms A1 B1 C1 D1 A2 B2 C2 D2 real
 

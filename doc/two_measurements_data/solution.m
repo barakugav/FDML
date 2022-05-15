@@ -67,12 +67,12 @@ fid_a = fopen('sol_a.txt', 'wt')
 fprintf(fid_a, '%s\n', char(sol_a))
 fclose(fid_a)
 
-sol_o = reduceRedundancies([eq, m1 * m2 == -1], [x, y, m1])
+sol_o = reduceRedundancies([eq, m1 * m2 == -1], [x, y, m2])
 fid_o = fopen('sol_o.txt', 'wt')%
 fprintf(fid_o, '%s\n', char(sol_o))
 fclose(fid_o)
 
-sol_oa = subs(sol_o, [m2], [0])
+sol_oa = subs(sol_o, [m1], [0])
 fid_oa = fopen('sol_oa.txt', 'wt')
 fprintf(fid_oa, '%s\n', char(sol_oa))
 fclose(fid_oa)
