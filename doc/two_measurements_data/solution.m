@@ -85,7 +85,7 @@ fclose(fid_o)
 [p1, p2, p3, p4, p5, p6, p7, p8, p9] = compute_terms(sol_o)
 [p1, p2, p3, p4, p5, p6, p7, p8, p9] = negate_terms(p1, p2, p3, p4, p5, p6, p7, p8, p9)
 syms A1 B1 C1 D1 A2 B2 C2 D2 real
-eq17 = D2 == k^2*((-1/m2) - m2)
+eq17 = D2 == k^2*(m1^2 + 1)
 sol_c_o = compute_coeffs(p1, p2, p3, p4, p5, p6, p7, p8, p9, eq17)
 fid_c_o = fopen('sol_c_o.txt', 'wt')
 print_coeffs(fid_c_o, sol_c_o)
