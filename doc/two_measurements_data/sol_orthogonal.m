@@ -37,21 +37,83 @@
 % 4 * s1 * s2 * (x + m1 * y)^2 * (x + m2 * y)^2 =
 % ((r1 * (x + m1 * y) + r2 * (x + m2 * y) - x^2 - y^2 + k)^2 - s1 * (x + m1 * y)^2 - s2 * (x + m2 * y)^2)^2
 
-
 % eq11 = r1 == (x + m1 * y) / (1 + m1^2)
-% eq12 = s1 == ((x + m1 * y)^2 - (1 + m1^2) * (x^2 + y^2 - d1^2)) / (1 + m1^2)^2
+% eq12 = s1 == (((x + m1 * y)^2 - (1 + m1^2) * (x^2 + y^2 - d1^2)) / (1 + m1^2)^2)
 % eq21 = r2 == (x + m2 * y) / (1 + m2^2)
-% eq22 = s2 == ((x + m2 * y)^2 - (1 + m2^2) * (x^2 + y^2 - d2^2)) / (1 + m2^2)^2
+% eq22 = s2 == (((x + m2 * y)^2 - (1 + m2^2) * (x^2 + y^2 - d2^2)) / (1 + m2^2)^2)
 
-syms d1 d2 k m1 m2 x y
-eq = 4 * ((x + m1 * y)^2 - (1 + m1^2) * (x^2 + y^2 - d1^2)) / (1 + m1^2)^2 * ((x + m2 * y)^2 - (1 + m2^2) * (x^2 + y^2 - d2^2)) / (1 + m2^2)^2 * (x + m1 * y)^2 * (x + m2 * y)^2 == (((x + m1 * y) / (1 + m1^2) * (x + m1 * y) + (x + m2 * y) / (1 + m2^2) * (x + m2 * y) - x^2 - y^2 + k)^2 - ((x + m1 * y)^2 - (1 + m1^2) * (x^2 + y^2 - d1^2)) / (1 + m1^2)^2 * (x + m1 * y)^2 - ((x + m2 * y)^2 - (1 + m2^2) * (x^2 + y^2 - d2^2)) / (1 + m2^2)^2 * (x + m2 * y)^2)^2
+syms r1 s1 r2 s2 d1 d2 k m1 m2 x y real
+eqb = 4 * s1 * s2 * (x + m1 * y)^2 * (x + m2 * y)^2 == ((r1 * (x + m1 * y) + r2 * (x + m2 * y) - x^2 - y^2 + k)^2 - s1 * (x + m1 * y)^2 - s2 * (x + m2 * y)^2)^2
+
+eq = subs(eqb, [r1, s1, r2, s2], [((x + m1 * y) / (1 + m1^2)),(((x + m1 * y)^2 - (1 + m1^2) * (x^2 + y^2 - d1^2)) / (1 + m1^2)^2),((x + m2 * y) / (1 + m2^2)),(((x + m2 * y)^2 - (1 + m2^2) * (x^2 + y^2 - d2^2)) / (1 + m2^2)^2)])
 sol_o = reduceRedundancies([eq, m1 * m2 == -1], [x, y, m1])
 
-fid_o = fopen('sol_o2.txt', 'wt')
+fid_o = fopen('sol_o.txt', 'wt')
 fprintf(fid_o, '%s\n', char(sol_o))
 fclose(fid_o)
 
-%% sol_oa = subs(sol_o, [m1], [0])
-%% fid_oa = fopen('sol_o.txt', 'wt')
-%% fprintf(fid_oa, '%s\n', char(sol_oa))
-%% fclose(fid_oa)
+%%%%%%%%
+
+[p1, p2, p3, p4, p5, p6, p7, p8, p9] = compute_terms(sol_o)
+[p1, p2, p3, p4, p5, p6, p7, p8, p9] = negate_terms(p1, p2, p3, p4, p5, p6, p7, p8, p9)
+
+fid_c_o = fopen('sol_c_o.txt', 'wt')
+
+fprintf(fid_c_o, '%s\n', p1)
+fprintf(fid_c_o, '%s\n', p2)
+fprintf(fid_c_o, '%s\n', p3)
+fprintf(fid_c_o, '%s\n', p4)
+fprintf(fid_c_o, '%s\n', p5)
+fprintf(fid_c_o, '%s\n', p6)
+fprintf(fid_c_o, '%s\n', p7)
+fprintf(fid_c_o, '%s\n', p8)
+fprintf(fid_c_o, '%s\n', p9)
+fprintf(fid_c_o, '\n')
+
+syms A1 B1 C1 D1 A2 B2 C2 D2 real
+
+% eq10 = A1 == d1^2*m2 - d2^2*(-1/m2) + 2*sqrt(d1^2*d2^2 - k^2)
+% eq11 = B1 == d2^2*m2 - d1^2*(-1/m2) - 2*sqrt(d1^2*d2^2 - k^2)
+% eq12 = C1 == 2 * (d2^2 - d1^2) + 2 * ((-1/m2) + m2) * sqrt(d1^2*d2^2 - k^2)
+% eq13 = D1 == k^2*(m2 - (-1/m2))
+% eq14 = A2 == d1^2*m2 - d2^2*(-1/m2) - 2*sqrt(d1^2*d2^2 - k^2)
+% eq15 = B2 == d2^2*m2 - d1^2*(-1/m2) + 2*sqrt(d1^2*d2^2 - k^2)
+% eq16 = C2 == 2 * (d2^2 - d1^2) - 2 * ((-1/m2) + m2) * sqrt(d1^2*d2^2 - k^2)
+% eq17 = D2 == k^2*((-1/m2) - m2)
+eq17 = D2 == k^2*((-1/m2) - m2)
+
+sol_c_o = compute_coeffs(p1, p2, p3, p4, p5, p6, p7, p8, p9, eq17)
+print_coeffs(fid_c_o, sol_c_o)
+fclose(fid_c_o)
+
+%%%%%%%% Solve for the simplest case, namely, orthogonal and axis aligned
+
+sol_oa = subs(sol_o, [m1], [0])
+fid_oa = fopen('sol_oa.txt', 'wt')
+fprintf(fid_oa, '%s\n', char(sol_oa))
+fclose(fid_oa)
+
+[p1, p2, p3, p4, p5, p6, p7, p8, p9] = compute_terms(sol_oa)
+[p1, p2, p3, p4, p5, p6, p7, p8, p9] = negate_terms(p1, p2, p3, p4, p5, p6, p7, p8, p9)
+
+fid_c_oa = fopen('sol_c_oa.txt', 'wt')
+
+fprintf(fid_c_oa, '%s\n', p1)
+fprintf(fid_c_oa, '%s\n', p2)
+fprintf(fid_c_oa, '%s\n', p3)
+fprintf(fid_c_oa, '%s\n', p4)
+fprintf(fid_c_oa, '%s\n', p5)
+fprintf(fid_c_oa, '%s\n', p6)
+fprintf(fid_c_oa, '%s\n', p7)
+fprintf(fid_c_oa, '%s\n', p8)
+fprintf(fid_c_oa, '%s\n', p9)
+fprintf(fid_c_oa, '\n')
+
+syms A1 B1 C1 D1 A2 B2 C2 D2 real
+eq10 = A1 == d1^2
+eq13 = D1 == -k^2
+eq14 = A2 == d2^2
+eq17 = D2 == -k^2
+sol_c_oa = compute_coeffs(p1, p2, p3, p4, p5, p6, p7, p8, p9, eq13)
+print_coeffs(fid_c_oa, sol_c_oa)
+fclose(fid_c_oa)

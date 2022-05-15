@@ -1,34 +1,53 @@
-syms d1 d2 k m2
-syms A1 B1 C1 D1 A2 B2 C2 D2
-eq1 = A1*A2 == -(d2^4 + d1^4*m2^4 + 4*k^2*m2^2 - 2*d1^2*d2^2*m2^2)
-eq2 = B1*B2 == -(d1^4 + d2^4*m2^4 + 4*k^2*m2^2 - 2*d1^2*d2^2*m2^2)
-eq3 = D1*D2 == -(k^4 + 2*k^4*m2^2 + k^4*m2^4)
+syms d1 d2 k m2 real
 
-eq4 = A1*D2 + A2*D1 == -(- 2*d2^2*k^2 - 2*d1^2*k^2*m2^2 - 2*d2^2*k^2*m2^2 - 2*d1^2*k^2*m2^4)
-eq5 = B1*D2 + B2*D1 == -(- 2*d1^2*k^2 - 2*d1^2*k^2*m2^2 - 2*d2^2*k^2*m2^2 - 2*d2^2*k^2*m2^4)
+p1 = -(d1^4 + d2^4*m2^4 + 4*k^2*m2^2 - 2*d1^2*d2^2*m2^2)/(m2^2 + 1)^2						% x^4
+p2 = -(4*d1^4*m2 - 8*k^2*m2 - 4*d2^4*m2^3 + 8*k^2*m2^3 + 4*d1^2*d2^2*m2 - 4*d1^2*d2^2*m2^3)/(m2^2 + 1)^2	% x^3*y
+p3 = -(4*k^2 - 2*d1^2*d2^2 + 6*d1^4*m2^2 + 6*d2^4*m2^2 - 16*k^2*m2^2 + 4*k^2*m2^4 + 8*d1^2*d2^2*m2^2 - 2*d1^2*d2^2*m2^4)/(m2^2 + 1)^2	% x^2*y^2
+p4 = (2*d1^2*k^2 + 2*d1^2*k^2*m2^2 + 2*d2^2*k^2*m2^2 + 2*d2^2*k^2*m2^4)/(m2^2 + 1)^2				% x^2
+p5 = (4*d2^4*m2 - 8*k^2*m2 - 4*d1^4*m2^3 + 8*k^2*m2^3 + 4*d1^2*d2^2*m2 - 4*d1^2*d2^2*m2^3)/(m2^2 + 1)^2		% x*y^3
+p6 = (4*d1^2*k^2*m2 - 4*d2^2*k^2*m2 + 4*d1^2*k^2*m2^3 - 4*d2^2*k^2*m2^3)/(m2^2 + 1)^2				% x*y
+p7 = -(d2^4 + d1^4*m2^4 + 4*k^2*m2^2 - 2*d1^2*d2^2*m2^2)/(m2^2 + 1)^2						% y^4
+p8 = (2*d2^2*k^2 + 2*d1^2*k^2*m2^2 + 2*d2^2*k^2*m2^2 + 2*d1^2*k^2*m2^4)/(m2^2 + 1)^2 				% y^2
+p9 = -(k^4 + 2*k^4*m2^2 + k^4*m2^4)/(m2^2 + 1)^2			    					% free
 
-eq6 = C1*D2+C2*D1 == -(4*d1^2*k^2*m2 - 4*d2^2*k^2*m2 + 4*d1^2*k^2*m2^3 - 4*d2^2*k^2*m2^3)
+[p1, p2, p3, p4, p5, p6, p7, p8, p9] = negate_terms(p1, p2, p3, p4, p5, p6, p7, p8, p9)
 
-eq7 = A1*B2 + A2*B1 + C1*C2 == -(4*k^2 - 2*d1^2*d2^2 + 6*d1^4*m2^2 + 6*d2^4*m2^2 - 16*k^2*m2^2 + 4*k^2*m2^4 + 8*d1^2*d2^2*m2^2 - 2*d1^2*d2^2*m2^4)
+fid_c_o = fopen('sol_c_o.txt', 'wt')
 
-sol_c = solve([eq1, eq2, eq3, eq4, eq5, eq6, eq7],[A1, B1, C1, D1, A2, B2, C2, D2])
-fid = fopen('sol_c_o.txt', 'wt')
-A1 = reduceRedundancies([sol_c.A1], [d1, d2, k, m2])
-fprintf(fid, 'A1 = %s\n', char(A1))
-B1 = reduceRedundancies([sol_c.B1], [d1, d2, k, m2])
-fprintf(fid, 'B1 = %s\n', char(B1))
-C1 = reduceRedundancies([sol_c.C1], [d1, d2, k, m2])
-fprintf(fid, 'C1 = %s\n', char(C1))
-D1 = reduceRedundancies([sol_c.D1], [d1, d2, k, m2])
-fprintf(fid, 'D1 = %s\n', char(D1))
+fprintf(fid_c_oa, '%s\n', p1)
+fprintf(fid_c_oa, '%s\n', p2)
+fprintf(fid_c_oa, '%s\n', p3)
+fprintf(fid_c_oa, '%s\n', p4)
+fprintf(fid_c_oa, '%s\n', p5)
+fprintf(fid_c_oa, '%s\n', p6)
+fprintf(fid_c_oa, '%s\n', p7)
+fprintf(fid_c_oa, '%s\n', p8)
+fprintf(fid_c_oa, '%s\n', p9)
+fprintf(fid_c_oa, '\n')
 
-fprintf(fid, '\n')
-A2 = reduceRedundancies([sol_c.A2], [d1, d2, k, m2])
-fprintf(fid, 'A2 = %s\n', char(A2))
-B2 = reduceRedundancies([sol_c.B2], [d1, d2, k, m2])
-fprintf(fid, 'B2 = %s\n', char(B2))
-C2 = reduceRedundancies([sol_c.C2], [d1, d2, k, m2])
-fprintf(fid, 'C2 = %s\n', char(C2))
-D2 = reduceRedundancies([sol_c.D2], [d1, d2, k, m2])
-fprintf(fid, 'D2 = %s\n', char(D2))
-fclose(fid)
+syms A1 B1 C1 D1 A2 B2 C2 D2 real
+
+% eq10 = A1 == d1^2*m2 - d2^2*m1 + 2*sqrt(d1^2*d2^2 - k^2)
+% eq11 = B1 == d2^2*m2 - d1^2*m1 - 2*sqrt(d1^2*d2^2 - k^2)
+% eq12 = C1 == 2 * (d2^2 - d1^2) + 2 * (m1 + m2) * sqrt(d1^2*d2^2 - k^2)
+% eq13 = D1 == k^2*(m2 - m1)
+% eq14 = A2 == d1^2*m2 - d2^2*m1 - 2*sqrt(d1^2*d2^2 - k^2)
+% eq15 = B2 == d2^2*m2 - d1^2*m1 + 2*sqrt(d1^2*d2^2 - k^2)
+% eq16 = C2 == 2 * (d2^2 - d1^2) - 2 * (m1 + m2) * sqrt(d1^2*d2^2 - k^2)
+% eq17 = D2 == k^2*(m1 - m2)
+
+% m1 = (-1/m2)
+% eq10 = A1 == d1^2*m2 - d2^2*(-1/m2) + 2*sqrt(d1^2*d2^2 - k^2)
+% eq11 = B1 == d2^2*m2 - d1^2*(-1/m2) - 2*sqrt(d1^2*d2^2 - k^2)
+% eq12 = C1 == 2 * (d2^2 - d1^2) + 2 * ((-1/m2) + m2) * sqrt(d1^2*d2^2 - k^2)
+% eq13 = D1 == k^2*(m2 - (-1/m2))
+eq13 = D1 == k^2*(m2 - (-1/m2))
+% eq14 = A2 == d1^2*m2 - d2^2*(-1/m2) - 2*sqrt(d1^2*d2^2 - k^2)
+% eq15 = B2 == d2^2*m2 - d1^2*(-1/m2) + 2*sqrt(d1^2*d2^2 - k^2)
+% eq16 = C2 == 2 * (d2^2 - d1^2) - 2 * ((-1/m2) + m2) * sqrt(d1^2*d2^2 - k^2)
+% eq17 = D2 == k^2*((-1/m2) - m2)
+eq17 = D2 == k^2*((-1/m2) - m2)
+
+sol_c_o = compute_coeffs(p1, p2, p3, p4, p5, p6, p7, p8, p9, eq17)
+print_coeffs(fid_c_o, sol_c_o)
+fclose(fid_c_o)
