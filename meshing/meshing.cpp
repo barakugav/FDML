@@ -42,23 +42,27 @@ int main(int argc, char** argv) {
 
     Surface_mesh m_d1, m_d2;
 
-    std::cout << "Computing M_d1..." << std::endl;
-    start = std::chrono::steady_clock::now();
-    single_measurement(m_d1, arr, pl, mo.d1, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r,
-                       mo.angle_bound, mo.radius_bound, mo.distance_bound);
-    end = std::chrono::steady_clock::now();
-    std::cout << "Done computing M_d1. Time took: "
-              << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000.0 << "[sec]"
-              << std::endl;
+    // Load from python::
+    CGAL::IO::read_polygon_mesh(CGAL::data_file_path("d1_.off"), m_d1);
+    CGAL::IO::read_polygon_mesh(CGAL::data_file_path("d2_.off"), m_d2);
 
-    std::cout << "Computing M_d2..." << std::endl;
-    start = std::chrono::steady_clock::now();
-    single_measurement_rotate_alpha(m_d2, arr, pl, mo.d2, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r,
-                       mo.angle_bound, mo.radius_bound, mo.distance_bound, mo.alpha);
-    end = std::chrono::steady_clock::now();
-    std::cout << "Done computing M_d2. Time took: "
-              << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000.0 << "[sec]"
-              << std::endl;
+    // std::cout << "Computing M_d1..." << std::endl;
+    // start = std::chrono::steady_clock::now();
+    // single_measurement(m_d1, arr, pl, mo.d1, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r,
+    //                    mo.angle_bound, mo.radius_bound, mo.distance_bound);
+    // end = std::chrono::steady_clock::now();
+    // std::cout << "Done computing M_d1. Time took: "
+    //           << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000.0 << "[sec]"
+    //           << std::endl;
+
+    // std::cout << "Computing M_d2..." << std::endl;
+    // start = std::chrono::steady_clock::now();
+    // single_measurement_rotate_alpha(m_d2, arr, pl, mo.d2, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r,
+    //                    mo.angle_bound, mo.radius_bound, mo.distance_bound, mo.alpha);
+    // end = std::chrono::steady_clock::now();
+    // std::cout << "Done computing M_d2. Time took: "
+    //           << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000.0 << "[sec]"
+    //           << std::endl;
 
     Surface_mesh v_square;
     DeltaCube initial_cube(Point_3(-mo.sphere_r, -mo.sphere_r, -mo.sphere_r), Point_3(mo.sphere_r, mo.sphere_r, mo.sphere_r));

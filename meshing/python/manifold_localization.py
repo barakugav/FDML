@@ -97,9 +97,9 @@ def implicit_manifold_to_polygon_soup(f, crit, N, minn, maxx):
         for j in range(N):
             x = minn + (maxx - minn) * i / (N-1)
             y = minn + (maxx - minn) * j / (N-1)
-            if not crit(x, y):
-                u[i, j, :] = 1
-                continue
+            # if not crit(x, y):
+            #     u[i, j, :] = 1
+            #     continue
             for k in range(N):
                 theta = 0 + 2 * math.pi * k / (N-1)
                 u[i, j, k] = f(x, y, theta)
@@ -180,8 +180,8 @@ def load_polygon(filename):
 
 if __name__ == "__main__":
     # polygon = [(-1.5,0), (-1.5,3), (0, 2), (1.5,3), (1.5,0)]
-    polygon = [(-1, -1), (-1, 1), (1, 1), (1, -1)]
-    # polygon = [(1,1), (3,4), (6,5), (5,3), (6,1)]
+    # polygon = [(-1, -1), (-1, 1), (1, 1), (1, -1)]
+    polygon = [(1,1), (3,4), (6,5), (5,3), (6,1)]
     # polygon = [(-1,-1), (1, -1), (1,1), (-0.5, 1), (-0.5, 0.5), (-0.75, 0.5), (-0.75, 0.75), (-0.51, 0.75), (-0.51, 1), (-1, 1)]
     # polygon = [(-1, -1), (1,-1), (1, 1), (0.05, 1), (0.05, 0.75), (0.125,0.75), (0.125, 0.5), (-0.125, 0.5), (-0.125, 0.75), (-0.05, 0.75), (-0.05, 1), (-1, 1)]
     # polygon = load_polygon('checkpoint.poly')
@@ -189,9 +189,9 @@ if __name__ == "__main__":
     draw_polygon(polygon)
     def crit(x, y): return is_point_inside(polygon, x, y)
 
-    N = 100
-    d1 = 1.7
-    d2 = 1.5
+    N = 300
+    d1 = 1
+    d2 = 2
     # r = 0.1
     beta = math.pi
 
@@ -203,12 +203,12 @@ if __name__ == "__main__":
 
     vertices, triangles = implicit_manifold_to_polygon_soup(
         f_d1, crit, N, minn, maxx)
-    mcubes.export_obj(vertices, triangles, 'out/square_room.obj')
+    mcubes.export_obj(vertices, triangles, 'd1_.obj')
     project_polygon_soup_to_xy('d1.png', triangles, vertices, N)
 
-    # vertices, triangles = implicit_manifold_to_polygon_soup(f_d2_, crit, N, minn, maxx)
-    # mcubes.export_obj(vertices, triangles, 'd2_.obj')
-    # project_polygon_soup_to_xy('d2_.png', triangles, vertices, N)
+    vertices, triangles = implicit_manifold_to_polygon_soup(f_d2_, crit, N, minn, maxx)
+    mcubes.export_obj(vertices, triangles, 'd2_.obj')
+    project_polygon_soup_to_xy('d2_.png', triangles, vertices, N)
 
     # vertices, triangles = implicit_manifold_to_polygon_soup(f_isect, crit, N, minn, maxx)
     # mcubes.export_obj(vertices, triangles, 'isect.obj')

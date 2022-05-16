@@ -1,1 +1,4 @@
 out/
+*.png
+*.obj
+*.off
