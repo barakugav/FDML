@@ -5,7 +5,6 @@ import importlib
 import fdmlpy
 import argparse
 
-
 def readable_dir(prospective_dir):
     # Determine whether the given directory exists and readable
     if not os.path.isdir(prospective_dir):
@@ -16,9 +15,12 @@ def readable_dir(prospective_dir):
         parser.error(
             "The directory {} is not a readable dir!".format(prospective_dir))
 
-
-def read_polygon(inp):
+def read_polygon(inp, library):
+    CGALPY = importlib.import_module(library)
+    Polygon = CGALPY.Pol2.Polygon_2
     pgn = Polygon()
+    Ker = fdmlpy.Ker
+    Point = Ker.Point_2
     n = int(inp.readline())
     for i in range(n):
         line = inp.readline()
@@ -27,15 +29,15 @@ def read_polygon(inp):
         pgn.push_back(p)
     return pgn
 
-
-def read_polygon_with_holes(imp):
-    boundary = read_polygon(imp)
+def read_polygon_with_holes(inp, library):
+    CGALPY = importlib.import_module(library)
+    Polygon_with_holes_2 = CGALPY.Pol2.Polygon_with_holes_2
+    boundary = read_polygon(inp, library)
     pgnwh = Polygon_with_holes_2(boundary)
     n = int(inp.readline())
     for i in range(n):
-        pgnwh.add_hole(read_polygon(imp))
+        pgnwh.add_hole(read_polygon(inp, library))
     return pgnwh
-
 
 def main():
     parser = argparse.ArgumentParser(description='Self locate.')
@@ -63,8 +65,8 @@ def main():
     print('Library name:', lib)
     CGALPY = importlib.import_module(lib)
 
-    Locator = fdml.Locator
-    Ker = fdml.Ker
+    Locator = fdmlpy.Locator
+    Ker = fdmlpy.Ker
     Point = Ker.Point_2
     FT = Ker.FT
     l = Locator()
@@ -72,7 +74,7 @@ def main():
     Polygon_with_holes_2 = CGALPY.Pol2.Polygon_with_holes_2
 
     with open(fullname, 'r') as inp:
-        pgnwh = read_polygon_with_holes(inp)
+        pgnwh = read_polygon_with_holes(inp, lib)
         print(pgnwh)
 
         l.init(pgnwh)

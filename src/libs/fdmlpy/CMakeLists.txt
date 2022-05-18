@@ -58,7 +58,7 @@ set (FDMLPY_TARGET_LINKER_FILE "fdmlpy${FDMLPY_LIBRARY_SUFFIX}")
 ################################################################################
 # Copy stubs
 set (FDMLPY_SRC_STUBS_DIR "${CMAKE_CURRENT_LIST_DIR}/stubs")
-set (FDMLPY_STUBS_SRC_FILES fdml.pyi)
+set (FDMLPY_STUBS_SRC_FILES fdmlpy.pyi)
 foreach(name IN LISTS FDMLPY_STUBS_SRC_FILES)
   set (FDMLPY_STUBS ${FDMLPY_STUBS} ${FDMLPY_LIB_DIR}/${name})
   configure_file(${FDMLPY_SRC_STUBS_DIR}/${name} ${FDMLPY_LIB_DIR}/${name})
@@ -78,8 +78,8 @@ set (FDMLPY_SETUP_FILES ${FDMLPY_LIB_DIR}/setup.py ${FDMLPY_LIB_DIR}/README.rst)
 ################################################################################
 # Setup application
 set (FDMLPY_BUILD_OUTPUT_DIR "${FDMLPY_LIB_DIR}/dist")
-set (FDMLPY_TAR ${FDMLPY_BUILD_OUTPUT_DIR}/FDML-1.0.tar.gz)
-set (FDMLPY_WHL ${FDMLPY_BUILD_OUTPUT_DIR}/FDML-1.0-py3-none-any.whl)
+set (FDMLPY_TAR ${FDMLPY_BUILD_OUTPUT_DIR}/fdmlpy-1.0.tar.gz)
+set (FDMLPY_WHL ${FDMLPY_BUILD_OUTPUT_DIR}/fdmlpy-1.0-py3-none-any.whl)
 set (FDMLPY_BUILD_OUTPUT ${FDMLPY_TAR} ${FDMLPY_WHL})
 set (FDMLPY_BUILD_CMD ${Python3_EXECUTABLE})
 set (FDMLPY_BUILD_ARGS -m build ${FDMLPY_LIB_DIR})

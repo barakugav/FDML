@@ -48,7 +48,7 @@ bp::list query1(const FDML::Locator& locator, const FDML::Kernel::FT& d) {
   return lst;
 }
 
-BOOST_PYTHON_MODULE(fdml) {
+BOOST_PYTHON_MODULE(fdmlpy) {
   typedef FDML::Kernel::FT      FT;
   typedef FDML::Polygon         Polygon;
   typedef FDML::Segment         Segment;
