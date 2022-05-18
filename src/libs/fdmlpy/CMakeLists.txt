@@ -38,7 +38,7 @@ target_link_libraries(fdmlpy PRIVATE
   ${EXTRA_LIBS})
 # don't prepend wrapper library name with lib
 set_target_properties(fdmlpy PROPERTIES PREFIX "")
-set_target_properties(fdmlpy PROPERTIES OUTPUT_NAME fdml)
+set_target_properties(fdmlpy PROPERTIES OUTPUT_NAME fdmlpy)
 set (FDMLPY_LIBRARY_SUFFIX ".so")
 if(WIN32)
   set (FDMLPY_LIBRARY_SUFFIX ".pyd")
@@ -68,29 +68,29 @@ endforeach()
 # Setup
 ################################################################################
 # Copy setup
-set (FDML_SRC_SETUP_DIR "${CMAKE_CURRENT_LIST_DIR}")
-configure_file(${FDML_SRC_SETUP_DIR}/setup.py ${FDMLPY_LIB_DIR}/setup.py)
-configure_file(${FDML_SRC_SETUP_DIR}/README.rst ${FDMLPY_LIB_DIR}/README.rst)
-set (FDML_SETUP_FILES ${FDMLPY_LIB_DIR}/setup.py ${FDMLPY_LIB_DIR}/README.rst)
+set (FDMLPY_SRC_SETUP_DIR "${CMAKE_CURRENT_LIST_DIR}")
+configure_file(${FDMLPY_SRC_SETUP_DIR}/setup.py ${FDMLPY_LIB_DIR}/setup.py)
+configure_file(${FDMLPY_SRC_SETUP_DIR}/README.rst ${FDMLPY_LIB_DIR}/README.rst)
+set (FDMLPY_SETUP_FILES ${FDMLPY_LIB_DIR}/setup.py ${FDMLPY_LIB_DIR}/README.rst)
 
 ################################################################################
 # Post build
 ################################################################################
 # Setup application
-set (FDML_BUILD_OUTPUT_DIR "${FDMLPY_LIB_DIR}/dist")
-set (FDML_TAR ${FDML_BUILD_OUTPUT_DIR}/FDML-1.0.tar.gz)
-set (FDML_WHL ${FDML_BUILD_OUTPUT_DIR}/FDML-1.0-py3-none-any.whl)
-set (FDML_BUILD_OUTPUT ${FDML_TAR} ${FDML_WHL})
-set (FDML_BUILD_CMD ${Python3_EXECUTABLE})
-set (FDML_BUILD_ARGS -m build ${FDMLPY_LIB_DIR})
-set (FDML_BUILD_DEPENDS fdmlpy ${FDMLPY_STUBS} ${FDML_SETUP_FILES})
+set (FDMLPY_BUILD_OUTPUT_DIR "${FDMLPY_LIB_DIR}/dist")
+set (FDMLPY_TAR ${FDMLPY_BUILD_OUTPUT_DIR}/FDML-1.0.tar.gz)
+set (FDMLPY_WHL ${FDMLPY_BUILD_OUTPUT_DIR}/FDML-1.0-py3-none-any.whl)
+set (FDMLPY_BUILD_OUTPUT ${FDMLPY_TAR} ${FDMLPY_WHL})
+set (FDMLPY_BUILD_CMD ${Python3_EXECUTABLE})
+set (FDMLPY_BUILD_ARGS -m build ${FDMLPY_LIB_DIR})
+set (FDMLPY_BUILD_DEPENDS fdmlpy ${FDMLPY_STUBS} ${FDMLPY_SETUP_FILES})
 add_custom_command(
-  OUTPUT ${FDML_BUILD_OUTPUT}
-  COMMAND ${FDML_BUILD_CMD}
-  ARGS ${FDML_BUILD_ARGS}
-  DEPENDS ${FDML_BUILD_DEPENDS})
+  OUTPUT ${FDMLPY_BUILD_OUTPUT}
+  COMMAND ${FDMLPY_BUILD_CMD}
+  ARGS ${FDMLPY_BUILD_ARGS}
+  DEPENDS ${FDMLPY_BUILD_DEPENDS})
 
-add_custom_target(FDML_BUILD ALL DEPENDS ${FDML_BUILD_OUTPUT})
+add_custom_target(FDMLPY_BUILD ALL DEPENDS ${FDMLPY_BUILD_OUTPUT})
 
 ################################################################################
 # Installation
