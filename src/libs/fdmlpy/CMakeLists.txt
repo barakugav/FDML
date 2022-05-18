@@ -51,7 +51,7 @@ endif()
 # appended by Multi-configuration generators (e.g Visual Studio)
 # https://cmake.org/cmake/help/latest/prop_tgt/LIBRARY_OUTPUT_DIRECTORY.html
 set_target_properties(fdmlpy PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${FDMLPY_LIB_DIR}/$<0:>)
-set (FDMLPY_TARGET_LINKER_FILE "fdml${FDMLPY_LIBRARY_SUFFIX}")
+set (FDMLPY_TARGET_LINKER_FILE "fdmlpy${FDMLPY_LIBRARY_SUFFIX}")
 
 ################################################################################
 # Stubs (Type Annotation)
