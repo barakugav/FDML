@@ -1,4 +1,6 @@
-\documentclass{article}
+\documentclass[11pt]{article}
+\usepackage{geometry}
+\geometry{left=1cm,top=1cm,right=1cm,bottom=1cm} %margins
 \usepackage[fleqn]{amsmath}
 \usepackage{tikz}
 \tikzset{%
@@ -10,14 +12,16 @@
 \definecolor{c2}{rgb}{0.53,0.6,0.13}
 \definecolor{c3}{rgb}{0.53,0.53,0.4}
 \begin{document}
+%%%%%%%% General Case
 \section{General Case}
 \begin{align*}
-  a_1 x_1 + b_1 y_1 + c_1 & = 0\\
-  a_1 x_2 + b_1 y_2 + c_1 & = 0\\
-  (x - x_1)^2 + (y - y_1)^2 & = d_1^2\\
-  (x - x_2)^2 + (y - y_2)^2 & = d_2^2\\
-  (x_2 - x_1)^2 + (y_2 - y_1)^2 & = d_1^2 + d_2^2 - 2 c d_1 d_2 = d_1^2 + d_2^2 - 2 k
+  a_1 x_1 + b_1 y_1 + c_1 &= 0\\
+  a_1 x_2 + b_1 y_2 + c_1 &= 0\\
+  (x - x_1)^2 + (y - y_1)^2 &= d_1^2\\
+  (x - x_2)^2 + (y - y_2)^2 &= d_2^2\\
+  (x_2 - x_1)^2 + (y_2 - y_1)^2 &= d_1^2 + d_2^2 - 2 c d_1 d_2 = d_1^2 + d_2^2 - 2 k
 \end{align*}
+%%%%%%%% Without Translation
 \section{Without Translation ($c_1 = c_2 = 0$)}
 \begin{align*}
   y_1 & = m_1 x_1\\
@@ -27,79 +31,200 @@
   (x_2 - x_1)^2 + (m_2 x_2 - m_1 x_1)^2 & = d_1^2 + d_2^2 - 2 k
 \end{align*}
 \begin{align*}
-  x^2 + x_1^2 - 2 x x_1 + y^2 + m_1^2x_1^2 - 2 y m_1 x_1 &= d_1^2\\
-  (1 + m_1^2) x_1^2 - 2 (x + y m_1) x_1  + x^2 + y^2  &= d_1^2\\
-  (1 + m_2^2) x_2^2 - 2 (x + y m_2) x_2  + x^2 + y^2  &= d_2^2\\
+  x^2 + x_1^2 - 2 x x_1 + y^2 + m_1^2x_1^2 - 2 m_1 y x_1 &= d_1^2\\
+  (1 + m_1^2) x_1^2 - 2 (x + m_1 y) x_1  + x^2 + y^2  &= d_1^2\\
+  (1 + m_2^2) x_2^2 - 2 (x + m_2 y) x_2  + x^2 + y^2  &= d_2^2\\
   x_2^2 + x_1^2 - 2 x_1 x_2 + m_1^2 x_1^2 + m_2^2 x_2^2 - 2 m_1 m_2 x_1 x_2 &= d_1^2 + d_2^2 - 2 k\\
-  (1 + m_1^2) x_1^2 + (1 + m_2^2) x_2^2 - 2 (1 - m_1 m_2) x_1 x_2 &= d_1^2 + d_2^2 - 2 k\\
+  (1 + m_1^2) x_1^2 + (1 + m_2^2) x_2^2 - 2 (1 + m_1 m_2) x_1 x_2 &= d_1^2 + d_2^2 - 2 k\\
 \end{align*}
 \begin{align*}
-  2 (1 - m_1 m_2) x_1 x_2 - 2 (x + y m_1) x_1 - 2 (x + y m_2) x_2 + 2 x^2 + 2 y^2 &= 2 k
+  2 (1 + m_1 m_2) x_1 x_2 - 2 (x + m_1 y) x_1 - 2 (x + m_2 y) x_2 + 2 x^2 + 2 y^2 &= 2 k\\
+  (1 + m_1 m_2) x_1 x_2 - (x + m_1 y) x_1 - (x + m_2 y) x_2 + x^2 + y^2 - k &= 0\\
 \end{align*}
-\section{Orthogonal ($m_1 m_2 = -1$)}
+%%%%%%%% x-aligned, no translation
+\section{$x$-Axis Aligned, without translation}
 \begin{align*}
-  2 x^2 + 2 y^2 - 2 (x + y m_1) x_1 - 2 (x + y m_2) x_2 &= 2 k\\
-  (1 + m_1^2) x_1^2 - 2 (x + y m_1) x_1  + x^2 + y^2 - d_1^2 &= 0\\
-  (1 + m_2^2) x_2^2 - 2 (x + y m_2) x_2  + x^2 + y^2 - d_2^2 &= 0\\
-\end{align*}
-\begin{align*}
-  x_1 &= \frac{x + y m_1 + \sqrt{(x + y m_1)^2 - (1 + m_1^2)(x^2 + y^2 - d_1^2)}}{(1 + m_1^2)}\\
-  x_2 &= \frac{x + y m_2 + \sqrt{(x + y m_2)^2 - (1 + m_2^2)(x^2 + y^2 - d_2^2)}}{(1 + m_2^2)}
-\end{align*}
-\section{Axis Aligned}
-\begin{align*}
-  y_1 & = 0\\
-  x_2 & = 0\\
-  (x - x_1)^2 + y^2 &= d_1^2\\
-  x^2 + (y - y_2)^2 &= d_2^2\\
-  x_1^2 + y_2^2 &= d_1^2 + d_2^2 - 2 c d_1 d_2 = d_1^2 + d_2^2 - 2 k
+  m_1 &= 0\\
+  (1 + m_1 m_2) x_1 x_2 - (x + m_1 y) x_1 - (x + m_2 y) x_2 + x^2 + y^2 - k &= 0\\
+  x_1 x_2 - x x_1 - (x + m_2 y) x_2 + x^2 + y^2 - k &= 0\\
 \end{align*}
 \begin{align*}
-  x_1^2 - 2 x x_1 + x^2 + y^2 - d_1^2 &= 0\\
-  y_2^2 - 2 y y_2 + x^2 + y^2 - d_2^2 &= 0\\
+  (x - x_1)^2 + y^2 & = d_1^2\\
+  (x - x_2)^2 + (y - m_2 x_2)^2 & = d_2^2\\
 \end{align*}
 \begin{align*}
-  x_1 &= x + \sqrt{d_1^2 - y^2)}\\
-  y_2 &= y + \sqrt{d_2^2 - x^2)}
+  x_1 &= x \pm \sqrt{d_1^2 - y^2}\\
+  x_2 &= \frac{x + m_2 y \pm \sqrt{(x + m_2 y)^2 - (1 + m_2^2)(x^2 + y^2 - d_2^2)}}{1 + m_2^2}\\
+  &= \frac{x + m_2 y \pm \sqrt{(2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2}}{1 + m_2^2}\\
+  &= \frac{x + m_2 y}{1 + m_2^2} + \sqrt{\frac{2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2}{(1 + m_2^2)^2}}
+\end{align*}
+%% Symbolic
+\section{Symbolic}
+\begin{align*}
+  x_1 &= r_1 \pm \sqrt{s_1} = x \pm \sqrt{d_1^2 - y^2}\\
+  x_2 &= r_2 \pm \sqrt{s_2}\\
 \end{align*}
 \begin{align*}
-  x_1^2 + y_2^2 &= d_1^2 + d_2^2 - 2 k\\
-  (x \pm \sqrt{d_1^2 - y^2)})^2 + (y \pm \sqrt{d_2^2 - x^2)})^2 &= d_1^2 + d_2^2 - 2 k\\
-  x^2 + d_1^2 - y^2 + y^2 + d_2^2 - x^2 \pm 2 x \sqrt{d_1^2 - y^2)} \pm 2 y \sqrt{d_2^2 - x^2)} &= d_1^2 + d_2^2 - 2 k\\
-  \pm x \sqrt{d_1^2 - y^2)} \pm y \sqrt{d_2^2 - x^2)} &= -k\\
-  x^2 (d_1^2 - y^2) + y^2 (d_2^2 - x^2) \pm 2 x y \sqrt{d_1^2 - y^2)} \sqrt{d_2^2 - x^2)} &= k^2
+  x_1 x_2 - x x_1 - (x + m_2 y) x_2 + x^2 + y^2 - k &= 0\\
+  (x \pm \sqrt{s_1}) (r_2 \pm \sqrt{s_2}) - x (x \pm \sqrt{s_1}) - (x + m_2 y) (r_2 \pm \sqrt{s_2}) + x^2 + y^2 - k &= 0\\
 \end{align*}
 \begin{align*}
-  \pm 2 x y \sqrt{(d_1^2 - y^2)(d_2^2 - x^2)} &= k^2 - x^2 (d_1^2 - y^2) - y^2 (d_2^2 - x^2)\\
-  4 x^2 y^2 (d_1^2 - y^2)(d_2^2 - x^2) &= (k^2 - d_1^2x^2 + x^2y^2 - d_2^2y^2 + x^2y^2)^2\\
-  4 x^2 y^2 (d_1^2d_2^2 - d_1^2x^2 - d_2^2y^2 + x^2y^2) &= (k^2 - d_1^2 x^2 - d_2^2 y^2 + 2 x^2 y^2)^2\\
-  4 d_1^2d_2^2 x^2 y^2 - 4 d_1^2 x^4 y^2 - 4 d_2^2 x^2 y^4 + 4 x^4 y^4  &= k^4 + d_1^4 x^4 + d_2^4 y^4 2 + 4 x^4 y^4 \\
-                                                                    &- 2 d_1^2 k^2 x^2 - 2 d_2^2 k^2 y^2 + 4 k^2 x^2 y^2 \\
-                                                                    &+ 2 d_1^2 d_2^2 x^2 y^2 - 4 d_1^2 x^4 y^2 - 4 d_2^2 x^2 y^4 \\
-  %
-  d_1^4 x^4 + d_2^4 y^4 - 2 d_1^2 k^2 x^2 - 2 d_2^2 k^2 y^2 + 4 k^2 x^2 y^2 - 2 d_1^2d_2^2 x^2 y^2 + k^4 &= 0
+  x r_2 \pm x \sqrt{s_2} \pm r_2 \sqrt{s_1} + \sqrt{s_1 s_2} - x^2 \mp x\sqrt{s_1} - r_2 (x + m_2 y) \mp (x + m_2 y)\sqrt{s_2} + x^2 + y^2 - k &= \\
+  x r_2 \pm x \sqrt{s_2} \pm r_2 \sqrt{s_1} + \sqrt{s_1 s_2} \mp x\sqrt{s_1} - r_2 x - r_2 m_2 y \mp x \sqrt{s_2} \mp m_2 y\sqrt{s_2}  + y^2 - k &= \\
+  \pm r_2 \sqrt{s_1} + \sqrt{s_1 s_2} \mp x\sqrt{s_1} - r_2 m_2 y \mp m_2 y\sqrt{s_2}  + y^2 - k &= 0\\
 \end{align*}
 \begin{align*}
-  (A_1 x^2 + B_1 y^2 + C_1 x y + D_1)(A_2 x^2 + B_2 y^2 + C_2 x y + D_2) &= 0\\
-  A_1 A_2 X^4 + B_1 B_2 y^4 + (A_1 C_2 + A_2 C_1) x^3 y + (B_1 C_2 + B_2 C_1) x y^3 + \\
-  (A_1 B_2 + A_2 B_1 + c_1 C_2) x^2 y^2 + (A_1 D_2 + A_2 D_1) x^2 + (B_1 D_2 + B_2 D_1) y^2 + \\
-  (C_2 D_1 + C_1 D_2) x y + D_1 D_2 &= 0
+  \mp x\sqrt{s_1} \pm r_2 \sqrt{s_1} \mp m_2 y \sqrt{s_2} + \sqrt{s_1 s_2} - r_2 m_2 y + y^2 - k &= 0\\
+  \mp (x - r_2) \sqrt{s_1} \mp m_2 y \sqrt{s_2} + \sqrt{s_1 s_2} - r_2 m_2 y + y^2 - k &= 0\\
+\end{align*}
+Add $\pm (x - r_2) \sqrt{s_1} \pm m_2 y \sqrt{s_2}$
+\begin{align*}
+  \sqrt{s_1 s_2} + (y^2 - r_2 m_2 y - k) &= \pm (x - r_2) \sqrt{s_1} \pm m_2 y \sqrt{s_2}\\
+\end{align*}
+Raise to the power of 2 each side
+\begin{align*}
+  s_1 s_2 + (y^2 - r_2 m_2 y - k)^2 + 2 (y^2 - r_2 m_2 y - k) \sqrt{s_1 s_2}
+  &= (x - r_2)^2 s_1 + m_2^2 y^2 s_2 + 2 m_2 y (x - r_2) \sqrt{s_1 s_2}\\
+  &= (x - r_2)^2 s_1 + m_2^2 y^2 s_2 + 2 (m_2 x y - r_2 m_2 y) \sqrt{s_1 s_2}\\
+\end{align*}
+Exchange
+\begin{align*}
+  s_1 s_2 + (y^2 - r_2 m_2 y - k)^2 - (x - r_2)^2 s_1 - m_2^2 y^2 s_2
+  &= 2 (m_2 x y - r_2 m_2 y - y^2 + r_2 m_2 y + k) \sqrt{s_1 s_2})\\
+  &= 2 (m_2 x y - y^2 + k) \sqrt{s_1 s_2})\\
+\end{align*}
+Raise again
+\begin{align*}
+  (s_1 s_2 + (y^2 - r_2 m_2 y - k)^2 - (x - r_2)^2 s_1 - m_2^2 y^2 s_2)^2 = 4 (m_2 x y - y^2 + k)^2 s_1 s_2\\
+\end{align*}
+Exchange and substitute
+\begin{align*}
+  4 (m_2 x y - y^2 + k)^2 s_1 s_2
+  &= ((d_1^2 - y^2) s_2 + (y^2 - r_2 m_2 y - k)^2 - (x - r_2)^2 (d_1^2 - y^2) - m_2^2 y^2 s_2)^2\\
+  &= (\\
+  & ~+ s_2 (d_1^2 - y^2 - m_2^2 y^2)\\
+  & ~+ r_2^2 (y^2 - d_1^2 + m_2^2 y^2)\\
+  & ~+ r_2 (2 m_2 k y - 2 m_2 y^3 + 2 (d_1^2 - y^2))\\
+  & ~+ y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2\\
+  & ~)^2\\
+\end{align*}
+Multiply by $(1 + m_2^2)^4$
+\begin{align*}
+  4 (m_2 x y - y^2 + k)^2 (1 + m_2^2)^4 s_1 s_2
+  &= (\\
+  & ~+ (1 + m_2^2)^2 s_2 (d_1^2 - y^2 - m_2^2 y^2)\\
+  & ~+ (1 + m_2^2)^2 r_2^2 (y^2 - d_1^2 + m_2^2 y^2)\\
+  & ~+ (1 + m_2^2)^2 r_2 (2 m_2 k y - 2 m_2 y^3 + 2 (d_1^2 - y^2))\\
+  & ~+ (1 + m_2^2)^2 (y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2)\\
+  & ~)^2\\
+  &= (\\
+  & ~+ (1 + m_2^2)^2 \frac{2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2}{(1 + m_2^2)^2} (d_1^2 - y^2 - m_2^2 y^2)\\
+  & ~+ (1 + m_2^2)^2 \frac{(x + m_2 y)}{1 + m_2^2}^2 (y^2 - d_1^2 + m_2^2 y^2)\\
+  & ~+ (1 + m_2^2)^2 \frac{(x + m_2 y)}{1 + m_2^2} (2 m_2 k y - 2 m_2 y^3 + 2 (d_1^2 - y^2))\\
+  & ~+ (1 + m_2^2)^2 (y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2)\\
+  & ~)^2\\
+  &= (\\
+  & ~+ (2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2) (d_1^2 - y^2 - m_2^2 y^2)\\
+  & ~+ (x + m_2 y)^2 (y^2 - d_1^2 + m_2^2 y^2)\\
+  & ~+ (1 + m_2^2) (x + m_2 y) (2 m_2 k y - 2 m_2 y^3 + 2 (d_1^2 - y^2))\\
+  & ~+ (1 + m_2^2)^2 (y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2)\\
+  & ~)^2\\
+  &= (\\
+  & ~+ 2 d_1^2 m_2 x y - d_1^2 y^2 + d_1^2 d_2^2 - d_1^2 m_2^2 x^2 + d_1^2 d_2^2 m_2^2\\
+  & ~- 2 m_2 x y^3 + y^4 - d_2^2 y^2 + m_2^2 x^2 y^2 - d_2^2 m_2^2y^2\\
+  & ~- 2 m_2^3 x y^3 + m_2^2 y^4 - d_2^2 m_2^2 y^2 + m_2^4 y^4 - d_2^2 m_2^4 y^2\\
+  & ~+ y^2 x^2 - d_1^2 x^2 + m_2^2 x^2 y^2\\
+  & ~+ m_2^2 y^4 - d_1^2 m_2^2 y^2 + m_2^4 y^4\\
+  & ~+ 2 m_2 x y^3 - 2 d_1^2 m_2 x y - 2 m_2^3 x y^3\\
+  & ~+ (x + m_2 y + m_2^2 x + m_2^3 y) (2 m_2 k y - 2 m_2 y^3 + 2 d_1^2 - 2 y^2)\\
+  & ~+ (1 + m_2^4 + 2 m_2^2) (y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2)\\
+  & ~)^2\\
 \end{align*}
 \begin{align*}
-  A_1 A_2 &= d_1^4\\
-  B_1 B_2 &= d_2^4\\
-  A_1 C_2 + A_2 C_1 &= 0\\
-  B_1 C_2 + B_2 C_1 &= 0\\
-  A_1 B_2 + A_2 B_1 + C_1 C_2 &= 4 k^2 - 2 d_1^2 d_2^2\\
-  A_1 D_2 + A_2 D_1 &= 2 -d_1^2 k^2\\
-  B_1 D_2 + B_2 D_1 &= 2 -d_2^2 k^2\\
-  C_2 D_1 + C_1 D_2 &= 0\\
-  D_1 D_2 &= k^4
+  4 (m_2 x y - y^2 + k)^2 (1 + m_2^2)^4 s_1 s_2
+  &= (\\
+  & ~+ 2 d_1^2 m_2 x y - d_1^2 y^2 + d_1^2 d_2^2 - d_1^2 m_2^2 x^2 + d_1^2 d_2^2 m_2^2\\
+  & ~- 2 m_2 x y^3 + y^4 - d_2^2 y^2 + m_2^2 x^2 y^2 - d_2^2 m_2^2y^2\\
+  & ~- 2 m_2^3 x y^3 + m_2^2 y^4 - d_2^2 m_2^2 y^2 + m_2^4 y^4 - d_2^2 m_2^4 y^2\\
+  & ~+ y^2 x^2 - d_1^2 x^2 + m_2^2 x^2 y^2\\
+  & ~+ m_2^2 y^4 - d_1^2 m_2^2 y^2 + m_2^4 y^4\\
+  & ~+ 2 m_2 x y^3 - 2 d_1^2 m_2 x y - 2 m_2^3 x y^3\\
+  & ~+ 2 m_2 k x y - 2 m_2 x y^3 + 2 d_1^2 x - 2 x y^2\\
+  & ~+ 2 m_2^2 k y^2 - 2 m_2^2 y^4 + 2 d_1^2 m_2 y - 2 m_2 y^3\\
+  & ~+ 2 m_2^3 k x y - 2 m_2^3 x y^3 + 2 d_1^2 m_2^2 x - 2 m_2^2 x y^2\\
+  & ~+ 2 m_2^4 k y^2 - 2 m_2^4 y^4 + 2 d_1^2 m_2^3 y - 2 m_2^3 y^3\\
+  & ~+ y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2\\
+  & ~+ m_2^4 y^4 + k^2 m_2^4 - 2 m_2^4 k y^2 - d_1^2 m_2^4 x^2 + m_2^4 x^2 y^2\\
+  & ~+ 2 m_2^2 y^4 + 2 k^2 m_2^2 - 4 m_2^2 k y^2 - 2 d_1^2 m_2^2 x^2 + 2 m_2^2 x^2 y^2\\
+  & ~)^2
 \end{align*}
 \begin{align*}
-  A_1 &= A_2 = d_1^2\\
-  B_1 &= B_2 = d_2^2\\
-  C_1 &= -C_2 = 2 \sqrt{d_1^2 d_2^2 - k^2}\\
-  D_1 &= D_2 = -k^2\\
-\end{align*}
+  4 (m_2 x y - y^2 + k)^2 (1 + m_2^2)^4 s_1 s_2
+  &= 4 (m_2 x y - y^2 + k)^2 (1 + m_2^2)^4 (d_1^2 - y^2) \frac{2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2}{(1 + m_2^2)^2}\\
+  &= 4 (m_2 x y - y^2 + k)^2 (1 + m_2^2)^2 (d_1^2 - y^2) (2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2)\\
+  &= 4\\
+  &  (m_2 x y - y^2 + k)^2 \\
+  &  (1 + m_2^2)^2 \\
+  &  (d_1^2 - y^2) \\
+  &  (2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2)\\
+  &= 4\\
+  &  (m_2^2 x^2 y^2 + y^4 + k^2 - 2 m_2 x y^3 + 2 m_2 k x y - 2 k y^2) \\
+  &  (1 + m_2^4 + 2 m_2^2) \\
+  &  (d_1^2 - y^2) \\
+  &  (2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2)\\
+  &= 4\\
+  & + (d_1^2 m_2^2 x^2 y^2 + d_1^2 y^4 + d_1^2 k^2 - 2 m_2 d_1^2 x y^3 + 2 m_2 d_1^2 k x y - 2 kd_1^2  y^2\\
+  & + d_1^2 m_2^6 x^2 y^2 + d_1^2 m_2^4 y^4 + d_1^2 m_2^4 k^2 - 2 d_1^2 m_2 m_2^4 x y^3 + 2 d_1^2 m_2 m_2^4 k x y - 2 d_1^2 m_2^4 k y^2\\
+  & + 2 d_1^2 m_2^24 x^2 y^2 + 2 d_1^2 m_2^2 y^4 + 2 d_1^2 m_2^2 k^2 - 4 d_1^2 m_2^3 x y^3 + 4 d_1^2 m_2^3 k x y - 4 d_1^2 m_2^2 k y^2\\
+  & - m_2^2 x^2 y^4 - y^6 - k^2 y^2 + 2 m_2 x y^5 - 2 m_2 k x y^3 + 2 k y^4\\
+  & - m_2^6 x^2 y^4 - m_2^4 y^6 - m_2^4 k^2 y^2 + 2 m_2 m_2^4 x y^5 - 2 m_2 m_2^4 k x y^3 +- 2 m_2^4 k y^4\\
+  & - 2 m_2^24 x^2 y^3 - 2 m_2^2 y^6 - 2 m_2^2 k^2 +y^2  4 m_2^3 x y^5 - 4 m_2^3 k x y^3 + 4 m_2^2 k y^4)\\
+  & (2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2)\\
+ \end{align*}
+
+
+%%   (
+%%     + 2 y^4
+%%     + 2 m_2^2 y^4
+%%     + m_2^4 y^4
+
+%%     - 6 m_2^3 x y^3
+%%     - 2 m_2 x y^3
+%%     - 2 m_2 y^3
+
+%%     + 2 x^2 y^2
+%%     + m_2^4 x^2 y^2
+%%     + 4 m_2^2 x^2 y^2
+
+%%     - 2 d_1^2 x^2
+%%     - d_1^2 m_2^4 x^2
+%%     - 3 d_1^2 m_2^2 x^2
+
+%%     - 2 k y^2
+%%     - d_1^2 y^2
+%%     - d_2^2 y^2
+%%     - 2 d_2^2 m_2^2 y^2
+%%     - d_1^2 m_2^2 y^2
+%%     - d_2^2 m_2^4 y^2
+%%     - 2 m_2^2 k y^2
+
+%%     - 2 x y^2
+%%     - 2 m_2^2 x y^2
+
+%%     + 2 m_2 k x y
+%%     + 2 m_2^3 k x y
+
+%%     + 2 d_1^2 m_2 y
+
+%%     + 2 d_1^2 x
+%%     + 2 d_1^2 m_2^2 x
+
+%%     + 2 d_1^2 m_2^3 y
+
+%%     + d_1^2 d_2^2
+%%     + d_1^2 d_2^2 m_2^2
+%%     + k^2
+%%     + k^2 m_2^4
+%%     + 2 m_2^2 k^2
+%%   )^2
 \end{document}
