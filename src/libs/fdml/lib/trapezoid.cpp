@@ -214,7 +214,11 @@ std::vector<Polygon> Trapezoid::calc_result_m1(const Kernel::FT& d) const {
 }
 
 static double atan2(const Kernel::FT& y, const Kernel::FT& x) {
-  return std::atan2(CGAL::to_double(y), CGAL::to_double(x));
+  double z = std::atan2(CGAL::to_double(y), CGAL::to_double(x));
+  if (z < 0)
+    z += 2 * M_PI;
+  assert(0 <= z && z <= 2 * M_PI);
+  return z;
 }
 
 std::vector<Segment> Trapezoid::calc_result_m2(const Kernel::FT& d1, const Kernel::FT& d2) const {
@@ -332,7 +336,9 @@ void Trapezoid::calc_min_max_openings(Kernel::FT& opening_min, Kernel::FT& openi
   };
   auto angle_between = [](double low, double high) {
     double r = high - low;
-    return low < high ? r : r + 2 * M_PI;
+    r = low < high ? r : r + 2 * M_PI;
+    assert(r >= 0);
+    return r;
   };
   auto dir_to_angle = [](const Direction& dir) { return atan2(dir.dy(), dir.dx()); };
   for (unsigned int side = 0; side < 2; side++) {
@@ -360,7 +366,7 @@ void Trapezoid::calc_min_max_openings(Kernel::FT& opening_min, Kernel::FT& openi
     } else {
       /* Conchoid */
       /* for a conchoid curve of a limiting vertex, i failed to calculate analytically the minimum point, and
-       * therefore forced to search numerically on the convex function. The maximum will always be one of the
+       * therefore forced to search numerically on the (i think) convex function. The maximum will always be one of the
        * angle interval limits. */
       Kernel::FT m1 = calc_conchoid_opening(limit_vertex, -angle_begin);
       Kernel::FT m2 = calc_conchoid_opening(limit_vertex, -angle_end);
@@ -369,7 +375,7 @@ void Trapezoid::calc_min_max_openings(Kernel::FT& opening_min, Kernel::FT& openi
 
       double a_low = dir_to_angle(angle_begin), a_high = dir_to_angle(angle_end);
       const double PRECISION = 0.01;
-      while (std::abs(a_high - a_low) > PRECISION) {
+      for (unsigned int iter_num = 0; angle_between(a_low, a_high) > PRECISION; iter_num++) {
         double a = angle_between(a_low, a_high);
         double mid1 = a * 1 / 3, mid2 = a * 2 / 3;
         Kernel::FT mid1_min_opening = calc_conchoid_opening(limit_vertex, rotate(angle_begin, mid1));
@@ -378,6 +384,10 @@ void Trapezoid::calc_min_max_openings(Kernel::FT& opening_min, Kernel::FT& openi
           a_high = a_low + mid2;
         else
           a_low = a_low + mid1;
+        if (iter_num == 1000) {
+          fdml_errln("Failed to converge on the minimum opening...");
+          break;
+        }
       }
       double a = angle_between(a_low, a_high) / 2;
       min = CGAL::min(min, calc_conchoid_opening(limit_vertex, rotate(angle_begin, a)));

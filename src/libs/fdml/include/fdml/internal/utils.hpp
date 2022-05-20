@@ -36,7 +36,7 @@ static const bool DEBUG_PRINT_EN = false;
       std::cout << args;                                                                                               \
   } while (false)
 #define fdml_debugln(args) fdml_debug(args << std::endl)
-#define fdml_debug_line()  fdml_debug(__FILE__ << ":" << __LINE__ << std::endl)
+#define fdml_debug_line()  fdml_debugln(__FILE__ << ":" << __LINE__)
 
 #define FDML_UNUSED(var) (void)var
 
