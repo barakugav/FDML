@@ -296,6 +296,28 @@ void Trapezoider::init_poly_set(const Polygon_with_holes& scene) {
       if (!(is_free(e->face()) ^ is_free(e->twin()->face())))
         throw std::invalid_argument("zero width edges are not supported");
     });
+
+  /* This detection takes O(n^3) time, consider disabling it */
+  bool found_3collinear = false;
+  for (auto v1 = polygon_set_arr.vertices_begin(); v1 != polygon_set_arr.vertices_end(); ++v1) {
+    for (auto v2 = v1; v2 != polygon_set_arr.vertices_end(); ++v2) {
+      if (v1 == v2)
+        continue;
+      Line line(v1->point(), v2->point());
+
+      for (auto v3 = v2; v3 != polygon_set_arr.vertices_end(); ++v3) {
+        if (v1 == v3 || v2 == v3)
+          continue;
+
+        if (line.oriented_side(v3->point()) == CGAL::ON_ORIENTED_BOUNDARY) {
+          fdml_infoln("3 colliniar points: (" << v1->point() << "), (" << v3->point() << "), (" << v3->point() << ")");
+          found_3collinear = true;
+        }
+      }
+    }
+  }
+  if (found_3collinear)
+    throw std::invalid_argument("input scene contains 3 colliniar points");
 }
 
 /* Create a new Trapezoid and update the relevant data structures */

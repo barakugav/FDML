@@ -44,6 +44,8 @@ void Locator::init(const Polygon_with_holes& scene) {
     TrapezoidRTreePoint max(CGAL::to_double(opening.max));
     rtree.insert(TrapezoidRTreeValue(TrapezoidRTreeSegment(min, max), it->get_id()));
   }
+
+  fdml_infoln("[Locator] init done");
 }
 
 std::vector<Locator::Res1d> Locator::query(const Kernel::FT& d) const {
