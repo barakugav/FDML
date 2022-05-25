@@ -5,10 +5,11 @@ FT shoot_ray(Arrangement* arr, Trap_pl& pl, Point p, FT cos_theta, FT sin_theta)
   FT dist(INFTY);
 
   // If we are out of bounds - return infinity
+  /*
   auto obj = pl.locate(p);
   auto f = boost::get<Arrangement::Face_const_handle>(&obj);
   if (f && (*f)->is_unbounded())
-    return dist;
+    return dist;*/
 
   // Traverse all edges of the arrangement
   for (auto eit = arr->edges_begin(); eit != arr->edges_end(); ++eit) {

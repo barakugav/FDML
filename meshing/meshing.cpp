@@ -23,8 +23,10 @@ int main(int argc, char** argv) {
 
   if (mo.single_measurement) {
     Surface_mesh sm;
-    single_measurement(sm, arr, pl, mo.d1, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r, mo.angle_bound,
-                       mo.radius_bound, mo.distance_bound);
+    //single_measurement(sm, arr, pl, mo.d1, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r, mo.angle_bound,
+    //                   mo.radius_bound, mo.distance_bound);
+
+    single_measurement_marching_cubes(sm, arr, pl, mo.d1, mo.sphere_r, 500);
 
     std::ofstream out(mo.out_filename);
     out << sm << std::endl;
