@@ -6,8 +6,8 @@
 #include "cgal_include.h"
 #include <CGAL/Polygon_mesh_processing/clip.h>
 #include <boost/function.hpp>
-#include <functional>
 #include <cmath>
+#include <functional>
 
 /*
  * Get a room and a measured distance, and return (by reference) an approximating
@@ -17,7 +17,8 @@
 void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, Point_3 sphere_origin, FT sphere_radius,
                         FT angle_bound, FT radius_bound, FT distance_bound);
 
-void single_measurement_marching_cubes(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, FT sphere_radius, unsigned int n);
+void single_measurement_marching_cubes(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, FT sphere_radius,
+                                       unsigned int n);
 
 void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, Point_3 sphere_origin, FT sphere_radius,
                         FT angle_bound, FT radius_bound, FT distance_bound,

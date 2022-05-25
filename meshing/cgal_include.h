@@ -11,9 +11,9 @@
 #include <CGAL/make_surface_mesh.h>
 #include <CGAL/squared_distance_2.h>
 
-#include <CGAL/AABB_tree.h>
-#include <CGAL/AABB_traits.h>
 #include <CGAL/AABB_face_graph_triangle_primitive.h>
+#include <CGAL/AABB_traits.h>
+#include <CGAL/AABB_tree.h>
 #include <CGAL/Polygon_mesh_processing/compute_normal.h>
 #include <CGAL/Polygon_mesh_processing/orientation.h>
 
@@ -34,7 +34,6 @@ typedef CGAL::Implicit_surface_3<GT, Function> Surface_3;
 typedef CGAL::Surface_mesh<Point_3> Surface_mesh;
 typedef Surface_mesh::Vertex_index Vertex_descriptor;
 typedef Surface_mesh::Face_index Face_descriptor;
-
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
 typedef Kernel::FT Number_type;

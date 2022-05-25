@@ -16,12 +16,12 @@
 #if defined(FDML_ALL_DYN_LINK) || defined(FDML_FDML_DYN_LINK)
 // export if this is our own source, otherwise import:
 #ifdef FDML_FDML_SOURCE
-# define FDML_FDML_DECL __declspec(dllexport)
+#define FDML_FDML_DECL __declspec(dllexport)
 #else
-# define FDML_FDML_DECL __declspec(dllimport)
-#endif  // FDML_FDML_SOURCE
-#endif  // DYN_LINK
-#endif  // FDML_HAS_DECLSPEC
+#define FDML_FDML_DECL __declspec(dllimport)
+#endif // FDML_FDML_SOURCE
+#endif // DYN_LINK
+#endif // FDML_HAS_DECLSPEC
 
 #ifndef FDML_FDML_DECL
 #define FDML_FDML_DECL
