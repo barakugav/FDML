@@ -53,6 +53,6 @@ typedef CGAL::Bbox_3 Bbox_3;
 typedef Kernel::Plane_3 Plane_3;
 typedef Kernel::Vector_3 Vector_3;
 
-#define INFTY 100000.0
+#define INFTY 10000.0
 
 #endif
