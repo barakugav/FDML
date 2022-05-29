@@ -20,6 +20,9 @@ void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, P
 void single_measurement_marching_cubes(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, FT sphere_radius,
                                        unsigned int n);
 
+void single_measurement_marching_cubes_rotate_alpha(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, FT alpha, FT sphere_radius,
+                                       unsigned int n);
+
 void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, Point_3 sphere_origin, FT sphere_radius,
                         FT angle_bound, FT radius_bound, FT distance_bound,
                         boost::function<Point_3(Point_3)> twist_func);

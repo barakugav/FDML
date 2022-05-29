@@ -12,7 +12,7 @@ void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, P
     C2t3 c2t3(tr);
 
     auto implicit_func = [&arr, &pl, d](Point_3 p) {
-        return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z()), sin(p.z())) - d);
+        return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z() * 2 * M_PI), sin(p.z() * 2 * M_PI)) - d);
     };
 
     // Generate the implicit surface and make surface mesh to c2t3
@@ -64,12 +64,51 @@ void single_measurement_marching_cubes(Surface_mesh& sm, Arrangement& arr, Trap_
     std::cout << mesh.indices.size() << std::endl;
 
     for (size_t i = 0; i < mesh.indices.size(); i += 3) {
-        Point_3 p1(mesh.vertices.at(mesh.indices.at(i)).x, mesh.vertices.at(mesh.indices.at(i)).y,
-                   mesh.vertices.at(mesh.indices.at(i)).z);
-        Point_3 p2(mesh.vertices.at(mesh.indices.at(i + 1)).x, mesh.vertices.at(mesh.indices.at(i + 1)).y,
-                   mesh.vertices.at(mesh.indices.at(i + 1)).z);
-        Point_3 p3(mesh.vertices.at(mesh.indices.at(i + 2)).x, mesh.vertices.at(mesh.indices.at(i + 2)).y,
-                   mesh.vertices.at(mesh.indices.at(i + 2)).z);
+        Point_3 p1(mesh.vertices.at(mesh.indices.at(i)).x / n, mesh.vertices.at(mesh.indices.at(i)).y  / n,
+                   mesh.vertices.at(mesh.indices.at(i)).z  / n);
+        Point_3 p2(mesh.vertices.at(mesh.indices.at(i + 1)).x  / n, mesh.vertices.at(mesh.indices.at(i + 1)).y  / n,
+                   mesh.vertices.at(mesh.indices.at(i + 1)).z  / n);
+        Point_3 p3(mesh.vertices.at(mesh.indices.at(i + 2)).x  / n, mesh.vertices.at(mesh.indices.at(i + 2)).y  / n,
+                   mesh.vertices.at(mesh.indices.at(i + 2)).z  / n);
+
+        Surface_mesh::Vertex_index u = sm.add_vertex(p1);
+        Surface_mesh::Vertex_index v = sm.add_vertex(p2);
+        Surface_mesh::Vertex_index w = sm.add_vertex(p3);
+        sm.add_face(u, v, w);
+    }
+}
+
+void single_measurement_marching_cubes_rotate_alpha(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, FT alpha,
+                                                    FT sphere_radius, unsigned int n) {
+    auto implicit_func = [&arr, &pl, d, alpha](Point_3 p) {
+        return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z() + alpha), sin(p.z() + alpha)) - d);
+    };
+
+    // Based on the code from https://github.com/aparis69/MarchingCubeCpp#readme
+    FT* field = new FT[n * n * n];
+    for (int i = 0; i < n; i++) {
+        std::cout << i << std::endl;
+        for (int j = 0; j < n; j++)
+            for (int k = 0; k < n; k++) {
+                FT x = ((FT)i / ((FT)n - 1) * 2 - 1) * sphere_radius;
+                FT y = ((FT)j / ((FT)n - 1) * 2 - 1) * sphere_radius;
+                FT z = ((FT)k / ((FT)n - 1) * 2 - 1) * 2 * M_PI;
+                field[(k * n + j) * n + i] = implicit_func(Point_3(x, y, z));
+                // std::cout << field[(k * n + j) * n + i] << std::endl;
+            }
+    }
+    MC::mcMesh mesh;
+    MC::marching_cube(field, n, n, n, mesh);
+
+    std::cout << mesh.indices.size() << std::endl;
+
+    for (size_t i = 0; i < mesh.indices.size(); i += 3) {
+        Point_3 p1(mesh.vertices.at(mesh.indices.at(i)).x / n, mesh.vertices.at(mesh.indices.at(i)).y / n,
+                   mesh.vertices.at(mesh.indices.at(i)).z / n);
+        Point_3 p2(mesh.vertices.at(mesh.indices.at(i + 1)).x / n, mesh.vertices.at(mesh.indices.at(i + 1)).y / n,
+                   mesh.vertices.at(mesh.indices.at(i + 1)).z / n);
+        Point_3 p3(mesh.vertices.at(mesh.indices.at(i + 2)).x / n, mesh.vertices.at(mesh.indices.at(i + 2)).y / n,
+                   mesh.vertices.at(mesh.indices.at(i + 2)).z / n);
 
         Surface_mesh::Vertex_index u = sm.add_vertex(p1);
         Surface_mesh::Vertex_index v = sm.add_vertex(p2);
@@ -85,7 +124,7 @@ void single_measurement_rotate_alpha(Surface_mesh& sm, Arrangement& arr, Trap_pl
     C2t3 c2t3(tr);
 
     auto implicit_func = [&arr, &pl, d, alpha](Point_3 p) {
-        return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z() + alpha), sin(p.z() + alpha)) - d);
+        return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z() * 2 * M_PI + alpha), sin(p.z() * 2 * M_PI + alpha)) - d);
     };
 
     // Generate the implicit surface and make surface mesh to c2t3
@@ -113,7 +152,7 @@ void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, P
 
     auto implicit_func = [&arr, &pl, d, twist_func](Point_3 p) {
         // First push theta to [0,2pi] and clamp
-        FT theta = p.z() * 2 * M_PI;
+        FT theta = p.z() * 2 * M_PI * 2 * M_PI;
         if (theta < 0 || theta > 2 * M_PI)
             return INFTY;
 
