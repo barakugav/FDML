@@ -180,13 +180,14 @@ def load_polygon(filename):
 
 if __name__ == "__main__":
     # polygon = [(-1.5,0), (-1.5,3), (0, 2), (1.5,3), (1.5,0)]
-    # polygon = [(-1, -1), (-1, 1), (1, 1), (1, -1)]
-    polygon = [(1,1), (3,4), (6,5), (5,3), (6,1)]
+    polygon = [(-1, -1), (-1, 1), (1, 1), (1, -1)]
+    # polygon = [(1,1), (3,4), (6,5), (5,3), (6,1)]
     # polygon = [(-1,-1), (1, -1), (1,1), (-0.5, 1), (-0.5, 0.5), (-0.75, 0.5), (-0.75, 0.75), (-0.51, 0.75), (-0.51, 1), (-1, 1)]
     # polygon = [(-1, -1), (1,-1), (1, 1), (0.05, 1), (0.05, 0.75), (0.125,0.75), (0.125, 0.5), (-0.125, 0.5), (-0.125, 0.75), (-0.05, 0.75), (-0.05, 1), (-1, 1)]
     # polygon = load_polygon('checkpoint.poly')
     minn, maxx = get_polygon_bb(polygon)
     draw_polygon(polygon)
+    sys.exit(-1)
     def crit(x, y): return is_point_inside(polygon, x, y)
 
     N = 300
