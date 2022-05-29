@@ -1,7 +1,7 @@
 #include "manifold_intersection.h"
 
-void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M_isect, DeltaCube initial_cube,
-                           FT delta, FT epsilon) {
+void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M_isect, Trap_pl& pl,
+                           DeltaCube initial_cube, FT delta, FT epsilon) {
     std::vector<DeltaCube> Q; // A queue of pending cubes to split;
     Q.push_back(initial_cube);
 
@@ -16,8 +16,31 @@ void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M
             tree_2.any_intersected_primitive(curr_cube.to_bbox_3())) { // Intersect stuff
             if (curr_cube.size() > delta)
                 curr_cube.split(Q);
-            else if (true) // Validate
+            else {
+                // Point_3 midpoint = curr_cube.midpoint();
+                // bool z_okay = 0 <= midpoint.z() && midpoint.z() <= 1 / (2 * M_PI);
+
+                // if (!z_okay)
+                //     continue;
+
+                auto obj1 = pl.locate(Point(curr_cube.bottom_left.x(), curr_cube.bottom_left.y()));
+                auto obj2 = pl.locate(Point(curr_cube.top_right.x(), curr_cube.top_right.y()));
+                auto obj3 = pl.locate(Point(curr_cube.bottom_right().x(), curr_cube.bottom_right().y()));
+                auto obj4 = pl.locate(Point(curr_cube.top_left().x(), curr_cube.top_left().y()));
+                auto f1 = boost::get<Arrangement::Face_const_handle>(&obj1);
+                auto f2 = boost::get<Arrangement::Face_const_handle>(&obj2);
+                auto f3 = boost::get<Arrangement::Face_const_handle>(&obj3);
+                auto f4 = boost::get<Arrangement::Face_const_handle>(&obj4);
+                bool bottom_left_inside_room = !f1 || !(*f1)->is_unbounded();
+                bool top_right_inside_room = !f2 || !(*f2)->is_unbounded();
+                bool bottom_right_inside_room = !f3 || !(*f3)->is_unbounded();
+                bool top_left_inside_room = !f4 || !(*f4)->is_unbounded();
+                if (!bottom_left_inside_room || !top_right_inside_room || !bottom_right_inside_room ||
+                    !top_left_inside_room)
+                    continue;
+
                 curr_cube.to_surface_mesh(M_isect);
+            }
         }
     }
 }
@@ -80,8 +103,7 @@ void DeltaCube::to_surface_mesh(Surface_mesh& sm) {
 }
 
 void DeltaCube::split(std::vector<DeltaCube>& list) {
-    Point_3 center((bottom_left.x() + top_right.x()) / FT(2), (bottom_left.y() + top_right.y()) / FT(2),
-                   (bottom_left.z() + top_right.z()) / FT(2));
+    Point_3 center = this->midpoint();
 
     list.push_back(DeltaCube(Point_3(bottom_left.x(), bottom_left.y(), bottom_left.z()),
                              Point_3(center.x(), center.y(), center.z())));
@@ -99,4 +121,16 @@ void DeltaCube::split(std::vector<DeltaCube>& list) {
         DeltaCube(Point_3(bottom_left.x(), center.y(), center.z()), Point_3(center.x(), top_right.y(), top_right.z())));
     list.push_back(
         DeltaCube(Point_3(center.x(), center.y(), center.z()), Point_3(top_right.x(), top_right.y(), top_right.z())));
+}
+
+Point_3 DeltaCube::midpoint() const {
+    return Point_3((bottom_left.x() + top_right.x()) / FT(2), (bottom_left.y() + top_right.y()) / FT(2),
+                   (bottom_left.z() + top_right.z()) / FT(2));
+}
+
+Point_3 DeltaCube::bottom_right() const {
+    return Point_3(top_right.x(), bottom_left.y(), bottom_left.z());
+}
+Point_3 DeltaCube::top_left() const {
+    return Point_3(bottom_left.x(), top_right.y(), top_right.z());
 }
