@@ -1,6 +1,6 @@
 #include "manifold_intersection.h"
 
-void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M_isect, Trap_pl& pl,
+void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M_isect, Arrangement& arr, Trap_pl& pl,
                            DeltaCube initial_cube, FT delta, FT epsilon) {
     std::vector<DeltaCube> Q; // A queue of pending cubes to split;
     Q.push_back(initial_cube);
@@ -17,11 +17,22 @@ void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M
             if (curr_cube.size() > delta)
                 curr_cube.split(Q);
             else {
-                // Point_3 midpoint = curr_cube.midpoint();
+                Point_3 midpoint = curr_cube.midpoint();
                 // bool z_okay = 0 <= midpoint.z() && midpoint.z() <= 1 / (2 * M_PI);
 
                 // if (!z_okay)
                 //     continue;
+
+                FT dist(INFTY);
+                Point p(midpoint.x(), midpoint.y());
+                for (auto eit = arr.edges_begin(); eit != arr.edges_end(); ++eit) {
+                    Segment seg = eit->curve();
+                    FT tmp = std::sqrt(CGAL::squared_distance(seg, p));
+                    if (tmp < dist)
+                        dist = tmp;
+                }
+                if (dist < 4 * delta)
+                    continue;
 
                 auto obj1 = pl.locate(Point(curr_cube.bottom_left.x(), curr_cube.bottom_left.y()));
                 auto obj2 = pl.locate(Point(curr_cube.top_right.x(), curr_cube.top_right.y()));

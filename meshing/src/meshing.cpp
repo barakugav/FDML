@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
         Surface_mesh v_square;
         DeltaCube initial_cube(Point_3(-mo.sphere_r, -mo.sphere_r, -mo.sphere_r),
                                Point_3(mo.sphere_r, mo.sphere_r, mo.sphere_r));
-        RUN_TIME(manifold_intersection, m_d1, m_d2, v_square, pl, initial_cube, mo.delta, 0.01);
+        RUN_TIME(manifold_intersection, m_d1, m_d2, v_square, arr, pl, initial_cube, mo.delta, 0.01);
 
         std::ofstream out(mo.out_filename);
         out << v_square << std::endl;
