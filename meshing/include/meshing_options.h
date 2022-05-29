@@ -13,6 +13,7 @@ struct MeshingOptions {
     FT d1, d2, alpha;
     FT delta;
     FT sphere_x, sphere_y, sphere_z, sphere_r;
+    int mc_n;
     bool single_measurement;
 };
 

@@ -21,6 +21,8 @@ int load_options(MeshingOptions& mo, int argc, char** argv) {
                        "Alpha rotation for achieving second measurement (optional)");
     desc.add_options()("delta", po::value<FT>(&mo.delta)->default_value(-INFTY),
                        "Delta cutoff for curve intersection (optional)");
+    desc.add_options()("mc-n", po::value<int>(&mo.mc_n)->default_value(100),
+                        "Number of points per grid axis for marching cubes");
 
     desc.add_options()("sphere-x", po::value<FT>(&mo.sphere_x)->default_value(0),
                        "Bounding sphere x coordinate (optional, default is origin)");
