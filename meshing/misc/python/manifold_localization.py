@@ -180,17 +180,17 @@ def load_polygon(filename):
 
 if __name__ == "__main__":
     # polygon = [(-1.5,0), (-1.5,3), (0, 2), (1.5,3), (1.5,0)]
-    polygon = [(-1, -1), (-1, 1), (1, 1), (1, -1)]
+    # polygon = [(-1, -1), (-1, 1), (1, 1), (1, -1)]
     # polygon = [(1,1), (3,4), (6,5), (5,3), (6,1)]
     # polygon = [(-1,-1), (1, -1), (1,1), (-0.5, 1), (-0.5, 0.5), (-0.75, 0.5), (-0.75, 0.75), (-0.51, 0.75), (-0.51, 1), (-1, 1)]
     # polygon = [(-1, -1), (1,-1), (1, 1), (0.05, 1), (0.05, 0.75), (0.125,0.75), (0.125, 0.5), (-0.125, 0.5), (-0.125, 0.75), (-0.05, 0.75), (-0.05, 1), (-1, 1)]
-    # polygon = load_polygon('checkpoint.poly')
+    polygon = load_polygon('meshing/resources/polygons/checkpoint.poly')
     minn, maxx = get_polygon_bb(polygon)
     draw_polygon(polygon)
-    sys.exit(-1)
+    # sys.exit(-1)
     def crit(x, y): return is_point_inside(polygon, x, y)
 
-    N = 300
+    N = 100
     d1 = 1
     d2 = 2
     # r = 0.1
@@ -200,16 +200,16 @@ if __name__ == "__main__":
     f_d2 = generate_f_d(polygon, d2)
     def f_d2_(x, y, theta): return f_d2(x, y, theta + beta)
     # f_isect = intersect_manifolds_with_shift(f_d1, f_d2, r, beta)
-    f_isect = intersect_manifolds_with_rotate(f_d1, f_d2, beta)
+    # f_isect = intersect_manifolds_with_rotate(f_d1, f_d2, beta)
 
     vertices, triangles = implicit_manifold_to_polygon_soup(
         f_d1, crit, N, minn, maxx)
-    mcubes.export_obj(vertices, triangles, 'd1_.obj')
-    project_polygon_soup_to_xy('d1.png', triangles, vertices, N)
+    mcubes.export_obj(vertices, triangles, 'meshing/tmp/d1_.obj')
+    # project_polygon_soup_to_xy('d1.png', triangles, vertices, N)
 
     vertices, triangles = implicit_manifold_to_polygon_soup(f_d2_, crit, N, minn, maxx)
-    mcubes.export_obj(vertices, triangles, 'd2_.obj')
-    project_polygon_soup_to_xy('d2_.png', triangles, vertices, N)
+    mcubes.export_obj(vertices, triangles, 'meshing/tmp/d2_.obj')
+    # project_polygon_soup_to_xy('d2_.png', triangles, vertices, N)
 
     # vertices, triangles = implicit_manifold_to_polygon_soup(f_isect, crit, N, minn, maxx)
     # mcubes.export_obj(vertices, triangles, 'isect.obj')
