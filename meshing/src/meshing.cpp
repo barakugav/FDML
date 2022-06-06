@@ -42,17 +42,17 @@ int main(int argc, char** argv) {
 
         Surface_mesh m_d1, m_d2;
 
-        // CGAL::IO::read_polygon_mesh(CGAL::data_file_path("d1_.off"), m_d1); // Load from python::
-        // CGAL::IO::read_polygon_mesh(CGAL::data_file_path("d2_.off"), m_d2);
+        CGAL::IO::read_polygon_mesh(CGAL::data_file_path("tmp/d1.off"), m_d1); // Load from python::
+        CGAL::IO::read_polygon_mesh(CGAL::data_file_path("tmp/d2.off"), m_d2);
 
-        std::cout << "Computing M_d1..." << std::endl;
-        RUN_TIME(single_measurement, m_d1, arr, pl, mo.d1, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r*mo.sphere_r,
-                 mo.angle_bound, mo.radius_bound, mo.distance_bound);
+        // std::cout << "Computing M_d1..." << std::endl;
+        // RUN_TIME(single_measurement, m_d1, arr, pl, mo.d1, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z), mo.sphere_r*mo.sphere_r,
+        //          mo.angle_bound, mo.radius_bound, mo.distance_bound);
         // RUN_TIME(single_measurement_marching_cubes, m_d1, arr, pl, mo.d1, mo.sphere_r, mo.mc_n);
 
-        std::cout << "Computing M_d2..." << std::endl;
-        RUN_TIME(single_measurement_rotate_alpha, m_d2, arr, pl, mo.d2, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z),
-                 mo.sphere_r*mo.sphere_r, mo.angle_bound, mo.radius_bound, mo.distance_bound, mo.alpha);
+        // std::cout << "Computing M_d2..." << std::endl;
+        // RUN_TIME(single_measurement_rotate_alpha, m_d2, arr, pl, mo.d2, Point_3(mo.sphere_x, mo.sphere_y, mo.sphere_z),
+        //          mo.sphere_r*mo.sphere_r, mo.angle_bound, mo.radius_bound, mo.distance_bound, mo.alpha);
         // RUN_TIME(single_measurement_marching_cubes_rotate_alpha, m_d2, arr, pl, mo.d2, mo.alpha, mo.sphere_r, mo.mc_n);
 
         std::cout << "Computing intersection..." << std::endl;

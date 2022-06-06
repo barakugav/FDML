@@ -5,6 +5,8 @@ void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M
     std::vector<DeltaCube> Q; // A queue of pending cubes to split;
     Q.push_back(initial_cube);
 
+    // Use AABB trees for each polygon soup of the surface meshes
+    // to quickly determine intersection with cubes and nearest point queries
     Tree tree_1(faces(M_1).first, faces(M_1).second, M_1);
     Tree tree_2(faces(M_2).first, faces(M_2).second, M_2);
 
@@ -13,7 +15,7 @@ void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M
         Q.pop_back();
 
         if (tree_1.any_intersected_primitive(curr_cube.to_bbox_3()) &&
-            tree_2.any_intersected_primitive(curr_cube.to_bbox_3())) { // Intersect stuff
+            tree_2.any_intersected_primitive(curr_cube.to_bbox_3())) { 
             if (curr_cube.size() > delta)
                 curr_cube.split(Q);
             else {
@@ -23,32 +25,16 @@ void manifold_intersection(Surface_mesh& M_1, Surface_mesh& M_2, Surface_mesh& M
                 // if (!z_okay)
                 //     continue;
 
-                FT dist(INFTY);
-                Point p(midpoint.x(), midpoint.y());
-                for (auto eit = arr.edges_begin(); eit != arr.edges_end(); ++eit) {
-                    Segment seg = eit->curve();
-                    FT tmp = std::sqrt(CGAL::squared_distance(seg, p));
-                    if (tmp < dist)
-                        dist = tmp;
-                }
-                if (dist < 4 * delta)
-                    continue;
-
-                auto obj1 = pl.locate(Point(curr_cube.bottom_left.x(), curr_cube.bottom_left.y()));
-                auto obj2 = pl.locate(Point(curr_cube.top_right.x(), curr_cube.top_right.y()));
-                auto obj3 = pl.locate(Point(curr_cube.bottom_right().x(), curr_cube.bottom_right().y()));
-                auto obj4 = pl.locate(Point(curr_cube.top_left().x(), curr_cube.top_left().y()));
-                auto f1 = boost::get<Arrangement::Face_const_handle>(&obj1);
-                auto f2 = boost::get<Arrangement::Face_const_handle>(&obj2);
-                auto f3 = boost::get<Arrangement::Face_const_handle>(&obj3);
-                auto f4 = boost::get<Arrangement::Face_const_handle>(&obj4);
-                bool bottom_left_inside_room = !f1 || !(*f1)->is_unbounded();
-                bool top_right_inside_room = !f2 || !(*f2)->is_unbounded();
-                bool bottom_right_inside_room = !f3 || !(*f3)->is_unbounded();
-                bool top_left_inside_room = !f4 || !(*f4)->is_unbounded();
-                if (!bottom_left_inside_room || !top_right_inside_room || !bottom_right_inside_room ||
-                    !top_left_inside_room)
-                    continue;
+                // FT dist(INFTY);
+                // Point p(midpoint.x(), midpoint.y());
+                // for (auto eit = arr.edges_begin(); eit != arr.edges_end(); ++eit) {
+                //     Segment seg = eit->curve();
+                //     FT tmp = std::sqrt(CGAL::squared_distance(seg, p));
+                //     if (tmp < dist)
+                //         dist = tmp;
+                // }
+                // if (dist < 4 * delta)
+                //     continue;
 
                 curr_cube.to_surface_mesh(M_isect);
             }
@@ -61,15 +47,15 @@ DeltaCube::DeltaCube(Point_3 bottom_left, Point_3 top_right) {
     this->top_right = top_right;
 }
 
-FT DeltaCube::size() {
+FT DeltaCube::size() const {
     return top_right.x() - bottom_left.x();
 }
 
-Bbox_3 DeltaCube::to_bbox_3() {
+Bbox_3 DeltaCube::to_bbox_3() const {
     return Bbox_3(bottom_left.x(), bottom_left.y(), bottom_left.z(), top_right.x(), top_right.y(), top_right.z());
 }
 
-void DeltaCube::to_surface_mesh(Surface_mesh& sm) {
+void DeltaCube::to_surface_mesh(Surface_mesh& sm) const {
     // Bottom Face
     Vertex_descriptor p1 = sm.add_vertex(Point_3(bottom_left.x(), bottom_left.y(), bottom_left.z()));
     Vertex_descriptor p2 = sm.add_vertex(Point_3(top_right.x(), bottom_left.y(), bottom_left.z()));
@@ -113,7 +99,7 @@ void DeltaCube::to_surface_mesh(Surface_mesh& sm) {
     sm.add_face(p1, p2, p3, p4);
 }
 
-void DeltaCube::split(std::vector<DeltaCube>& list) {
+void DeltaCube::split(std::vector<DeltaCube>& list) const {
     Point_3 center = this->midpoint();
 
     list.push_back(DeltaCube(Point_3(bottom_left.x(), bottom_left.y(), bottom_left.z()),
@@ -137,11 +123,4 @@ void DeltaCube::split(std::vector<DeltaCube>& list) {
 Point_3 DeltaCube::midpoint() const {
     return Point_3((bottom_left.x() + top_right.x()) / FT(2), (bottom_left.y() + top_right.y()) / FT(2),
                    (bottom_left.z() + top_right.z()) / FT(2));
-}
-
-Point_3 DeltaCube::bottom_right() const {
-    return Point_3(top_right.x(), bottom_left.y(), bottom_left.z());
-}
-Point_3 DeltaCube::top_left() const {
-    return Point_3(bottom_left.x(), top_right.y(), top_right.z());
 }
