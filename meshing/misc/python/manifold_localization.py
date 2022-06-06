@@ -190,7 +190,7 @@ if __name__ == "__main__":
     # sys.exit(-1)
     def crit(x, y): return is_point_inside(polygon, x, y)
 
-    N = 100
+    N = 200
     d1 = 1
     d2 = 2
     # r = 0.1
