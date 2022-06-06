@@ -8,7 +8,7 @@ find_package(CGAL REQUIRED COMPONENTS Core)
 find_package(Boost REQUIRED COMPONENTS program_options)
 
 add_executable( meshing
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/meshing.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/read_input.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/shoot_ray.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/single_measurement.cpp

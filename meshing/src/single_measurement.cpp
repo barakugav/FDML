@@ -5,6 +5,49 @@
 #define MC_CPP_USE_DOUBLE_PRECISION
 #include "MC.h"
 
+// template <typename MeshingAlgorithm>
+// void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, MeshingAlgorithm meshing,
+//                         boost::function<Point_3(Point_3)> transformation) {
+//     // Define the implicit function (with or without the pre-transformation)
+//     boost::function<FT(Point_3)> implicit_function;
+//     if (transformation) {
+//         implicit_function = boost::function<FT(Point_3)>([&arr, &pl, d, transformation](Point_3 p) {
+//             p = Point_3(p.x(), p.y(), p.z() * 2 * M_PI);
+//             p = transformation(p);
+//             return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z()), sin(p.z())) - d);
+//         });
+//     } else {
+//         implicit_function = boost::function<FT(Point_3)>([&arr, &pl, d](Point_3 p) {
+//             p = Point_3(p.x(), p.y(), p.z() * 2 * M_PI);
+//             return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z()), sin(p.z())) - d);
+//         });
+//     }
+
+//     // Apply the meshing algorithm
+//     meshing(sm, implicit_function);
+// }
+
+DelaunayMeshing::DelaunayMeshing(Point_3 sphere_origin, FT sphere_radius, FT angle_bound, FT radius_bound,
+                                 FT distance_bound) {
+    this->sphere_origin = sphere_origin;
+    this->sphere_radius = sphere_radius;
+    this->angle_bound = angle_bound;
+    this->radius_bound = radius_bound;
+    this->distance_bound = distance_bound;
+}
+
+
+void DelaunayMeshing::operator()(Surface_mesh& sm, boost::function<FT(Point_3)> f) {
+    Tr tr;
+    C2t3 c2t3(tr);
+    Surface_3 surface(f, Sphere_3(sphere_origin, sphere_radius));
+
+    CGAL::Surface_mesh_default_criteria_3<Tr> criteria(angle_bound, radius_bound, distance_bound);
+    CGAL::make_surface_mesh(c2t3, surface, criteria, CGAL::Non_manifold_tag());
+    CGAL::facets_in_complex_2_to_triangle_mesh(c2t3, sm);
+}
+
+/*
 void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, Point_3 sphere_origin, FT sphere_radius,
                         FT angle_bound, FT radius_bound, FT distance_bound) {
     // Generate the 2D-complex in 3D-Delaunay triangulation
@@ -25,18 +68,18 @@ void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, P
     CGAL::facets_in_complex_2_to_triangle_mesh(c2t3, sm);
 
     // Clip angle value in [0, 2pi]
-    /*
-    CGAL::Polygon_mesh_processing::clip(sm,
-        Plane_3(
-            Point_3(FT(0), FT(0), FT(0)),
-            Vector_3(FT(0), FT(0), FT(-1))
-        ));
-    CGAL::Polygon_mesh_processing::clip(sm,
-        Plane_3(
-            Point_3(FT(0), FT(0), FT(1)),
-            Vector_3(FT(0), FT(0), FT(1))
-        ));
-    std::cout << "I'm here" << std::endl;*/
+
+    // CGAL::Polygon_mesh_processing::clip(sm,
+    //     Plane_3(
+    //         Point_3(FT(0), FT(0), FT(0)),
+    //         Vector_3(FT(0), FT(0), FT(-1))
+    //     ));
+    // CGAL::Polygon_mesh_processing::clip(sm,
+    //     Plane_3(
+    //         Point_3(FT(0), FT(0), FT(1)),
+    //         Vector_3(FT(0), FT(0), FT(1))
+    //     ));
+    // std::cout << "I'm here" << std::endl;
 }
 
 void single_measurement_marching_cubes(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, FT sphere_radius,
@@ -64,12 +107,12 @@ void single_measurement_marching_cubes(Surface_mesh& sm, Arrangement& arr, Trap_
     std::cout << mesh.indices.size() << std::endl;
 
     for (size_t i = 0; i < mesh.indices.size(); i += 3) {
-        Point_3 p1(mesh.vertices.at(mesh.indices.at(i)).x / n, mesh.vertices.at(mesh.indices.at(i)).y  / n,
-                   mesh.vertices.at(mesh.indices.at(i)).z  / n);
-        Point_3 p2(mesh.vertices.at(mesh.indices.at(i + 1)).x  / n, mesh.vertices.at(mesh.indices.at(i + 1)).y  / n,
-                   mesh.vertices.at(mesh.indices.at(i + 1)).z  / n);
-        Point_3 p3(mesh.vertices.at(mesh.indices.at(i + 2)).x  / n, mesh.vertices.at(mesh.indices.at(i + 2)).y  / n,
-                   mesh.vertices.at(mesh.indices.at(i + 2)).z  / n);
+        Point_3 p1(mesh.vertices.at(mesh.indices.at(i)).x / n, mesh.vertices.at(mesh.indices.at(i)).y / n,
+                   mesh.vertices.at(mesh.indices.at(i)).z / n);
+        Point_3 p2(mesh.vertices.at(mesh.indices.at(i + 1)).x / n, mesh.vertices.at(mesh.indices.at(i + 1)).y / n,
+                   mesh.vertices.at(mesh.indices.at(i + 1)).z / n);
+        Point_3 p3(mesh.vertices.at(mesh.indices.at(i + 2)).x / n, mesh.vertices.at(mesh.indices.at(i + 2)).y / n,
+                   mesh.vertices.at(mesh.indices.at(i + 2)).z / n);
 
         Surface_mesh::Vertex_index u = sm.add_vertex(p1);
         Surface_mesh::Vertex_index v = sm.add_vertex(p2);
@@ -124,7 +167,9 @@ void single_measurement_rotate_alpha(Surface_mesh& sm, Arrangement& arr, Trap_pl
     C2t3 c2t3(tr);
 
     auto implicit_func = [&arr, &pl, d, alpha](Point_3 p) {
-        return (FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z() * 2 * M_PI + alpha), sin(p.z() * 2 * M_PI + alpha)) - d);
+        return (
+            FT)(shoot_ray(&arr, pl, Point(p.x(), p.y()), cos(p.z() * 2 * M_PI + alpha), sin(p.z() * 2 * M_PI + alpha)) -
+                d);
     };
 
     // Generate the implicit surface and make surface mesh to c2t3
@@ -137,10 +182,10 @@ void single_measurement_rotate_alpha(Surface_mesh& sm, Arrangement& arr, Trap_pl
     CGAL::facets_in_complex_2_to_triangle_mesh(c2t3, sm);
 
     // Clip angle value in [alpha, 2pi+alpha]
-    /* CGAL::Polygon_mesh_processing::clip(
-        sm, Plane_3(Point_3(FT(0), FT(0), FT(alpha / (2.0 * M_PI))), Vector_3(FT(0), FT(0), FT(-1))));
-    CGAL::Polygon_mesh_processing::clip(
-        sm, Plane_3(Point_3(FT(0), FT(0), FT(1 + alpha / (2.0 * M_PI))), Vector_3(FT(0), FT(0), FT(1))));*/
+    //  CGAL::Polygon_mesh_processing::clip(
+    //     sm, Plane_3(Point_3(FT(0), FT(0), FT(alpha / (2.0 * M_PI))), Vector_3(FT(0), FT(0), FT(-1))));
+    // CGAL::Polygon_mesh_processing::clip(
+    //     sm, Plane_3(Point_3(FT(0), FT(0), FT(1 + alpha / (2.0 * M_PI))), Vector_3(FT(0), FT(0), FT(1))));
 }
 
 void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, Point_3 sphere_origin, FT sphere_radius,
@@ -170,3 +215,4 @@ void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, P
     // Convert the c2t3 mesh to a surface mesh
     CGAL::facets_in_complex_2_to_triangle_mesh(c2t3, sm);
 }
+*/
