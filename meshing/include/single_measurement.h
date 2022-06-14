@@ -37,6 +37,16 @@ void single_measurement(Surface_mesh& sm, Arrangement& arr, Trap_pl& pl, FT d, M
     meshing(sm, implicit_function);
 }
 
+class MarchingCubesMeshing {
+public:
+    MarchingCubesMeshing(unsigned int n, FT sphere_radius);
+    void operator()(Surface_mesh& sm, boost::function<FT(Point_3)> f);
+
+private:
+    unsigned int n;
+    FT sphere_radius;
+};
+
 class DelaunayMeshing {
   public:
     DelaunayMeshing(Point_3 sphere_origin, FT sphere_radius, FT angle_bound, FT radius_bound, FT distance_bound);
@@ -46,6 +56,16 @@ class DelaunayMeshing {
     Point_3 sphere_origin;
     FT sphere_radius;
     FT angle_bound, radius_bound, distance_bound;
+};
+
+class DelaunayMeshing3 {
+    public:
+        DelaunayMeshing3(Point_3 sphere_origin, FT sphere_radius);
+        void operator()(Surface_mesh& sm, boost::function<FT(Point_3)> f);
+    
+    private:
+        Point_3 sphere_origin;
+        FT sphere_radius;
 };
 
 /*

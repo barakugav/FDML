@@ -1,5 +1,6 @@
 out/
 bin/
+release/
 *.png
 *.obj
 *.off

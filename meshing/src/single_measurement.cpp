@@ -27,6 +27,60 @@
 //     meshing(sm, implicit_function);
 // }
 
+MarchingCubesMeshing::MarchingCubesMeshing(unsigned int n, FT sphere_radius)
+{
+    this->n = n;
+    this->sphere_radius = sphere_radius;
+}
+void MarchingCubesMeshing::operator()(Surface_mesh& sm, boost::function<FT(Point_3)> f)
+{
+    // Based on the code from https://github.com/aparis69/MarchingCubeCpp#readme
+    FT* field = new FT[n * n * n];
+    for (int i = 0; i < n; i++) {
+        std::cout << i << std::endl;
+        for (int j = 0; j < n; j++)
+            for (int k = 0; k < n; k++) {
+                FT x = ((FT)i / ((FT)n - 1) * 2 - 1) * sphere_radius;
+                FT y = ((FT)j / ((FT)n - 1) * 2 - 1) * sphere_radius;
+                FT z = ((FT)k / ((FT)n - 1) * 2 - 1) * 2 * M_PI;
+                field[(k * n + j) * n + i] = f(Point_3(x, y, z));
+            }
+    }
+
+    MC::mcMesh mesh;
+    MC::marching_cube(field, n, n, n, mesh);
+
+    std::cout << mesh.indices.size() << std::endl;
+
+    for (size_t i = 0; i < mesh.indices.size(); i += 3) {
+        Point_3 p1(mesh.vertices.at(mesh.indices.at(i)).x / n, mesh.vertices.at(mesh.indices.at(i)).y / n,
+                   mesh.vertices.at(mesh.indices.at(i)).z / n);
+        Point_3 p2(mesh.vertices.at(mesh.indices.at(i + 1)).x / n, mesh.vertices.at(mesh.indices.at(i + 1)).y / n,
+                   mesh.vertices.at(mesh.indices.at(i + 1)).z / n);
+        Point_3 p3(mesh.vertices.at(mesh.indices.at(i + 2)).x / n, mesh.vertices.at(mesh.indices.at(i + 2)).y / n,
+                   mesh.vertices.at(mesh.indices.at(i + 2)).z / n);
+
+        Surface_mesh::Vertex_index u = sm.add_vertex(p1);
+        Surface_mesh::Vertex_index v = sm.add_vertex(p2);
+        Surface_mesh::Vertex_index w = sm.add_vertex(p3);
+        sm.add_face(u, v, w);
+    }
+}
+
+DelaunayMeshing3::DelaunayMeshing3(Point_3 sphere_origin, FT sphere_radius)
+{
+    this->sphere_origin = sphere_origin;
+    this->sphere_radius = sphere_radius;
+}
+
+void DelaunayMeshing3::operator()(Surface_mesh& sm, boost::function<FT(Point_3)> f)
+{
+    Mesh_domain domain = Mesh_domain::create_implicit_mesh_domain(f, Sphere_3(sphere_origin, sphere_radius));
+    Mesh_criteria criteria(facet_angle=30, facet_size=0.5, facet_distance=0.5, cell_radius_edge_ratio=2, cell_size=0.1);
+    C3t3 c3t3 = CGAL::make_mesh_3<C3t3>(domain, criteria);
+    CGAL::facets_in_complex_3_to_triangle_mesh(c3t3, sm);
+}
+
 DelaunayMeshing::DelaunayMeshing(Point_3 sphere_origin, FT sphere_radius, FT angle_bound, FT radius_bound,
                                  FT distance_bound) {
     this->sphere_origin = sphere_origin;

@@ -7,6 +7,9 @@ import mcubes
 import numpy as np
 import shapely.geometry
 
+from dc.dual_contour_3d import dual_contour_3d, normal_from_function
+from dc.utils_3d import make_obj
+
 IMG_SIZE = 1024
 IMG_MARGIN = 0.5
 EPS = 0.08
@@ -177,18 +180,26 @@ def load_polygon(filename):
             polygon.append((float(x), float(y)))
     return polygon
 
+def intersect_function(x, y, z):
+    return x**2 + y**2 + z**2 - 1
+    y -= 0.3
+    x -= 0.5
+    x = abs(x)
+    return min(x - y, x + y)
 
 if __name__ == "__main__":
     # polygon = [(-1.5,0), (-1.5,3), (0, 2), (1.5,3), (1.5,0)]
-    # polygon = [(-1, -1), (-1, 1), (1, 1), (1, -1)]
+    polygon = [(-1, -1), (-1, 1), (1, 1), (1, -1)]
     # polygon = [(1,1), (3,4), (6,5), (5,3), (6,1)]
     # polygon = [(-1,-1), (1, -1), (1,1), (-0.5, 1), (-0.5, 0.5), (-0.75, 0.5), (-0.75, 0.75), (-0.51, 0.75), (-0.51, 1), (-1, 1)]
     # polygon = [(-1, -1), (1,-1), (1, 1), (0.05, 1), (0.05, 0.75), (0.125,0.75), (0.125, 0.5), (-0.125, 0.5), (-0.125, 0.75), (-0.05, 0.75), (-0.05, 1), (-1, 1)]
-    polygon = load_polygon('meshing/resources/polygons/checkpoint.poly')
+    # polygon = load_polygon('meshing/resources/polygons/checkpoint.poly')
     minn, maxx = get_polygon_bb(polygon)
-    draw_polygon(polygon)
+    minn -= 1
+    maxx += 1
+    # draw_polygon(polygon)
     # sys.exit(-1)
-    def crit(x, y): return is_point_inside(polygon, x, y)
+    # def crit(x, y): return is_point_inside(polygon, x, y)
 
     N = 200
     d1 = 1
@@ -196,19 +207,29 @@ if __name__ == "__main__":
     # r = 0.1
     beta = math.pi
 
+    mesh = dual_contour_3d(intersect_function, normal_from_function(intersect_function))
+    with open("output.obj", "w") as f:
+        make_obj(f, mesh)
+
     f_d1 = generate_f_d(polygon, d1)
     f_d2 = generate_f_d(polygon, d2)
     def f_d2_(x, y, theta): return f_d2(x, y, theta + beta)
+
+    mesh_d1 = dual_contour_3d(f_d1, normal_from_function(f_d1), minn, maxx, minn, maxx, minn, maxx)
+    with open("d1_.obj", "w") as fp:
+        make_obj(fp, mesh_d1)
+
+
     # f_isect = intersect_manifolds_with_shift(f_d1, f_d2, r, beta)
     # f_isect = intersect_manifolds_with_rotate(f_d1, f_d2, beta)
 
-    vertices, triangles = implicit_manifold_to_polygon_soup(
-        f_d1, crit, N, minn, maxx)
-    mcubes.export_obj(vertices, triangles, 'meshing/tmp/d1_.obj')
+    # vertices, triangles = implicit_manifold_to_polygon_soup(
+    #     f_d1, crit, N, minn, maxx)
+    # mcubes.export_obj(vertices, triangles, 'meshing/tmp/d1_.obj')
     # project_polygon_soup_to_xy('d1.png', triangles, vertices, N)
 
-    vertices, triangles = implicit_manifold_to_polygon_soup(f_d2_, crit, N, minn, maxx)
-    mcubes.export_obj(vertices, triangles, 'meshing/tmp/d2_.obj')
+    # vertices, triangles = implicit_manifold_to_polygon_soup(f_d2_, crit, N, minn, maxx)
+    # mcubes.export_obj(vertices, triangles, 'meshing/tmp/d2_.obj')
     # project_polygon_soup_to_xy('d2_.png', triangles, vertices, N)
 
     # vertices, triangles = implicit_manifold_to_polygon_soup(f_isect, crit, N, minn, maxx)

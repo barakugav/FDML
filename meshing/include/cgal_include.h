@@ -1,6 +1,9 @@
 #ifndef CGAL_INCLUDE_H_
 #define CGAL_INCLUDE_H_
 
+#define CGAL_CONCURRENT_MESH_3
+#define CGAL_LINKED_WITH_TBB
+
 #include <boost/optional/optional_io.hpp>
 
 #include <CGAL/Complex_2_in_triangulation_3.h>
@@ -10,6 +13,12 @@
 #include <CGAL/Surface_mesh_default_triangulation_3.h>
 #include <CGAL/make_surface_mesh.h>
 #include <CGAL/squared_distance_2.h>
+
+#include <CGAL/Mesh_triangulation_3.h>
+#include <CGAL/Mesh_complex_3_in_triangulation_3.h>
+#include <CGAL/Mesh_criteria_3.h>
+#include <CGAL/Labeled_mesh_domain_3.h>
+#include <CGAL/make_mesh_3.h>
 
 #include <CGAL/AABB_face_graph_triangle_primitive.h>
 #include <CGAL/AABB_traits.h>
@@ -37,6 +46,7 @@ typedef Surface_mesh::Face_index Face_descriptor;
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
 typedef Kernel::FT Number_type;
+typedef Kernel::Point_3 Point_3;
 typedef CGAL::Arr_non_caching_segment_traits_2<Kernel> Traits;
 typedef Traits::Point_2 Point;
 typedef Traits::X_monotone_curve_2 Segment;
@@ -45,6 +55,23 @@ typedef Arrangement::Vertex_handle Vertex_handle;
 typedef Arrangement::Halfedge_handle Halfedge_handle;
 typedef Arrangement::Face_handle Face_handle;
 typedef CGAL::Arr_trapezoid_ric_point_location<Arrangement> Trap_pl;
+typedef Number_type (Function3)(const Point_3&);
+typedef CGAL::Labeled_mesh_domain_3<Kernel> Mesh_domain;
+
+#ifdef CGAL_CONCURRENT_MESH_3
+typedef CGAL::Parallel_tag Concurrency_tag;
+#else
+typedef CGAL::Sequential_tag Concurrency_tag;
+#endif
+// typedef CGAL::Parallel_tag Concurrency_tag;
+
+// Triangulation
+typedef CGAL::Mesh_triangulation_3<Mesh_domain,CGAL::Default,Concurrency_tag>::type Tr3;
+typedef CGAL::Mesh_complex_3_in_triangulation_3<Tr3> C3t3;
+// Criteria
+typedef CGAL::Mesh_criteria_3<Tr3> Mesh_criteria;
+// To avoid verbose function and named parameters call
+using namespace CGAL::parameters;
 
 typedef CGAL::AABB_face_graph_triangle_primitive<Surface_mesh> Primitive;
 typedef CGAL::AABB_traits<Kernel, Primitive> AABB_Traits;
