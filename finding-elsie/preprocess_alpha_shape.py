@@ -17,10 +17,10 @@ def alpha_shape(alpha=0.0, additional_points=[], data_file="data/lab_points.txt"
     points += additional_points
 
     alpha_shape = alphashape.alphashape(points, alpha)
-    x, y = alpha_shape.exterior.coords.xy
-    with open(out_file, "w") as fp:
-        for i in range(len(x) - 1): # Last vertex is duplicated
-            fp.write("{} {}\n".format(x[i], y[i]))
+    # x, y = alpha_shape.exterior.coords.xy
+    # with open(out_file, "w") as fp:
+    #     for i in range(len(x) - 1): # Last vertex is duplicated
+    #         fp.write("{} {}\n".format(x[i], y[i]))
 
     if draw:
         fig, ax = plt.subplots()
@@ -32,14 +32,14 @@ def alpha_shape(alpha=0.0, additional_points=[], data_file="data/lab_points.txt"
 
 if __name__ == "__main__":
     # Add a small line segment to fix ambiguity
-    start = (3.41, -1.54)
-    end = (3.79, -1.69)
-    additional_points = []
-    for i in range(101):
-        t = i / 100
-        p = (
-            t * end[0] + (1-t) * start[0] + random.random() * 0.01,
-            t * end[1] + (1-t) * start[1] + random.random() * 0.01
-        )
-        additional_points.append(p)
-    alpha_shape(alpha=5.0, additional_points=additional_points, draw=True)
+    # start = (3.41, -1.54)
+    # end = (3.79, -1.69)
+    # additional_points = []
+    # for i in range(101):
+    #     t = i / 100
+    #     p = (
+    #         t * end[0] + (1-t) * start[0] + random.random() * 0.01,
+    #         t * end[1] + (1-t) * start[1] + random.random() * 0.01
+    #     )
+    #     additional_points.append(p)
+    alpha_shape(alpha=2.0, additional_points=[], draw=True)

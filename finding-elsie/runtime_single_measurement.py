@@ -8,6 +8,10 @@ import shapely.geometry
 
 from utils import *
 
+"""
+IDEA: https://github.com/tdhooper/glsl-marching-cubes
+"""
+
 IMG_SIZE = 1024
 IMG_MARGIN = 0.5
 EPS = 0.08

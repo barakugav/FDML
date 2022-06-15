@@ -12,7 +12,7 @@ CUTOFF = 5000
 N = 100
 
 if __name__ == "__main__":
-    filename = "data/manifolds/m3_1234.obj"
+    filename = "data/manifolds/m_1234.obj"
     polygon_filename = "data/lab.poly"
     points = obj_file_to_numpy(filename)
 
@@ -47,8 +47,8 @@ if __name__ == "__main__":
 
         poly = shapely.geometry.polygon.Polygon(polygon)
         point = shapely.geometry.Point(x, y)
-        if poly.exterior.distance(point) < 0.2:
-            continue
+        # if poly.exterior.distance(point) < 0.2:
+        #     continue
 
         err = 0
         for i in range(4):

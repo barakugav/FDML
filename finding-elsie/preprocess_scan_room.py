@@ -87,4 +87,4 @@ def scan_room(move_dist=0.2, num_steps=14, sample_freq=50, file_prefix="data/raw
     ep_robot.close()
 
 if __name__ == "__main__":
-    scan_room(move_dist=0.4, num_steps=7)
+    scan_room(move_dist=0.4, num_steps=6)
