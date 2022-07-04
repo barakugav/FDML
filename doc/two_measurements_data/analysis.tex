@@ -1,0 +1,20 @@
+% =============================================================================
+\section{Algebraic Analysis}
+\label{sec:analysis}
+% =============================================================================
+We start with an algebraic analysis of the problem. Here, we concentrate at a local view of the problem, where we only consider two walls (edges) of obstacles and ignore everything else; see Figure~\ref{ltdm}. Let $L_1: a_1 x + b_1 y + c_1 = 0$ and $L_2: a_2 x + b_2 y + c_2 = 0$ denote the two lines that contain the two edges of obstacles hit by the two measuring rays, respectively. Let $p = (x,y)$ denote a point in the workspace our sensor could be located at. Let $p_1 = (x_1,y_1)$ denote the point on $L_1$ hit by the first measuring ray, and similarly, let $p_2 = (x_2,y_2)$ denote the point on $L_2$ hit by the second measuring ray. The following equations must be satisfied:
+\begin{gather*}
+  a_1\cdot x_1 + b_1\cdot y_1 + c1 = 0\\
+  a_2\cdot x_2 + b_2\cdot y_2 + c_2 = 0\\
+  |p - p_1| = d_1\\
+  |p - p_2| = d_2\\
+  d_1^2 + d_2^2 + 2\cdot \cos(\alpha)\cdot d_1\cdot d_2 = |p_1 - p_2|^2
+\end{gather*}
+In the degenerate case, where $L_1$ and $L_2$ are parallel (or $L_1 == L_2$) the loci of all points that satisfy the above equations form a line. This line must be trimmed to a segment according to the actual edge lengths and interiors of the obstacles. In all other cases the loci of points form two ellipses that correspond to clockwise and counter clockwise rotations. The ellipse that corresponds to the clockwise location is discarded and the other must be trimmed to obtain that actual possible locations.
+
+Solving the above non-linear equation system is messy. First, we denote $k = \cos(alpha)\cdot d_1\cdot d_2$. We can add some constraints to the above system without compromising. We set $c_1 = 0$, $c_2 = 0$, coercing the intersection point of $L_1$ and $L_2$ to be at the origin. We also set $a_1 = 0$, coercing $L_1$ to lie on the $x$-axis. Once we find the desired elliptic arc, we can apply an inverse rotation followed by an inverse translation to obtain the elliptic arc in the original space.
+
+First, we handle the simple case, where $b_2 = 0$. Employing Matlab to simplify the equations above, we obtain the single polynomial:
+$$P1: d_1^4\cdot x^4 + (4\cdot k^2 - 2\cdot d_1^2\cdot d_2^2)\cdot x^2\cdot y^2 - 2\cdot d_1^2\cdot k^2\cdot x^2 + d_2^4\cdot y^4 + k^4 - 2\cdot d_2^2\cdot k^2\cdot y^2$$.
+The zero set of P1 consists of the two desired ellipses. Employing Matlab yet again to factorize the polynomial P1, we get: $P_1: (A_1\cdot x^2 + B_1\cdot y^2 + C_1\cdot x\cdot y + D_1)\cdot (A_2\cdot x^2 + B_2\cdot y^2 + C_2\cdot x\cdot y +D_2)$, where $A_1 = d_1^2$, $B_1 = d_2^2$, $C_1 = 2*(d_1^2\cdot d_2^2 - k^2)(1/2)$, $D_1 = -k^2$ and $A_2 = d_1^2$, $B_2 = d_2^2$, $C_2 = -2*(d_1^2\cdot d_2^2 - k^2)(1/2)$, $D2 = -k^2$. You can visualize the ellipses and how they dynamically change as a consequence of changing the parameters $d_1$, $\alpha$, $d_2$, using the GeoGebra online tool using this GeoGebra data file.
+Second, we denote $m_2 = \frac{a_2}{b_2}$, assuming the lines are not parallel. The obtained polynomial, $P_2$, in this case is much more complex; see here. Use this GeoGebra data file to visualize the ellipses in this case.
