@@ -1,0 +1,42 @@
+\documentclass{standalone}
+\usepackage{xparse}
+\usepackage{tikz}
+\tikzset{%
+  point/.style={circle,inner sep=0.5pt,minimum size=0.5pt,draw,fill=#1},
+  point/.default=red
+}
+\definecolor{c0}{rgb}{0.2,0.4,0.67}
+\definecolor{c1}{rgb}{0.67,0.4,0.12}
+\definecolor{c2}{rgb}{0.53,0.6,0.13}
+\definecolor{c3}{rgb}{0.53,0.53,0.4}
+\NewDocumentCommand\witnessB{O{a}O{b}O{c}O{c2}}{%
+  \node[point=#4] (#1) at (0,1) {};
+  \node[point=#4] (#2) at (1,0) {};
+  \node[point=#4] (#3) at (1,1) {};
+  \draw[#4] (#1)--(#2)--(#3);
+}
+\NewDocumentCommand\crvb{}{%
+  \def\a{-0.618034}
+  \def\b{-1.61803}
+  \def\c{.52573}
+  \def\s{.85065}
+  \draw[c1,parametric,variable=\t,smooth,
+    domain=1.66:1.89,
+    samples=60]
+  plot
+  ({\a*cos(\t r)*\c-\b*sin(\t r)*\s},{\a*cos(\t r)*\s+\b*sin(\t r)*\c});
+}
+\NewDocumentCommand\obs{}{%
+  \coordinate (q0) at (0.76,0.1);
+  \coordinate (q1) at (3.05,0.1);
+  \coordinate (q2) at (3.05,0.2);
+  \coordinate (q3) at (0.76,0.2);
+  \filldraw[fill=white,draw=c0] (q0) -- (q1) -- (q2) -- (q3) -- cycle;%
+  \node[point=c0] at (q0) {};
+  \node[point=c0] at (q1) {};
+  \node[point=c0] at (q2) {};
+  \node[point=c0] at (q3) {};
+}
+\begin{document}
+\input{square5.tex}
+\end{document}

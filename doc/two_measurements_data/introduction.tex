@@ -2,4 +2,83 @@
 \section{Introduction}
 \label{sec:intro}
 % =============================================================================
-In this variant a query consists of three real numbers $d_1$, $\alpha$, $d_2$ describing the following sequence of events: The sensor at its original state obtained the distance reading $d_1$, then the sensor was rotated (without translating) by $\alpha$ radians counterclockwise, and then it obtained a second distance reading $d_2$. A more complicated problem allows for a translation of the robot before the second measurement is taken. In this variant a query consists of four real numbers $d_1$, $\alpha$, $t$, $d_2$, where $t$ denotes a translation vector in the plane. If $t \neq 0$, the two measurements can be taken simultaneously. This is possible in practice, if two distinct sensors are at our disposal. We made experiments with a real robot equipped with two sensors.
+\begin{figure}[!htp]
+\NewDocumentCommand\witness{mmmO{c2}}{%
+  \node[point=#4] (w0) at (#1) {};
+  \node[point=#4] (w1) at (#2) {};
+  \node[point=#4] (w2) at (#3) {};
+  \draw[#4] (w0)--(w1)--(w2);
+}
+\def\myWitness{\witness{0,0}{\x,\y}{\dc,0}}
+\NewDocumentCommand\crvb{}{%
+  \def\a{-0.618034}
+  \def\b{-1.61803}
+  \def\c{.52573}
+  \def\s{.85065}
+  \draw[c1,parametric,variable=\t,smooth,
+    domain=1:2.6,
+    samples=60]
+  plot
+  ({\a*cos(\t r)*\c-\b*sin(\t r)*\s},{\a*cos(\t r)*\s+\b*sin(\t r)*\c});
+}
+\NewDocumentCommand\sights{O{a}O{b}O{c}O{c2}}{%
+  \node[point=#4] (#1) at (0,1) {};
+  \node[point=#4] (#2) at (1,0) {};
+  \node[point=#4] (#3) at (1,1) {};
+  \draw[#4] (#1)--(#2)--(#3);
+}
+\NewDocumentCommand\elipricArc{mm}{
+  \draw[c1,thick] ($(0, 0) + (0:#1 cm and #2 cm)$(P) arc (0:90:#1 cm and #2 cm);
+}
+\NewDocumentCommand\crv{}{%
+  \begin{scope}[shift={(1,-1)},rotate=270]\coordinate (q1) at (1,0);\end{scope}
+  \begin{scope}[shift={(1.06,-.721)},rotate=250]\coordinate (q2) at (1,0);\end{scope}
+  \begin{scope}[shift={(1.2929,-.5858)},rotate=225]\coordinate (q3) at (1,0);\end{scope}
+  \begin{scope}[shift={(1.655,-.717)},rotate=200]\coordinate (q4) at (1,0);\end{scope}
+  \begin{scope}[shift={(2,-1)},rotate=180]\coordinate (q5) at (1,0);\end{scope}
+  \draw [c1] plot [smooth] coordinates {(q1)(q2)(q3)(q4)(q5)};
+}
+\NewDocumentCommand\obs{}{%
+  \coordinate (q0) at (0.76,0.1);
+  \coordinate (q1) at (3.05,0.1);
+  \coordinate (q2) at (3.05,0.2);
+  \coordinate (q3) at (0.76,0.2);
+  \filldraw[fill=white,draw=c0] (q0) -- (q1) -- (q2) -- (q3) -- cycle;%
+  \node[point=c0] at (q0) {};
+  \node[point=c0] at (q1) {};
+  \node[point=c0] at (q2) {};
+  \node[point=c0] at (q3) {};
+}
+\NewDocumentCommand\witnessB{O{a}O{b}O{c}O{c2}}{%
+  \node[point=#4] (#1) at (0,1) {};
+  \node[point=#4] (#2) at (1,0) {};
+  \node[point=#4] (#3) at (1,1) {};
+  \draw[#4] (#1)--(#2)--(#3);
+}
+  \captionsetup[subfigure]{justification=centering}
+  \centering%
+  \subfloat[$d_1 = 1$, $d_2 = 1$, $\alpha = 90^{\circ}$]{\label{fig:examples:1}
+    \input{square1/square1.tex}
+  }\,
+  \subfloat[$d_1 = 1$, $d_2 = \sqrt{2}$, $\alpha = 90^{\circ}$]{\label{fig:examples:2}
+    \input{square3/square3.tex}
+  }\,
+  \subfloat[$d_1 = 1$, $d_2 = \sqrt{2}$, $\alpha = 45^{\circ}$]{\label{fig:examples:3}
+    \input{square2/square2.tex}
+  }\,
+  \subfloat[$d_1 = 1$, $d_2 = \sqrt{2}$, $\alpha = 180^{\circ}$]{\label{fig:examples:4}
+    \input{square4/square4.tex}
+  }\,
+  \subfloat[$d_1 = 1$, $d_2 = \sqrt{2}$, $\alpha = 45^{\circ}$]{\label{fig:examples:5}
+    \input{square5/square5.tex}
+  }
+  \caption[]{Various examples. The free space is filled with a light-gray color.
+    The boundary of the free space is drawn with blue segments.
+    Orange curves contains all the possible locations of the sensor.
+    Two green segments with a common endpoint shows a witness.}
+  \label{fig:examples}
+\end{figure}
+
+If only a single measurement is carried out at an unknown direction, the possible locations of the robot comprise two-dimentional regions. Here, we concern ourselves with a variant of the problem where a query consists of three real numbers $d_1$, $\alpha \neq 0$, $d_2$ describing the following sequence of events: The sensor at its original state obtained the distance reading $d_1$, then the sensor was rotated (without translating) by $\alpha$ radians counterclockwise, and then it obtained a second distance reading $d_2$. The possible locations of the robot in this case comprise of one-dimentional curves in the general case; see Figure~\ref{fig:examples}. If the query is augmented by a second rotation followed by a third measurement, the possible locations of the robot consist of one or more isolated points (in the general case).
+
+A more complicated problem allows for a translation of the robot before the second measurement is taken. In this variant a query consists of four real numbers $d_1$, $\alpha$, $t$, $d_2$, where $t$ denotes a translation vector in the plane. If $t \neq 0$, the two measurements can be taken simultaneously. This is possible in practice, if two distinct sensors are at our disposal. We made experiments with a real robot equipped with two sensors.

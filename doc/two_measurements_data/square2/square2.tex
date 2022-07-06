@@ -1,40 +1,3 @@
-\documentclass{standalone}
-\usepackage{xparse}
-\usepackage{tikz}
-\tikzset{%
-  point/.style={circle,inner sep=1.25pt,minimum size=1.25pt,draw,fill=#1},
-  point/.default=red
-}
-\definecolor{c0}{rgb}{0.2,0.4,0.67}
-\definecolor{c1}{rgb}{0.67,0.4,0.12}
-\definecolor{c2}{rgb}{0.53,0.6,0.13}
-\definecolor{c3}{rgb}{0.53,0.53,0.4}
-\NewDocumentCommand\sights{O{a}O{b}O{c}O{c2}}{%
-  \node[point=#4] (#1) at (0,1) {};
-  \node[point=#4] (#2) at (1,0) {};
-  \node[point=#4] (#3) at (1,1) {};
-  \draw[#4] (#1)--(#2)--(#3);
-}
-\NewDocumentCommand\crvb{}{%
-  \def\a{-0.618034}
-  \def\b{-1.61803}
-  \def\c{.52573}
-  \def\s{.85065}
-  \draw[c1,parametric,variable=\t,smooth,
-    domain=1:2.6,
-    samples=60]
-  plot
-  ({\a*cos(\t r)*\c-\b*sin(\t r)*\s},{\a*cos(\t r)*\s+\b*sin(\t r)*\c});
-}
-\NewDocumentCommand\crv{}{%
-  \begin{scope}[shift={(1,-1)},rotate=270]\coordinate (q1) at (1,0);\end{scope}
-  \begin{scope}[shift={(1.06,-.721)},rotate=250]\coordinate (q2) at (1,0);\end{scope}
-  \begin{scope}[shift={(1.2929,-.5858)},rotate=225]\coordinate (q3) at (1,0);\end{scope}
-  \begin{scope}[shift={(1.655,-.717)},rotate=200]\coordinate (q4) at (1,0);\end{scope}
-  \begin{scope}[shift={(2,-1)},rotate=180]\coordinate (q5) at (1,0);\end{scope}
-  \draw [c1] plot [smooth] coordinates {(q1)(q2)(q3)(q4)(q5)};
-}
-\begin{document}
 \begin{tikzpicture}[thick]
   \coordinate (p0) at (-2,-2);
   \coordinate (p1) at (2,-2);
@@ -87,24 +50,3 @@
   \node[point=c1] (n6) at (a6) {};
   \node[point=c1] (n7) at (a7) {};
 \end{tikzpicture}
-\end{document}
-
-% x^4 + 4*y^4 - 2*x^2 - 4*y^2 + 1 = 0;
-% eq1: x^2 + 2xy + 2y^2 = 1
-% eq1: x^2 - 2xy + 2y^2 = 1
-
-% Curve((a*cos(x)*c-b*sin(x)*s,a*cos(x)*s+b*sin(x)*c), x, 0, 2pi)
-
-%% cos(t)^2/a^2 + sin(t)^2/b^2 = 1,
-%% sin(t)^2/a^2 + cos(t)^2/b^2 = 2,
-%% 2*cos(t)*sin(t)*(1/a^2-1/b^2) = -2
-
-%% a = -1.61803
-%% b = -0.618034
-%% t = 2 * (pi * n - 0.276787) = .553574
-%% s = .52573
-%% c = .85065
-
-%% c(t)^2/a^2 + s(t)^2/b^2 = 1,
-%% s(t)^2/a^2 + c(t)^2/b^2 = 2,
-%% 2*c(t)*s(t)*(1/a^2-1/b^2) = -2
