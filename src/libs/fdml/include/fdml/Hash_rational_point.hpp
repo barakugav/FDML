@@ -6,6 +6,8 @@
 #ifndef FDML_HASH_RATIONAL_POINT_HPP
 #define FDML_HASH_RATIONAL_POINT_HPP
 
+#include <CGAL/basic.h>
+
 #include <boost/functional/hash/hash.hpp>
 #include <boost/functional/hash_fwd.hpp>
 
