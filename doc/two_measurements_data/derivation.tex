@@ -1,0 +1,316 @@
+% =============================================================================
+\section{Derivation}
+\label{sec:derivation}
+% =============================================================================
+We repeat the system equation in the general case:
+\begin{align}
+  a_1 x_1 + b_1 y_1 + c_1 &= 0\\
+  a_1 x_2 + b_1 y_2 + c_1 &= 0\\
+  (x - x_1)^2 + (y - y_1)^2 &= d_1^2\label{eq:1}\\
+  (x - x_2)^2 + (y - y_2)^2 &= d_2^2\label{eq:2}\\
+  (x_2 - x_1)^2 + (y_2 - y_1)^2 &= d_1^2 + d_2^2 - 2 c d_1 d_2 = d_1^2 + d_2^2 - 2 k\label{eq:3}
+\end{align}
+
+% -----------------------------------------------------------------------------
+\subsection{Constraining the Intersection Point}
+\label{ssec:derivation-constraining-origin}
+% -----------------------------------------------------------------------------
+\setlength{\parskip}{1ex}
+%\noindent
+We set $c_1 = c_2 = 0$, coercing the intersection point of $L_1$ and $L_2$ to coincide with the origin, and denote $m_1 = \frac{a_1}{b_1}$ and $m_2 = \frac{a_2}{b_2}$; we get $y_1 = m_1 x_1$ and $y_2 = m_2 x_2$.
+
+\noindent
+We substitute $y_1$ and $y_2$ in equations~\ref{eq:1}, \ref{eq:2}, and \ref{eq:3} and get:
+\begin{align}
+  (x - x_1)^2 + (y - m_1 x_1)^2 & = d_1^2\\
+  (x - x_2)^2 + (y - m_2 x_2)^2 & = d_2^2\\
+  (x_2 - x_1)^2 + (m_2 x_2 - m_1 x_1)^2 & = d_1^2 + d_2^2 - 2 k
+\end{align}
+
+\noindent
+We expand and regroup and get:
+\begin{align}
+  %x^2 + x_1^2 - 2 x x_1 + y^2 + m_1^2x_1^2 - 2 m_1 y x_1 &= d_1^2\\
+  (1 + m_1^2) x_1^2 - 2 (x + m_1 y) x_1  + x^2 + y^2  &= d_1^2\label{eq:d1}\\
+  (1 + m_2^2) x_2^2 - 2 (x + m_2 y) x_2  + x^2 + y^2  &= d_2^2\label{eq:d2}\\
+  % x_2^2 + x_1^2 - 2 x_1 x_2 + m_1^2 x_1^2 + m_2^2 x_2^2 - 2 m_1 m_2 x_1 x_2 &= d_1^2 + d_2^2 - 2 k\\
+  (1 + m_1^2) x_1^2 + (1 + m_2^2) x_2^2 - 2 (1 + m_1 m_2) x_1 x_2 &= d_1^2 + d_2^2 - 2 k\label{eq:d}
+\end{align}
+
+\noindent
+We substitute $d_1$ and $d_2$ in Equation~\ref{eq:d} and obtain the single equation:
+\begin{align}
+  % 2 (1 + m_1 m_2) x_1 x_2 - 2 (x + m_1 y) x_1 - 2 (x + m_2 y) x_2 + 2 x^2 + 2 y^2 &= 2 k\\
+  (1 + m_1 m_2) x_1 x_2 - (x + m_1 y) x_1 - (x + m_2 y) x_2 + x^2 + y^2 - k &= 0\label{eqs}
+\end{align}
+
+% -----------------------------------------------------------------------------
+\subsection{Constraining the Slope of One Line}
+\label{ssec:derivation-constraining-slope}
+% -----------------------------------------------------------------------------
+We set $m_1 = 0$ in equations~\ref{eq:d1}, \ref{eq:d2}, and \ref{eqs}, coercing $L_1$ to lie on the $x$-axis, andd get:
+\begin{align}
+  (x - x_1)^2 + y^2 & = d_1^2\label{eq:d1-s}\\
+  (x - x_2)^2 + (y - m_2 x_2)^2 & = d_2^2\label{eq:d2-s}\\
+  x_1 x_2 - x x_1 - (x + m_2 y) x_2 + x^2 + y^2 - k &= 0\label{eq:d-s}
+\end{align}
+
+\noindent
+We solve the quadratic equations~\ref{eq:d1-s} and~\ref{eq:d2-s}, and get:
+\begin{align*}
+  x_1 &= x \pm \sqrt{d_1^2 - y^2}\\
+  x_2 &= \frac{x + m_2 y \pm \sqrt{(x + m_2 y)^2 - (1 + m_2^2)(x^2 + y^2 - d_2^2)}}{1 + m_2^2}\\
+  &= \frac{x + m_2 y \pm \sqrt{(2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2}}{1 + m_2^2}\\
+  &= \frac{x + m_2 y}{1 + m_2^2} + \sqrt{\frac{2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2}{(1 + m_2^2)^2}}
+\end{align*}
+
+\noindent
+We introduce the symbols $r_1$, $s_1$, $r_2$, and $s_2$, and set
+\begin{align*}
+  x_1 &= r_1 \pm \sqrt{s_1} = x \pm \sqrt{d_1^2 - y^2}\\
+  x_2 &= r_2 \pm \sqrt{s_2}
+\end{align*}
+
+\noindent
+We substitute $x_1$ and $x_2$ in Equation~\ref{eq:d-s} and get:
+\begin{align*}
+  % x_1 x_2 - x x_1 - (x + m_2 y) x_2 + x^2 + y^2 - k &= 0\\
+  (x \pm \sqrt{s_1}) (r_2 \pm \sqrt{s_2}) - x (x \pm \sqrt{s_1}) - (x + m_2 y) (r_2 \pm \sqrt{s_2}) + x^2 + y^2 - k &= 0\\
+\end{align*}
+
+\noindent
+We expand and get:
+\begin{align*}
+  x r_2 \pm x \sqrt{s_2} \pm r_2 \sqrt{s_1} + \sqrt{s_1 s_2} - x^2 \mp x\sqrt{s_1} - r_2 (x + m_2 y) \mp (x + m_2 y)\sqrt{s_2} + x^2 + y^2 - k &= \\
+  x r_2 \pm x \sqrt{s_2} \pm r_2 \sqrt{s_1} + \sqrt{s_1 s_2} \mp x\sqrt{s_1} - r_2 x - r_2 m_2 y \mp x \sqrt{s_2} \mp m_2 y\sqrt{s_2}  + y^2 - k &= \\
+  \pm r_2 \sqrt{s_1} + \sqrt{s_1 s_2} \mp x\sqrt{s_1} - r_2 m_2 y \mp m_2 y\sqrt{s_2}  + y^2 - k &= 0\\
+\end{align*}
+
+\noindent
+We remove vanishig terms and regroup and get:
+\begin{align*}
+  \mp x\sqrt{s_1} \pm r_2 \sqrt{s_1} \mp m_2 y \sqrt{s_2} + \sqrt{s_1 s_2} - r_2 m_2 y + y^2 - k &= 0\\
+  \mp (x - r_2) \sqrt{s_1} \mp m_2 y \sqrt{s_2} + \sqrt{s_1 s_2} - r_2 m_2 y + y^2 - k &= 0\\
+\end{align*}
+
+\noindent
+We exchange and get:
+\begin{align*}
+  \sqrt{s_1 s_2} + (y^2 - r_2 m_2 y - k) &= \pm (x - r_2) \sqrt{s_1} \pm m_2 y \sqrt{s_2}\\
+\end{align*}
+
+\noindent
+We raise to the power of two each side and get:
+\begin{align*}
+  s_1 s_2 + (y^2 - r_2 m_2 y - k)^2 + 2 (y^2 - r_2 m_2 y - k) \sqrt{s_1 s_2}
+  &= (x - r_2)^2 s_1 + m_2^2 y^2 s_2 + 2 m_2 y (x - r_2) \sqrt{s_1 s_2}\\
+  &= (x - r_2)^2 s_1 + m_2^2 y^2 s_2 + 2 (m_2 x y - r_2 m_2 y) \sqrt{s_1 s_2}\\
+\end{align*}
+
+\noindent
+We exchange again and get:
+\begin{align*}
+  s_1 s_2 + (y^2 - r_2 m_2 y - k)^2 - (x - r_2)^2 s_1 - m_2^2 y^2 s_2
+  &= 2 (m_2 x y - r_2 m_2 y - y^2 + r_2 m_2 y + k) \sqrt{s_1 s_2})\\
+  &= 2 (m_2 x y - y^2 + k) \sqrt{s_1 s_2})
+\end{align*}
+
+\noindent
+We raise again and get:
+\begin{align*}
+  (s_1 s_2 + (y^2 - r_2 m_2 y - k)^2 - (x - r_2)^2 s_1 - m_2^2 y^2 s_2)^2 = 4 (m_2 x y - y^2 + k)^2 s_1 s_2
+\end{align*}
+
+\noindent
+We exchange and substitute and get:
+\begin{align*}
+  4 (m_2 x y - y^2 + k)^2 s_1 s_2
+  &= ((d_1^2 - y^2) s_2 + (y^2 - r_2 m_2 y - k)^2 - (x - r_2)^2 (d_1^2 - y^2) - m_2^2 y^2 s_2)^2\\
+  &= (\\
+  & ~+ s_2 (d_1^2 - y^2 - m_2^2 y^2)\\
+  & ~+ r_2^2 (y^2 - d_1^2 + m_2^2 y^2)\\
+  & ~+ r_2 (2 m_2 k y - 2 m_2 y^3 + 2 (d_1^2 - y^2))\\
+  & ~+ y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2\\
+  & ~)^2\\
+\end{align*}
+
+We multiply by $(1 + m_2^2)^4$ and get:
+\begin{align*}
+  4 (m_2 x y - y^2 + k)^2 (1 + m_2^2)^4 s_1 s_2
+  &= (\\
+  & ~+ (1 + m_2^2)^2 s_2 (d_1^2 - y^2 - m_2^2 y^2)\\
+  & ~+ (1 + m_2^2)^2 r_2^2 (y^2 - d_1^2 + m_2^2 y^2)\\
+  & ~+ (1 + m_2^2)^2 r_2 (2 m_2 k y - 2 m_2 y^3 + 2 (d_1^2 - y^2))\\
+  & ~+ (1 + m_2^2)^2 (y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2)\\
+  & ~)^2\\
+  &= (\\
+  & ~+ (1 + m_2^2)^2 \frac{2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2}{(1 + m_2^2)^2} (d_1^2 - y^2 - m_2^2 y^2)\\
+  & ~+ (1 + m_2^2)^2 \frac{(x + m_2 y)}{1 + m_2^2}^2 (y^2 - d_1^2 + m_2^2 y^2)\\
+  & ~+ (1 + m_2^2)^2 \frac{(x + m_2 y)}{1 + m_2^2} (2 m_2 k y - 2 m_2 y^3 + 2 (d_1^2 - y^2))\\
+  & ~+ (1 + m_2^2)^2 (y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2)\\
+  & ~)^2\\
+  &= (\\
+  & ~+ (2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2) (d_1^2 - y^2 - m_2^2 y^2)\\
+  & ~+ (x + m_2 y)^2 (y^2 - d_1^2 + m_2^2 y^2)\\
+  & ~+ (1 + m_2^2) (x + m_2 y) (2 m_2 k y - 2 m_2 y^3 + 2 (d_1^2 - y^2))\\
+  & ~+ (1 + m_2^2)^2 (y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2)\\
+  & ~)^2\\
+  &= (\\
+  & ~+ 2 d_1^2 m_2 x y - d_1^2 y^2 + d_1^2 d_2^2 - d_1^2 m_2^2 x^2 + d_1^2 d_2^2 m_2^2\\
+  & ~- 2 m_2 x y^3 + y^4 - d_2^2 y^2 + m_2^2 x^2 y^2 - d_2^2 m_2^2y^2\\
+  & ~- 2 m_2^3 x y^3 + m_2^2 y^4 - d_2^2 m_2^2 y^2 + m_2^4 y^4 - d_2^2 m_2^4 y^2\\
+  & ~+ y^2 x^2 - d_1^2 x^2 + m_2^2 x^2 y^2\\
+  & ~+ m_2^2 y^4 - d_1^2 m_2^2 y^2 + m_2^4 y^4\\
+  & ~+ 2 m_2 x y^3 - 2 d_1^2 m_2 x y - 2 m_2^3 x y^3\\
+  & ~+ (x + m_2 y + m_2^2 x + m_2^3 y) (2 m_2 k y - 2 m_2 y^3 + 2 d_1^2 - 2 y^2)\\
+  & ~+ (1 + m_2^4 + 2 m_2^2) (y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2)\\
+  & ~)^2\\
+\end{align*}
+
+\noindent
+We expand and get:
+\begin{align*}
+  4 (m_2 x y - y^2 + k)^2 (1 + m_2^2)^4 s_1 s_2
+  &= (\\
+  & ~+ 2 d_1^2 m_2 x y - d_1^2 y^2 + d_1^2 d_2^2 - d_1^2 m_2^2 x^2 + d_1^2 d_2^2 m_2^2\\
+  & ~- 2 m_2 x y^3 + y^4 - d_2^2 y^2 + m_2^2 x^2 y^2 - d_2^2 m_2^2y^2\\
+  & ~- 2 m_2^3 x y^3 + m_2^2 y^4 - d_2^2 m_2^2 y^2 + m_2^4 y^4 - d_2^2 m_2^4 y^2\\
+  & ~+ y^2 x^2 - d_1^2 x^2 + m_2^2 x^2 y^2\\
+  & ~+ m_2^2 y^4 - d_1^2 m_2^2 y^2 + m_2^4 y^4\\
+  & ~+ 2 m_2 x y^3 - 2 d_1^2 m_2 x y - 2 m_2^3 x y^3\\
+  & ~+ 2 m_2 k x y - 2 m_2 x y^3 + 2 d_1^2 x - 2 x y^2\\
+  & ~+ 2 m_2^2 k y^2 - 2 m_2^2 y^4 + 2 d_1^2 m_2 y - 2 m_2 y^3\\
+  & ~+ 2 m_2^3 k x y - 2 m_2^3 x y^3 + 2 d_1^2 m_2^2 x - 2 m_2^2 x y^2\\
+  & ~+ 2 m_2^4 k y^2 - 2 m_2^4 y^4 + 2 d_1^2 m_2^3 y - 2 m_2^3 y^3\\
+  & ~+ y^4 + k^2 - 2 k y^2 - d_1^2 x^2 + x^2 y^2\\
+  & ~+ m_2^4 y^4 + k^2 m_2^4 - 2 m_2^4 k y^2 - d_1^2 m_2^4 x^2 + m_2^4 x^2 y^2\\
+  & ~+ 2 m_2^2 y^4 + 2 k^2 m_2^2 - 4 m_2^2 k y^2 - 2 d_1^2 m_2^2 x^2 + 2 m_2^2 x^2 y^2\\
+  & ~)^2
+\end{align*}
+
+\noindent
+We regroup and get:
+\begin{align*}
+  4 (m_2 x y - y^2 + k)^2 (1 + m_2^2)^4 s_1 s_2
+  &= 4 (m_2 x y - y^2 + k)^2 (1 + m_2^2)^4 (d_1^2 - y^2) \frac{2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2}{(1 + m_2^2)^2}\\
+  &= 4 (m_2 x y - y^2 + k)^2 (1 + m_2^2)^2 (d_1^2 - y^2) (2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2)\\
+  &= 4\\
+  &  (m_2 x y - y^2 + k)^2 \\
+  &  (1 + m_2^2)^2 \\
+  &  (d_1^2 - y^2) \\
+  &  (2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2)\\
+  &= 4\\
+  &  (m_2^2 x^2 y^2 + y^4 + k^2 - 2 m_2 x y^3 + 2 m_2 k x y - 2 k y^2) \\
+  &  (1 + m_2^4 + 2 m_2^2) \\
+  &  (d_1^2 - y^2) \\
+  &  (2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2)\\
+  &= 4\\
+  & + (d_1^2 m_2^2 x^2 y^2 + d_1^2 y^4 + d_1^2 k^2 - 2 m_2 d_1^2 x y^3 + 2 m_2 d_1^2 k x y - 2 kd_1^2  y^2\\
+  & + d_1^2 m_2^6 x^2 y^2 + d_1^2 m_2^4 y^4 + d_1^2 m_2^4 k^2 - 2 d_1^2 m_2 m_2^4 x y^3 + 2 d_1^2 m_2 m_2^4 k x y - 2 d_1^2 m_2^4 k y^2\\
+  & + 2 d_1^2 m_2^24 x^2 y^2 + 2 d_1^2 m_2^2 y^4 + 2 d_1^2 m_2^2 k^2 - 4 d_1^2 m_2^3 x y^3 + 4 d_1^2 m_2^3 k x y - 4 d_1^2 m_2^2 k y^2\\
+  & - m_2^2 x^2 y^4 - y^6 - k^2 y^2 + 2 m_2 x y^5 - 2 m_2 k x y^3 + 2 k y^4\\
+  & - m_2^6 x^2 y^4 - m_2^4 y^6 - m_2^4 k^2 y^2 + 2 m_2 m_2^4 x y^5 - 2 m_2 m_2^4 k x y^3 +- 2 m_2^4 k y^4\\
+  & - 2 m_2^24 x^2 y^3 - 2 m_2^2 y^6 - 2 m_2^2 k^2 +y^2  4 m_2^3 x y^5 - 4 m_2^3 k x y^3 + 4 m_2^2 k y^4)\\
+  & (2 m_2 x y - y^2 + d_2^2 - m_2^2 x^2 + d_2^2 m_2^2)\label{eq:final}
+ \end{align*}
+
+% -----------------------------------------------------------------------------
+\subsection{Simplifying}
+\label{ssec:derivation-matlab}
+% -----------------------------------------------------------------------------
+We simplify last equation using Matlab. We obtain the bivariate
+polynomial $P_2$, the zero set of which represents the points
+satisfying the equation. We employ Matlab yet again to factorize the
+polynomial $P_2$; see Section~\ref{ssec:derivation-p2} for the final
+expressions. The Matlab script is available at
+\url{http://acg.cs.tau.ac.il/projects/in-house-projects/localization-with-few-distance-measurements/solution.m}.
+
+% -----------------------------------------------------------------------------
+\subsection{Constraining the Slopes of Two Lines}
+\label{ssec:derivation-constraining-slopes}
+% -----------------------------------------------------------------------------
+
+% -----------------------------------------------------------------------------
+\subsection{The Result}
+\label{ssec:derivation-p2}
+% -----------------------------------------------------------------------------
+The bivariate polynomial obtained by simplifying the system equation in the case where $L_1$ lies on the $x$-axis and and the intersection point of $L_1$ and $L_2$ coincides with the origin follows.
+
+\begin{alignat*}{3}
+  & P_2 && : && 4 \cdot k^2 \cdot y^4
+    - 4 \cdot k^3 \cdot y^2
+    + k^4 + d_1^4 \cdot d_2^4
+    + 2 \cdot k^4 \cdot m_2^2
+    + k^4 \cdot m_2^4
+    + d_1^4 \cdot y^4
+    + d_2^4 \cdot y^4 -\\
+  & && && 4 \cdot d_1^2 \cdot k \cdot y^4
+    - 4 \cdot d_2^2 \cdot k \cdot y^4
+    - 2 \cdot d_1^2 \cdot d_2^2 \cdot k^2
+    + 2 \cdot d_1^2 \cdot d_2^2 \cdot y^4
+    - 2 \cdot d_1^2 \cdot d_2^4 \cdot y^2 -\\
+  & && && 2 \cdot d_1^4 \cdot d_2^2 \cdot y^2
+    + 2 \cdot d_1^2 \cdot k^2 \cdot y^2
+    + 2 \cdot d_2^2 \cdot k^2 \cdot y^2
+    + d_1^4 \cdot m_2^4 \cdot x^4
+    + 2 \cdot d_2^4 \cdot m_2^2 \cdot y^4 +\\
+  & && && d_2^4 \cdot m_2^4 \cdot y^4
+    - 4 \cdot k^3 \cdot m_2^2 \cdot y^2
+    + 4 \cdot k^2 \cdot m_2^2 \cdot y^4
+    + 4 \cdot d_1^2 \cdot d_2^2 \cdot k \cdot y^2 - \\
+  & && && 4 \cdot d_2^2 \cdot k \cdot m_2^2 \cdot y^4
+    - 4 \cdot d_1^4 \cdot m_2^3 \cdot x^3 \cdot y
+    - 8 \cdot k^2 \cdot m_2^3 \cdot x \cdot y^3
+    - 2 \cdot d_1^2 \cdot d_2^2 \cdot k^2 \cdot m_2^2 +\\
+  & && && 4 \cdot k^3 \cdot m_2 \cdot x \cdot y
+    - 2 \cdot d_1^4 \cdot d_2^2 \cdot m_2^2 \cdot x^2
+    - 2 \cdot d_1^2 \cdot d_2^2 \cdot m_2^2 \cdot y^4
+    - 2 \cdot d_1^2 \cdot d_2^4 \cdot m_2^2 \cdot y^2+\\
+  & && && 2 \cdot d_1^2 \cdot k^2 \cdot m_2^2 \cdot x^2
+    - 2 \cdot d_1^2 \cdot k^2 \cdot m_2^4 \cdot x^2
+    - 2 \cdot d_1^2 \cdot k^2 \cdot m_2^2 \cdot y^2
+    - 2 \cdot d_2^2 \cdot k^2 \cdot m_2^4 \cdot y^2 +\\
+  & && && 6 \cdot d_1^4 \cdot m_2^2 \cdot x^2 \cdot y^2
+    + 4 \cdot k^2 \cdot m_2^2 \cdot x^2 \cdot y^2
+    + 4 \cdot k^2 \cdot m_2^4 \cdot x^2 \cdot y^2
+    - 4 \cdot d_1^4 \cdot m_2 \cdot x \cdot y^3 -\\
+  & && && 8 \cdot k^2 \cdot m_2 \cdot x \cdot y^3
+    + 4 \cdot k^3 \cdot m_2^3 \cdot x \cdot y
+    + 4 \cdot d_1^2 \cdot d_2^2 \cdot m_2^3 \cdot x \cdot y^3
+    - 12 \cdot d_1^2 \cdot k \cdot m_2^2 \cdot x^2 \cdot y^2 +\\
+  & && && 4 \cdot d_1^4 \cdot d_2^2 \cdot m_2 \cdot x \cdot y
+    - 4 \cdot d_1^2 \cdot k^2 \cdot m_2 \cdot x \cdot y
+    + 12 \cdot d_1^2 \cdot k \cdot m_2 \cdot x \cdot y^3 +\\
+  & && && 4 \cdot d_2^2 \cdot k \cdot m_2 \cdot x \cdot y^3
+    + 2 \cdot d_1^2 \cdot d_2^2 \cdot m_2^2 \cdot x^2 \cdot y^2
+    - 2 \cdot d_1^2 \cdot d_2^2 \cdot m_2^4 \cdot x^2 \cdot y^2 -\\
+  & && && 4 \cdot d_1^2 \cdot d_2^2 \cdot m_2 \cdot x \cdot y^3
+    + 4 \cdot d_1^2 \cdot k^2 \cdot m_2^3 \cdot x \cdot y
+    + 4 \cdot d_1^2 \cdot k \cdot m_2^3 \cdot x^3 \cdot y +\\
+  & && && 4 \cdot d_2^2 \cdot k \cdot m_2^3 \cdot x \cdot y^3
+    + 8 \cdot d_1^2 \cdot d_2^2 \cdot k \cdot m_2^2 \cdot y^2
+    - 8 \cdot d_1^2 \cdot d_2^2 \cdot k \cdot m_2^3 \cdot x \cdot y -\\
+  & && && 4 \cdot d_1^2 \cdot d_2^2 \cdot k \cdot m_2 \cdot x \cdot y\\
+  & && =\quad && (A_1\cdot x^2 + B_1\cdot y^2 + C_1\cdot x \cdot y + D_1)\cdot
+    (A_2\cdot x^2 + B_2\cdot y^2 + C_2\cdot x \cdot y + D_2),\\
+  \end{alignat*}
+%
+where\\
+\begin{minipage}[c]{0.5\textwidth}
+\begin{align*}
+  A_1 &= d_1^2\cdot m_2^2\\
+  B_1 &= d_1^2+d_2^2-2\cdot k+d_2^2\cdot m_2^2+2\cdot m_2\cdot e\\
+  C_1 &= 2\cdot m_2\cdot (k - d_1^2 - m_2\cdot e)\\
+  D_1 &= k^2 - d_1^2\cdot d_2^2 - k^2\cdot m_2^2 - 2\cdot k\cdot m_2\cdot e\\
+\end{align*}
+\end{minipage}
+%
+\begin{minipage}[c]{0.5\textwidth}
+\begin{align*}
+  A_2 &= d_1^2\cdot m_2^2\\
+  B_2 &= d_1^2 - 2\cdot k + d_2^2 + d_2^2\cdot m_2^2 - 2\cdot m_2\cdot  e\\
+  C_2 &= 2\cdot m_2\cdot (k - d_1^2 + m_2\cdot  e)\\
+  D_2 &= k^2 - d_1^2\cdot d_2^2 - k^2\cdot m_2^2 + 2\cdot k\cdot m_2\cdot e\\
+\end{align*}
+\end{minipage}
+and $e = \sqrt{d_1^2\cdot d_2^2 - k^2}$.
