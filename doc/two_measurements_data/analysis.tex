@@ -66,11 +66,11 @@ In the degenerate case, where $L_1$ and $L_2$ are parallel (or $L_1 == L_2$) the
 
 Solving the above non-linear equation system is messy. We can add some constraints to the above system without compromising. First, we translate the scene, by setting $c_1 = 0$, $c_2 = 0$, coercing the intersection point of $L_1$ and $L_2$ to be at the origin. Then, we rotate the scene, setting $a_1 = 0$, coercing $L_1$ to lie on the $x$-axis. Once we find the desired elliptic arc in our transformed space, we can apply an inverse rotation followed by an inverse translation to obtain the elliptic arc in the original space.
 
-First, we handle the simple case, where $b_2 = 0$. Recall that $L_1$ lies on the $x$-axis. This additional constraint implies that $L_2$ lies on the $y$-axis. ($L_1$ and $L_2$ are orthogonal.) Manipulating the system equation above and employing Matlab to simplify the equations above, we obtain the single equation:
+First, we handle the simple case, where $b_2 = 0$. Recall that $L_1$ lies on the $x$-axis. This additional constraint implies that $L_2$ lies on the $y$-axis. ($L_1$ and $L_2$ are orthogonal.) Manipulating the system equation above (see Section~\ref{ssec:derivation-constraining-slopes}, we obtain the single equation below; see Equation~\ref{eq:oa}
 \begin{equation}
   d_1^4\cdot x^4 + (4\cdot k^2 - 2\cdot d_1^2\cdot d_2^2)\cdot x^2\cdot y^2 - 2\cdot d_1^2\cdot k^2\cdot x^2 + d_2^4\cdot y^4 - 2\cdot d_2^2\cdot k^2\cdot y^2 + k^4 = 0\label{eq:polynomial-orthogonal-x-aligned},
 \end{equation}
-where $k = \cos(\alpha)\cdot d_1\cdot d_2$. Let $P_1$ denote the bivariate polynomial on the left hand side of Equation~\ref{eq:polynomial-orthogonal-x-aligned}. The zero set of $P_1$ represents the two desired ellipses. Employing Matlab yet again to factorize the polynomial $P_1$, we get: $P_1: (A_1\cdot x^2 + B_1\cdot y^2 + C_1\cdot x\cdot y + D_1)\cdot (A_2\cdot x^2 + B_2\cdot y^2 + C_2\cdot x\cdot y +D_2)$, where
+where $k = \cos(\alpha)\cdot d_1\cdot d_2$. Let $P_1$ denote the bivariate polynomial on the left hand side of Equation~\ref{eq:polynomial-orthogonal-x-aligned}. The zero set of $P_1$ represents the points that sautisfy the equation system above. Employing Matlab to factorize the polynomial $P_1$, we get: $P_1: (A_1\cdot x^2 + B_1\cdot y^2 + C_1\cdot x\cdot y + D_1)\cdot (A_2\cdot x^2 + B_2\cdot y^2 + C_2\cdot x\cdot y +D_2)$, where
 \begin{minipage}[c]{0.5\linewidth}
 \begin{align*}
   A_1 &= d_1^2\\
@@ -87,13 +87,16 @@ where $k = \cos(\alpha)\cdot d_1\cdot d_2$. Let $P_1$ denote the bivariate polyn
   D2 &= -k^2
 \end{align*}
 \end{minipage}
-You can visualize the ellipses and how they dynamically change as a
-consequence of changing the parameters $d_1$, $\alpha$, $d_2$ using
-the GeoGebra\footnote{\url{https://www.geogebra.org}} online tool;
-download the GeoGebra script
+The zero set of the two factors represets two ellipses, respectively.
+You can visualize the two ellipses and how they dynamically change as
+a consequence of changing the parameters $d_1$, $\cos{\alpha}$, $d_2$
+using the GeoGebra\footnote{\url{https://www.geogebra.org}} online
+tool; download the GeoGebra script
 \url{https://www.geogebra.org/calculator/rvqwxqcd} and upload in
 GeoGebra. Second, we denote $m_2 = \frac{a_2}{b_2}$, assuming the
-lines are not parallel. The obtained polynomial, $P_2$, in this case
-is much more complex; see~\ref{ssec:derivation-p2}. Use the GeoGebra
-script \url{https://www.geogebra.org/calculator/ferztmgh} to visualize
-the ellipses in this case.
+lines are not parallel. The derivation process (see
+Section~\ref{ssec:derivation-constraining-slope}) and the obtained
+polynomial (see Equation~\ref{eq:a}) in this case are
+much more complex. Use the GeoGebra script
+\url{https://www.geogebra.org/calculator/ferztmgh} to visualize the
+ellipses in this case.

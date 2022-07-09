@@ -36,11 +36,7 @@ We introduce the symbols $s_1$ and $s_2$, and get
   x_1 &= x \pm \sqrt{s_1}\\
   y_2 &= y \pm \sqrt{s_2},
 \end{align*}
-where
-\begin{align*}
-  s_1 &= d_1^2 - y^2\\
-  s_2 &= d_2^2 - x^2
-\end{align*}
+where $s_1 = d_1^2 - y^2$ and $s_2 = d_2^2 - x^2$ based on equations~\ref{eq:d1-oa} and~\ref{eq:d2-oa}.
 
 \noindent
 We substitute $x_1$ and $x_2$ in Equation~\ref{eq:s-oa} and get:
@@ -87,7 +83,7 @@ We exchange and substitute $s_1$ and $s_2$ and get:
 \noindent
 We expand and regroup and get:
 \begin{align}
-  d_1^4 x^4 + y^2 x^2 (4 k^2 - 2 d_1^2 d_2^2) - 2 d_1^2 k^2 x^2 + d_2^4 y^4 - 2 d_2^2 k^2 y^2 + k^4 &= 0
+  d_1^4 x^4 + y^2 x^2 (4 k^2 - 2 d_1^2 d_2^2) - 2 d_1^2 k^2 x^2 + d_2^4 y^4 - 2 d_2^2 k^2 y^2 + k^4 &= 0\label{eq:oa}
 \end{align}
 
 % -----------------------------------------------------------------------------
@@ -201,37 +197,18 @@ Equation~\ref{eq:g}, coercing $L_1$ to lie on the $x$-axis, and get:
     s_1 (r_2 - x - m_1 y)^2 - s_2 (r_1 - x - m_2 y)^2)^2
 \end{multline*}
 We simplify the resutimg equation using Matlab. We obtain the
-bivariate polynomial $P_2$, the zero set of which represents the
-points satisfying the equation. We employ Matlab yet again to
-factorize the polynomial $P_2$; see Section~\ref{ssec:derivation-pa}
-for the final expressions. The Matlab script is available at
+bivariate polynomial $P_2$ (see below), the zero set of which
+represents the points satisfying the equation. We employ Matlab yet
+again to factorize the polynomial $P_2$. The Matlab script is
+available at
 \url{http://acg.cs.tau.ac.il/projects/in-house-projects/localization-with-few-distance-measurements/solution.m}.
 
-%% % -----------------------------------------------------------------------------
-%% \subsection{Constraining the Two Lines to be Orthogonal}
-%% \label{ssec:derivation-constraining-orthogonal}
-%% % -----------------------------------------------------------------------------
-%% If the $L_1$ and $L_2$ are orthogonal $m_1 m_2 = -1$. It implies that $\ell = 0$.
-%% We set $\ell = 0$ in Equation~\ref{eq:g}, coercing $L_1$ and $L_2$ to be
-%% orthogonal, and get:
-%% \begin{multline*}
-%%   4 s_1 s_2 ((x + m_1 y) (x + m_2 y))^2 =
-%%   ((r_1 (x + m_1 y) + r_2 (x + m_2 y) - x^2 - y^2 + k)^2 - s_1 (x + m_1 y)^2 - s_2 (x + m_2 y)^2)^2
-%% \end{multline*}
+The bivariate polynomial obtained by simplifying the system equation
+in the case where $L_1$ lies on the $x$-axis and and the intersection
+point of $L_1$ and $L_2$ coincides with the origin follows.
 
-%% We simplify the resutimg equation using Matlab. We obtain the
-%% bivariate polynomial $P$, the zero set of which represents the
-%% points satisfying the equation. We employ Matlab yet again to
-%% factorize the polynomial $P$; see Section~\ref{ssec:derivation-po}
-%% for the final expressions.
-
-% -----------------------------------------------------------------------------
-\subsection{The Result}
-\label{ssec:derivation-p2}
-% -----------------------------------------------------------------------------
-The bivariate polynomial obtained by simplifying the system equation in the case where $L_1$ lies on the $x$-axis and and the intersection point of $L_1$ and $L_2$ coincides with the origin follows.
-
-\begin{alignat*}{3}
+\begin{equation}\label{eq:a}
+  \begin{split}
   & P_2 && : && 4 \cdot k^2 \cdot y^4
     - 4 \cdot k^3 \cdot y^2
     + k^4 + d_1^4 \cdot d_2^4
@@ -288,7 +265,9 @@ The bivariate polynomial obtained by simplifying the system equation in the case
   & && && 4 \cdot d_1^2 \cdot d_2^2 \cdot k \cdot m_2 \cdot x \cdot y\\
   & && =\quad && (A_1\cdot x^2 + B_1\cdot y^2 + C_1\cdot x \cdot y + D_1)\cdot
     (A_2\cdot x^2 + B_2\cdot y^2 + C_2\cdot x \cdot y + D_2),\\
-  \end{alignat*}
+  \end{split}
+\end{equation}
+
 %
 where\\
 \begin{minipage}[c]{0.5\textwidth}
@@ -309,3 +288,21 @@ where\\
 \end{align*}
 \end{minipage}
 and $e = \sqrt{d_1^2\cdot d_2^2 - k^2}$.
+
+%% % -----------------------------------------------------------------------------
+%% \subsection{Constraining the Two Lines to be Orthogonal}
+%% \label{ssec:derivation-constraining-orthogonal}
+%% % -----------------------------------------------------------------------------
+%% If the $L_1$ and $L_2$ are orthogonal $m_1 m_2 = -1$. It implies that $\ell = 0$.
+%% We set $\ell = 0$ in Equation~\ref{eq:g}, coercing $L_1$ and $L_2$ to be
+%% orthogonal, and get:
+%% \begin{multline*}
+%%   4 s_1 s_2 ((x + m_1 y) (x + m_2 y))^2 =
+%%   ((r_1 (x + m_1 y) + r_2 (x + m_2 y) - x^2 - y^2 + k)^2 - s_1 (x + m_1 y)^2 - s_2 (x + m_2 y)^2)^2
+%% \end{multline*}
+
+%% We simplify the resutimg equation using Matlab. We obtain the
+%% bivariate polynomial $P$, the zero set of which represents the
+%% points satisfying the equation. We employ Matlab yet again to
+%% factorize the polynomial $P$; see Section~\ref{ssec:derivation-po}
+%% for the final expressions.
