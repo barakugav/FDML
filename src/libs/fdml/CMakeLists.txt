@@ -59,8 +59,8 @@ endif()
 
 find_package(Boost ${FDML_BOOST_MIN_VERSION} REQUIRED COMPONENTS system thread filesystem program_options json)
 
-if (CLS_USE_STATIC_LIBS)
-  set_target_properties(CLS PROPERTIES LINK_SEARCH_END_STATIC 1)
+if (FDML_USE_STATIC_LIBS)
+  set_target_properties(fdml PROPERTIES LINK_SEARCH_END_STATIC 1)
 endif()
 
 # Add libraries
