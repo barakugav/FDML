@@ -253,7 +253,8 @@ std::vector<Segment> Trapezoid::calc_result_m2(const Kernel::FT& d1, const Kerne
 
         Point prev;
         bool prev_valid = false;
-        unsigned int appx_num = (unsigned int)((std::abs(angle_range) / (M_PI * 2)) * ELLIPSE_APPX_POINTS_NUM);
+        unsigned int appx_num = std::max(1u,
+            (unsigned int)((std::abs(angle_range) / (M_PI * 2)) * ELLIPSE_APPX_POINTS_NUM));
         for (unsigned int i = 0; i <= appx_num; i++) {
             double a = i * angle_range / appx_num;
             Direction dir = rotate(angle_begin, a);
