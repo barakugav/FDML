@@ -27,7 +27,7 @@ typedef Kernel::Line_2                                        Line;
 typedef Kernel::Direction_2                                   Direction;
 typedef Kernel::Vector_2                                      Vector;
 
-typedef std::list<Point>                                      Point_2_container;
+typedef std::vector<Point>                                    Point_2_container;
 typedef CGAL::Polygon_2<Kernel, Point_2_container>            Polygon;
 typedef CGAL::Polygon_with_holes_2<Kernel, Point_2_container> Polygon_with_holes;
 
