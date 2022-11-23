@@ -4,6 +4,7 @@
 #include <CGAL/Boolean_set_operations_2.h>
 #include <CGAL/Boolean_set_operations_2/Gps_polygon_validation.h>
 #include <CGAL/Polygon_with_holes_2.h>
+#include <CGAL/Arr_observer.h>
 #include <CGAL/enum.h>
 
 namespace FDML {
@@ -96,10 +97,6 @@ std::vector<Polygon> Trapezoid::calc_result_m1(const Kernel::FT& d) const {
     Direction a_begin = -angle_begin, a_end = -angle_end;
     assert(Line({0, 0}, a_begin).oriented_side({a_end.dx(), a_end.dy()}) == CGAL::ON_POSITIVE_SIDE);
     Direction top_edge_direction = edge_direction(top_edge);
-
-    /* Calculate the trapezoid bounds. Will be used to intersect each result entry. */
-    const Polygon trapezoid_bounds = get_bounds_2d();
-    fdml_debugln("\ttrapezoid bounds (" << trapezoid_bounds << ')');
 
     /* calculate the mid angle, which is perpendicular to the top edge, and use it to split the trapezoid angle
      * interval into 2 to ensure simple polygon output for each result entry. */
@@ -203,13 +200,10 @@ std::vector<Polygon> Trapezoid::calc_result_m1(const Kernel::FT& d) const {
         }
 
         /* intersect the result polygon with the trapezoids bound and add the result to the output */
-        std::vector<Polygon_with_holes> res_bounded;
-        CGAL::intersection(trapezoid_bounds, res_unbounded, std::back_inserter(res_bounded));
-        fdml_debugln("\ttrapezoid result:");
+        auto res_bounded = intersect_with_bottom_edge_half_plane(res_unbounded);
         for (const auto& res_cell : res_bounded) {
-            assert(res_cell.number_of_holes() == 0);
-            res.push_back(res_cell.outer_boundary());
-            fdml_debugln("\t\t" << res_cell.outer_boundary());
+            res.push_back(res_cell);
+            fdml_debugln("\t\t" << res_cell);
         }
     }
 
@@ -407,6 +401,73 @@ void Trapezoid::calc_min_max_openings(Kernel::FT& opening_min, Kernel::FT& openi
             opening_max = CGAL::max(opening_max, max);
         }
     }
+}
+
+class Face_contained_prop_observer : public CGAL::Arr_observer<Arrangement> {
+public:
+  Face_contained_prop_observer(Arrangement& arr) : CGAL::Arr_observer<Arrangement>(arr) {}
+  virtual void after_split_face(Face_handle old_face, Face_handle new_face, bool _is_hole) {
+    new_face->set_contained(old_face->contained());
+  }
+};
+
+std::vector<Polygon> Trapezoid::intersect_with_bottom_edge_half_plane(Polygon& poly) const {
+    /* Calculate left and right vertices of the bottom edge relative to the trapezoid's direction */
+    auto v_mid = get_mid_angle(angle_begin, angle_end);
+    Point bottom_left, bottom_right;
+    calc_edge_left_right_vertices(bottom_edge, v_mid, bottom_left, bottom_right);
+
+    /* Create a long segment, defined by bottom edge, which will operate as half plane */
+    Segment halfplane_seg(bottom_left + 8*(bottom_left-bottom_right), bottom_right+8*(bottom_right-bottom_left));
+
+    /* Create an arrangment containing the input polygon */
+    Polygon_set ps;
+    ps.insert(poly);
+    auto arr = ps.arrangement();
+
+    /* Add an observer to preseve the 'contained' property */
+    Face_contained_prop_observer obs(arr);
+
+    /* Insert the half plane segment */
+    CGAL::insert(arr, halfplane_seg);
+
+    /* Iterate over the resulting faces in the arrangment and collect all result polygon in the correct half plane */
+    std::vector<Polygon> res;
+    for (auto& it = arr.faces_begin(); it != arr.faces_end(); ++it) {
+        Face face = it;
+        if (face->is_unbounded() || !face->contained())
+            continue;
+
+        /* Check on which side the face is relative to the half plane */
+        bool is_valid = false;
+        Arrangement::Ccb_halfedge_const_circulator circ = face->outer_ccb();
+        for (unsigned int i = 0; i < 3; i++) {
+            Point p = circ->target()->point();
+            CGAL::Orientation o = CGAL::orientation(halfplane_seg.source(), halfplane_seg.target(), p);
+            if (o == CGAL::LEFT_TURN) {
+                is_valid = true;
+                break;
+            } else if (o == CGAL::RIGHT_TURN) {
+                is_valid = false;
+                break;
+            }
+            /* else, point is collinear with halfplane, continue */
+            circ++;
+        }
+        if (!is_valid)
+            continue;
+
+        /* Add result face's polygon */
+        Polygon p;
+        for (Arrangement::Ccb_halfedge_const_circulator begin = face->outer_ccb(), e = begin;;) {
+            p.push_back(e->target()->point());
+            if (++e == begin)
+                break;
+        }
+        res.push_back(p);
+    }
+
+    return res;
 }
 
 } // namespace FDML

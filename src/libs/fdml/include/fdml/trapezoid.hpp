@@ -38,14 +38,6 @@ class Trapezoid {
     Trapezoid::ID get_id() const;
 
     /**
-     * @brief Get the 2D bounds polygon of the trapezoid, which should be intersected with the calculated result area
-     * during a localization query.
-     *
-     * @return Polygon that represent the 2D bounds of the trapezoid
-     */
-    Polygon get_bounds_2d() const;
-
-    /**
      * @brief Calculates all the points a sensor might be within the trapezoid measering distance 'd' at the top edge
      *
      * @param d the measurement value
@@ -74,6 +66,23 @@ class Trapezoid {
      * @param opening_max output for the maximum opening of the trapezoid
      */
     void calc_min_max_openings(Kernel::FT& opening_min, Kernel::FT& opening_max) const;
+
+private:
+    /**
+     * @brief Get the 2D bounds polygon of the trapezoid, which should be intersected with the calculated result area
+     * during a localization query.
+     *
+     * @return Polygon that represent the 2D bounds of the trapezoid
+     */
+    Polygon get_bounds_2d() const;
+
+    /**
+     * @brief Intersect a polygon with the halfplane of the bottom edge, and return a collection of polygons
+     *
+     * @param poly input polygon, which is assumed to be contained in the cells bound if the bottom edge wouldn't exists
+     * @return a collection of polygons which are sub polygons of the input polygon, contained in the half plane
+     */
+    std::vector<Polygon> intersect_with_bottom_edge_half_plane(Polygon& poly) const;
 };
 
 template <class OutputStream> OutputStream& operator<<(OutputStream& os, const Trapezoid& trapezoid) {

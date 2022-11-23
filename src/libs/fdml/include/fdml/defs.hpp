@@ -5,6 +5,7 @@
 
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Arrangement_2.h>
+#include <CGAL/Polygon_set_2.h>
 #include <CGAL/General_polygon_set_2.h>
 #include <CGAL/Gps_segment_traits_2.h>
 #include <CGAL/Polygon_2.h>
@@ -30,6 +31,7 @@ typedef Kernel::Vector_2                                      Vector;
 typedef std::vector<Point>                                    Point_2_container;
 typedef CGAL::Polygon_2<Kernel, Point_2_container>            Polygon;
 typedef CGAL::Polygon_with_holes_2<Kernel, Point_2_container> Polygon_with_holes;
+typedef CGAL::Polygon_set_2<Kernel, Point_2_container>        Polygon_set;
 
 typedef CGAL::Gps_segment_traits_2<Kernel, Point_2_container> Gps_Traits;
 typedef CGAL::General_polygon_set_2<Gps_Traits>               General_polygon_set_2;
