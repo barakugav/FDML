@@ -7,7 +7,9 @@ set(FDML_VERSION ${FDML_MAJOR_VERSION}.${FDML_MINOR_VERSION}.${FDML_PATCH_VERSIO
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-add_compile_options(-fno-builtin)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_compile_options(-fno-builtin)
+endif()
 
 # if (FDML_USE_STATIC_LIBS)
 #   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
