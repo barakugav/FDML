@@ -123,6 +123,9 @@ endforeach()
 
 set_target_properties(fdml PROPERTIES PUBLIC_HEADER "${FDML_PUBLIC_HEADERS}")
 
+set_target_properties(fdml PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/debug/$<0:>)
+set_target_properties(fdml PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release/$<0:>)
+
 # Generate files suitable for preprocessor inclusion; these files contain
 # macros to be used in source code
 

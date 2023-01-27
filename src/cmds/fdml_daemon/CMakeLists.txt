@@ -56,6 +56,9 @@ if (NOT FDML_USE_STATIC_LIBS)
   set(CMAKE_SKIP_BUILD_RPATH TRUE)
 endif()
 
+set_target_properties(fdml_daemon PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/debug/$<0:>)
+set_target_properties(fdml_daemon PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release/$<0:>)
+
 install(TARGETS fdml_daemon
   EXPORT FDMLTargets
   RUNTIME DESTINATION ${FDML_INSTALL_BIN_DIR}
