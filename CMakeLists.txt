@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14...3.22)
 project(FDML VERSION "1.0.0" LANGUAGES CXX)
 
 # Dependencies makefile
-set(dependencies_file dependencies.cmake)
+set(dependencies_file cmake/dependencies.cmake)
 include(${dependencies_file} OPTIONAL RESULT_VARIABLE dependencies_file_found)
 if(${dependencies_file_found} STREQUAL "NOTFOUND")
   message(STATUS "Dependencies file was not found, using globally installed libraries. consider running ./configure")
@@ -140,16 +140,16 @@ file(RELATIVE_PATH REL_BIN_DIR "${FDML_INSTALL_CMAKE_DIR}"
 set(CONF_INCLUDE_DIRS
   "${FDML_FDML_INCLUDE_DIRS}"
   "${FDML_BOOST_INCLUDE_DIRS}")
-configure_file(FDMLConfig.cmake.in
+configure_file(cmake/FDMLConfig.cmake.in
   "${PROJECT_BINARY_DIR}/FDMLConfig.cmake" @ONLY)
 
 # ... for the install tree
 set(CONF_INCLUDE_DIRS "\${FDML_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(FDMLConfig.cmake.in
+configure_file(cmake/FDMLConfig.cmake.in
   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/FDMLConfig.cmake" @ONLY)
 
 # ... for both
-configure_file(FDMLConfigVersion.cmake.in
+configure_file(cmake/FDMLConfigVersion.cmake.in
   "${PROJECT_BINARY_DIR}/FDMLConfigVersion.cmake" @ONLY)
 
 # Install the FDMLConfig.cmake and FDMLConfigVersion.cmake

@@ -9,7 +9,7 @@ import scripts.common as common
 ALL_DEPENDENCIES_REQUIRED = False
 
 def _write_dependencies_cmake(installed_paths, include_paths, library_paths):
-    deps_cmake_filename = os.path.join(common.FDML_TOP, "dependencies.cmake")
+    deps_cmake_filename = os.path.join(common.FDML_TOP, "cmake", "dependencies.cmake")
     with open(deps_cmake_filename, "w") as deps_cmake:
         for installed_path in installed_paths:
             deps_cmake.write(
