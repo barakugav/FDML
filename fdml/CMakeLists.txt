@@ -1,7 +1,7 @@
 # include(WriteCompilerDetectionHeader)
 # include(CheckLibraryExists)
 
-set(FDML_LIB_DIR "${CMAKE_BINARY_DIR}/src/fdml")
+set(FDML_LIB_DIR "${CMAKE_BINARY_DIR}/fdml")
 
 find_package(Python3 ${FDML_PY_MIN_VERSION} COMPONENTS Interpreter)
 if (WIN32)

@@ -1,5 +1,5 @@
-set(FDML_LIB_DIR "${CMAKE_BINARY_DIR}/src/fdml")
-set(FDMLPY_LIB_DIR "${CMAKE_BINARY_DIR}/src/fdmlpy")
+set(FDML_LIB_DIR "${CMAKE_BINARY_DIR}/fdml")
+set(FDMLPY_LIB_DIR "${CMAKE_BINARY_DIR}/fdmlpy")
 
 #### Add Packages
 find_package(Python3 ${FDML_PY_MIN_VERSION} COMPONENTS Interpreter Development)
