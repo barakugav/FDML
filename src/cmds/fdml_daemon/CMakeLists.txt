@@ -38,8 +38,8 @@ endif()
 
 # Add include dirs
 
-include_directories(../../libs/fdml/include)
-include_directories(${CMAKE_BINARY_DIR}/src/libs/fdml/include)
+include_directories(../../fdml/include)
+include_directories(${CMAKE_BINARY_DIR}/src/fdml/include)
 include_directories(${Boost_INCLUDE_DIR})
 
 # Link

@@ -5,7 +5,7 @@ project(FDML VERSION "1.0.0" LANGUAGES CXX)
 set(dependencies_file dependencies.cmake)
 include(${dependencies_file} OPTIONAL RESULT_VARIABLE dependencies_file_found)
 if(${dependencies_file_found} STREQUAL "NOTFOUND")
-  message(STATUS "Dependencies file was not found, using globaly installed libraries. consider running ./configure")
+  message(STATUS "Dependencies file was not found, using globally installed libraries. consider running ./configure")
 endif()
 
 # General options

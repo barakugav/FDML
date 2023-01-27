@@ -75,7 +75,10 @@ foreach(p LIB BIN INC CMAKE PYTHON)
 endforeach()
 
 # Add subdirectories
-add_subdirectory(libs)
+add_subdirectory(fdml)
+if (FDML_WITH_PYBINDINGS)
+  add_subdirectory(fdmlpy)
+endif()
 add_subdirectory(cmds)
 
 # Add all targets to the build-tree export set
