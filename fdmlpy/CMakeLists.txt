@@ -25,11 +25,11 @@ add_definitions(-DFDML_FDMLPY_SOURCE)
 add_definitions(-DFDMLPY_LIB)
 
 add_library(fdmlpy SHARED
-  lib/fdmlpy.cpp
-  lib/export_polygon_2.cpp
-  lib/export_point_2.cpp
-  lib/export_vector_2.cpp
-  lib/export_polygon_with_holes_2.cpp)
+  src/fdmlpy.cpp
+  src/export_polygon_2.cpp
+  src/export_point_2.cpp
+  src/export_vector_2.cpp
+  src/export_polygon_with_holes_2.cpp)
 target_link_libraries(fdmlpy PRIVATE
   fdml
   ${Boost_LIBRARIES}

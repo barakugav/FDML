@@ -16,11 +16,11 @@ endif()
 configure_file(version.hpp.in include/fdml/version.hpp)
 
 # The source files:
-set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/json_utils.cpp)
-set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/locator.cpp)
-set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/locator_daemon.cpp)
-set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/trapezoid.cpp)
-set(FDML_SRC_FILES ${FDML_SRC_FILES} lib/trapezoider.cpp)
+set(FDML_SRC_FILES ${FDML_SRC_FILES} src/json_utils.cpp)
+set(FDML_SRC_FILES ${FDML_SRC_FILES} src/locator.cpp)
+set(FDML_SRC_FILES ${FDML_SRC_FILES} src/locator_daemon.cpp)
+set(FDML_SRC_FILES ${FDML_SRC_FILES} src/trapezoid.cpp)
+set(FDML_SRC_FILES ${FDML_SRC_FILES} src/trapezoider.cpp)
 
 set(FDML_HDR_FILES ${FDML_HDR_FILES} include/fdml/defs.hpp)
 set(FDML_HDR_FILES ${FDML_HDR_FILES} include/fdml/locator_daemon.hpp)
