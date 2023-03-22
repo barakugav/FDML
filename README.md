@@ -1,7 +1,7 @@
 # FDML: Few Distance Measurements robot Localization
 
 <div align="center">
-<img src="https://github.com/barakugav/fdml/blob/master/doc/logo/logo_horizontal.png?raw=true" alt="drawing" width="600"/>
+<img src="https://github.com/barakugav/fdml/blob/master/ect/doc/logo/logo_horizontal.png?raw=true" alt="drawing" width="600"/>
 </div>
 
 FDML is a CPP software for robot localization processing and queries using few (one or two) distance measurements.
