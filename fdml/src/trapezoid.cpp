@@ -433,8 +433,8 @@ std::vector<Polygon> Trapezoid::intersect_with_bottom_edge_half_plane(Polygon& p
 
     /* Iterate over the resulting faces in the arrangment and collect all result polygon in the correct half plane */
     std::vector<Polygon> res;
-    for (auto& it = arr.faces_begin(); it != arr.faces_end(); ++it) {
-        Face face = it;
+    for (auto it = arr.faces_begin(); it != arr.faces_end(); ++it) {
+        auto face = it;
         if (face->is_unbounded() || !face->contained())
             continue;
 
