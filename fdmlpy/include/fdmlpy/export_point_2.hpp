@@ -12,10 +12,10 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/operators.h>
 
-#include "add_insertion.hpp"
-#include "make_iterator.hpp"
-#include "add_extraction.hpp"
-#include "Hash_rational_point.hpp"
+#include "fdmlpy/add_insertion.hpp"
+#include "fdmlpy/make_iterator.hpp"
+#include "fdmlpy/add_extraction.hpp"
+#include "fdmlpy/Hash_rational_point.hpp"
 
 namespace py = nanobind;
 

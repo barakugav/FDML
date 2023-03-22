@@ -1,17 +1,12 @@
 set(FDML_LIB_DIR "${CMAKE_BINARY_DIR}/fdml")
 set(FDMLPY_LIB_DIR "${CMAKE_BINARY_DIR}/fdmlpy")
 
-#### Add Packages
-find_package(Python3 ${FDML_PY_MIN_VERSION} COMPONENTS Interpreter Development)
-set (FDML_PY_MAJOR_DOT_MINOR_VERSION
-  "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
-set(FDML_PY_MAJOR_MINOR_VERSION
-  "${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}")
+find_package(Python ${FDML_PY_MIN_VERSION} COMPONENTS Interpreter Development)
+find_package(nanobind CONFIG REQUIRED)
 
-find_package(PythonLibs ${FDML_PY_MAJOR_DOT_MINOR_VERSION} EXACT REQUIRED)
+#### Add Packages
 find_package(Boost ${FDML_BOOST_MIN_VERSION} REQUIRED COMPONENTS
-  system thread program_options
-  python${FDML_PY_MAJOR_MINOR_VERSION} numpy${FDML_PY_MAJOR_MINOR_VERSION})
+  system thread program_options)
 
 # Add include directories
 include_directories(include)
@@ -24,34 +19,21 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 add_definitions(-DFDML_FDMLPY_SOURCE)
 add_definitions(-DFDMLPY_LIB)
 
-add_library(fdmlpy SHARED
+nanobind_add_module(fdmlpy
   src/fdmlpy.cpp
+  src/export_gmp.cpp
   src/export_polygon_2.cpp
-  src/export_point_2.cpp
-  src/export_vector_2.cpp
   src/export_polygon_with_holes_2.cpp)
 target_link_libraries(fdmlpy PRIVATE
   fdml
   ${Boost_LIBRARIES}
-  ${PYTHON_LIBRARIES}
-  ${CMAKE_DL_LIBS}
-  ${EXTRA_LIBS})
+  ${PYTHON_LIBRARIES})
 # don't prepend wrapper library name with lib
 set_target_properties(fdmlpy PROPERTIES PREFIX "")
 set_target_properties(fdmlpy PROPERTIES OUTPUT_NAME fdmlpy)
-set (FDMLPY_LIBRARY_SUFFIX ".so")
-if(WIN32)
-  set (FDMLPY_LIBRARY_SUFFIX ".pyd")
-  set_target_properties(fdmlpy PROPERTIES SUFFIX ".pyd")
-elseif(APPLE)
-  set (FDMLPY_LIBRARY_SUFFIX ".so")
-  set_target_properties(fdmlpy PROPERTIES BUNDLE ON)
-endif()
-# Use a generator expression to get rid of per-configuration subdirectory
-# appended by Multi-configuration generators (e.g Visual Studio)
-# https://cmake.org/cmake/help/latest/prop_tgt/LIBRARY_OUTPUT_DIRECTORY.html
+set(FDMLPY_LIBRARY_SUFFIX ${NB_SUFFIX})
 set_target_properties(fdmlpy PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${FDMLPY_LIB_DIR}/$<0:>)
-set (FDMLPY_TARGET_LINKER_FILE "fdmlpy${FDMLPY_LIBRARY_SUFFIX}")
+set(FDMLPY_TARGET_LINKER_FILE "fdmlpy${FDMLPY_LIBRARY_SUFFIX}")
 
 ################################################################################
 # Stubs (Type Annotation)
@@ -81,7 +63,7 @@ set (FDMLPY_BUILD_OUTPUT_DIR "${FDMLPY_LIB_DIR}/dist")
 set (FDMLPY_TAR ${FDMLPY_BUILD_OUTPUT_DIR}/fdmlpy-1.0.tar.gz)
 set (FDMLPY_WHL ${FDMLPY_BUILD_OUTPUT_DIR}/fdmlpy-1.0-py3-none-any.whl)
 set (FDMLPY_BUILD_OUTPUT ${FDMLPY_TAR} ${FDMLPY_WHL})
-set (FDMLPY_BUILD_CMD ${Python3_EXECUTABLE})
+set (FDMLPY_BUILD_CMD ${Python_EXECUTABLE})
 set (FDMLPY_BUILD_ARGS -m build ${FDMLPY_LIB_DIR})
 set (FDMLPY_BUILD_DEPENDS fdmlpy ${FDMLPY_STUBS} ${FDMLPY_SETUP_FILES})
 add_custom_command(
