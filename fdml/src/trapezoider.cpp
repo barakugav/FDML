@@ -311,7 +311,7 @@ void Trapezoider::init_poly_set(const Polygon_with_holes& scene) {
                     continue;
 
                 if (line.oriented_side(v3->point()) == CGAL::ON_ORIENTED_BOUNDARY) {
-                    fdml_infoln("3 colliniar points: (" << v1->point() << "), (" << v3->point() << "), (" << v3->point()
+                    fdml_infoln("3 collinear points: (" << v1->point() << "), (" << v2->point() << "), (" << v3->point()
                                                         << ")");
                     found_3collinear = true;
                 }
@@ -319,7 +319,7 @@ void Trapezoider::init_poly_set(const Polygon_with_holes& scene) {
         }
     }
     if (found_3collinear)
-        throw std::invalid_argument("input scene contains 3 colliniar points");
+        throw std::invalid_argument("input scene contains 3 collinear points");
 }
 
 /* Create a new Trapezoid and update the relevant data structures */
