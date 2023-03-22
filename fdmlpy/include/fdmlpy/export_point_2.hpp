@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Israel.
-// All rights reserved to Tel Aviv University.
-//
+
 // SPDX-License-Identifier: LGPL-3.0-or-later.
 // Commercial use is authorized only through a concession contract to purchase a commercial license for CGAL.
 //

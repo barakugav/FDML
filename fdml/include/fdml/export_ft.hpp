@@ -1,6 +1,3 @@
-// Copyright (c) 2022 Israel.
-// All rights reserved to Tel Aviv University.
-//
 // Author(s): Efi Fogel         <efifogel@gmail.com>
 
 #ifndef FDML_EXPORT_FT_HPP

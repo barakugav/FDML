@@ -1,6 +1,4 @@
-// Copyright (c) 2022 Israel.
-// All rights reserved to Tel Aviv University.
-//
+
 // Author(s): Efi Fogel         <efifogel@gmail.com>
 
 #ifndef FDML_HASH_RATIONAL_POINT_HPP

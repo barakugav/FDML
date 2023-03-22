@@ -1,6 +1,3 @@
-// Copyright (c) 2022 Israel.
-// All rights reserved.
-//
 // Author(s): Efi Fogel         <efifogel@gmail.com>
 
 #ifndef FDML_CONFIG_HPP
