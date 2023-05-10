@@ -88,8 +88,9 @@ If Python bindings are built, also [nanobind](https://github.com/wjakob/nanobind
 In this guide we will clone the `FDML` repo into `C:\fdml\`, install the dependencies into `C:\fdml_deps\` and build `FDML` atrifacts into `C:\fdml_build\`. You should change these paths according to your needs.
 
 - Install `cmake` and `MSVC`
+
 - Install `GMP` and `MPFR`:
-	Download and unzip the binaries from this [link](https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-win64-auxiliary-libraries-gmp-mpfr.zip) into `C:\fdml_deps\gmp`, and set `GMP` and `MPFR` environment variables:
+	Download and unzip the binaries from [this link](https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-win64-auxiliary-libraries-gmp-mpfr.zip) into `C:\fdml_deps\gmp`, and set `GMP` and `MPFR` environment variables:
 	```
 	$env:GMP_DIR="C:\fdml_deps\gmp"
 	$env:MPFR_DIR="C:\fdml_deps\gmp"
@@ -145,7 +146,11 @@ When creating the `Visual Studio` project using `cmake`, pass `-DFDML_WITH_PYBIN
 
 In this guide we will clone the `FDML` repo into `~/fdml/`, install the dependencies into `~/fdml_deps/` and build `FDML` atrifacts into `~/fdml_build/`. You should change these paths according to your needs.
 
-- Install `cmake` and `MSVC`
+- Install `C++` build tools:
+	```bash
+	sudo apt-get install build-essential checkinstall m4 g++ cmake
+	```
+
 - Install `GMP` and `MPFR`:
 	```bash
 	sudo apt-get install libgmp3-dev
@@ -157,11 +162,11 @@ Unfortenetly, the `boost` version installed through `apt-get` is currently `1.71
 	```
 	cd ~/fdml_deps/
 	wget -O boost_1_79_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.79.0/boost_1_79_0.tar.gz/download
-	tar xzvf boost_1_79_0.tar.gz
+	tar xzf boost_1_79_0.tar.gz
 	rm boost_1_79_0.tar.gz
 	cd boost_1_79_0
 	./bootstrap.sh
-	./b2 --build-dir=./build --stagedir=./bin architecture=x86 address-model=64 link=static,shared --variant=debug,release --debug-configuration --without-python
+	./b2 --build-dir=./build --stagedir=./bin architecture=x86 address-model=64 link=static,shared --variant=debug,release --without-python
 	export BOOST_INCLUDEDIR="~/fdml_deps/boost_1_79_0"
 	export BOOST_LIBRARYDIR="~/fdml_deps/boost_1_79_0/bin/lib"
 	```
@@ -172,7 +177,6 @@ Unfortenetly, the `boost` version installed through `apt-get` is currently `1.71
 	mkdir ~/fdml_deps/cgal/build
 	cd ~/fdml_deps/cgal/build
 	cmake ..
-	sudo make install # install to /usr/local
 	export CGAL_DIR="~/fdml_deps/cgal/build"
 	```
 

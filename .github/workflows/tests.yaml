@@ -1,0 +1,61 @@
+name: Build
+
+permissions:
+  contents: read
+
+on: [push]
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get repo
+      uses: actions/checkout@v3
+
+    - name: Install Cpp build tools
+      run: |
+        sudo apt-get install build-essential checkinstall m4 g++ cmake
+
+    - name: Install GMP and MPFR
+      run: |
+        sudo apt-get install libgmp3-dev
+        sudo apt-get install libmpfr-dev libmpfr-doc
+
+    - name: Install Boost
+      run: |
+        mkdir -p $GITHUB_WORKSPACE/fdml_deps/
+        cd $GITHUB_WORKSPACE/fdml_deps/
+        wget -O boost_1_79_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.79.0/boost_1_79_0.tar.gz/download
+        tar xzf boost_1_79_0.tar.gz
+        rm boost_1_79_0.tar.gz
+        cd boost_1_79_0
+        ./bootstrap.sh
+        ./b2 --build-dir=./build --stagedir=./bin architecture=x86 address-model=64 link=static,shared --variant=debug,release --without-python
+
+
+    - name: Install CGAL
+      run: |
+        git clone https://github.com/CGAL/cgal.git $GITHUB_WORKSPACE/fdml_deps/cgal
+        mkdir -p $GITHUB_WORKSPACE/fdml_deps/cgal/build
+        cd $GITHUB_WORKSPACE/fdml_deps/cgal/build
+        cmake ..
+
+    - name: Install nanobind
+      run: |
+        git clone https://github.com/wjakob/nanobind.git $GITHUB_WORKSPACE/fdml_deps/nanobind
+        cd $GITHUB_WORKSPACE/fdml_deps/nanobind
+        git submodule update --init
+
+    - name: Install Python dependencies
+      run: |
+        pip install -r $GITHUB_WORKSPACE/fdmlpy/requirements.txt
+
+    - name: Build FDML with bindings
+      run: |
+        export BOOST_INCLUDEDIR=$GITHUB_WORKSPACE/fdml_deps/boost_1_79_0
+        export BOOST_LIBRARYDIR=$GITHUB_WORKSPACE/fdml_deps/boost_1_79_0/bin/lib
+        export CGAL_DIR=$GITHUB_WORKSPACE/fdml_deps/cgal/build
+        export nanobind_DIR=$GITHUB_WORKSPACE/fdml_deps/nanobind/
+        mkdir $GITHUB_WORKSPACE/fdml_build/
+          cd $GITHUB_WORKSPACE/fdml_build/
+          cmake -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DFDML_WITH_PYBINDINGS:BOOL=ON $GITHUB_WORKSPACE
+          make -j
