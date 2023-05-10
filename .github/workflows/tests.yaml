@@ -31,7 +31,6 @@ jobs:
         ./bootstrap.sh
         ./b2 --build-dir=./build --stagedir=./bin architecture=x86 address-model=64 link=static,shared --variant=debug,release --without-python
 
-
     - name: Install CGAL
       run: |
         git clone https://github.com/CGAL/cgal.git $GITHUB_WORKSPACE/fdml_deps/cgal
@@ -59,3 +58,84 @@ jobs:
           cd $GITHUB_WORKSPACE/fdml_build/
           cmake -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DFDML_WITH_PYBINDINGS:BOOL=ON $GITHUB_WORKSPACE
           make -j
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Get repo
+      uses: actions/checkout@v3
+
+    - name: Create dependencies dir
+      run: |
+        mkdir ${{ github.workspace }}\fdml_deps\
+
+    - name: Install GMP and MPFR (download)
+      uses: suisei-cn/actions-download-file@v1.3.0
+      id: gmp_mpfr_zip_download
+      with:
+        url: "https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-win64-auxiliary-libraries-gmp-mpfr.zip"
+        target: ${{ github.workspace }}\fdml_deps\
+
+    - name: Install GMP and MPFR (extract)
+      run: |
+        cd ${{ github.workspace }}\fdml_deps\
+        mv CGAL-5.4-win64-auxiliary-libraries-gmp-mpfr.zip gmp-mpfr.zip
+        Expand-Archive -LiteralPath gmp-mpfr.zip -DestinationPath gmp_mpfr_parent
+        rm gmp-mpfr.zip
+        mv gmp_mpfr_parent\auxiliary\gmp gmp_mpfr
+        rmdir gmp_mpfr_parent\auxiliary
+        rmdir gmp_mpfr_parent
+
+    - name: Install Boost (download)
+      uses: suisei-cn/actions-download-file@v1.3.0
+      id: boost_zip_download
+      with:
+        url: "https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.zip"
+        target: ${{ github.workspace }}\fdml_deps\
+
+    - name: Install Boost (extract and build)
+      run: |
+        cd ${{ github.workspace }}\fdml_deps\
+        Expand-Archive -LiteralPath boost_1_79_0.zip -DestinationPath boost_1_79_0
+        rm boost_1_79_0.zip
+        mv boost_1_79_0 boost_1_79_0_parent
+        mv boost_1_79_0_parent\boost_1_79_0 boost_1_79_0
+        rmdir boost_1_79_0_parent
+        cd boost_1_79_0
+        .\bootstrap.bat
+        .\b2 --build-dir=.\build --stagedir=.\bin architecture=x86 address-model=64 link=static,shared runtime-link=static,shared --variant=debug,release --without-python
+
+    - name: Install CGAL
+      run: |
+        git clone https://github.com/CGAL/cgal.git ${{ github.workspace }}\fdml_deps\cgal
+        mkdir ${{ github.workspace }}\fdml_deps\cgal\build
+        cd ${{ github.workspace }}\fdml_deps\cgal\build
+        cmake ..
+
+    - name: Install nanobind
+      run: |
+        git clone https://github.com/wjakob/nanobind.git ${{ github.workspace }}\fdml_deps\nanobind
+        cd ${{ github.workspace }}\fdml_deps\nanobind
+        git submodule update --init
+
+    - name: Setup | Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+
+    - name: Install Python dependencies
+      run: |
+        pip install -r ${{ github.workspace }}\fdmlpy\requirements.txt
+
+    - name: Build FDML with bindings
+      run: |
+        $env:GMP_DIR="${{ github.workspace }}\fdml_deps\gmp_mpfr"
+        $env:MPFR_DIR="${{ github.workspace }}\fdml_deps\gmp_mpfr"
+        $env:BOOST_INCLUDEDIR="${{ github.workspace }}\fdml_deps\boost_1_79_0"
+        $env:BOOST_LIBRARYDIR="${{ github.workspace }}\fdml_deps\boost_1_79_0\bin\lib"
+        $env:CGAL_DIR="${{ github.workspace }}\fdml_deps\cgal\build"
+        $env:nanobind_DIR="${{ github.workspace }}\fdml_deps\nanobind"
+        mkdir ${{ github.workspace }}\fdml_build\
+        cd ${{ github.workspace }}\fdml_build\
+        cmake -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DFDML_WITH_PYBINDINGS:BOOL=ON ${{ github.workspace }}
+        cmake --build . -j

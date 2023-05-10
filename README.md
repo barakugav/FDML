@@ -90,10 +90,10 @@ In this guide we will clone the `FDML` repo into `C:\fdml\`, install the depende
 - Install `cmake` and `MSVC`
 
 - Install `GMP` and `MPFR`:
-	Download and unzip the binaries from [this link](https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-win64-auxiliary-libraries-gmp-mpfr.zip) into `C:\fdml_deps\gmp`, and set `GMP` and `MPFR` environment variables:
+	Download and unzip the binaries from [this link](https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-win64-auxiliary-libraries-gmp-mpfr.zip) into `C:\fdml_deps\gmp_mpfr`, and set `GMP` and `MPFR` environment variables:
 	```
-	$env:GMP_DIR="C:\fdml_deps\gmp"
-	$env:MPFR_DIR="C:\fdml_deps\gmp"
+	$env:GMP_DIR="C:\fdml_deps\gmp_mpfr"
+	$env:MPFR_DIR="C:\fdml_deps\gmp_mpfr"
 	```
 
 - Install `boost` via [installer](https://sourceforge.net/projects/boost/files/boost-binaries/) into `C:\fdml_deps\boost_1_82_0` and set its environment variables (replace `1_82_0` and `14.3` if you are using different versions):
@@ -116,16 +116,15 @@ In this guide we will clone the `FDML` repo into `C:\fdml\`, install the depende
 	git clone https://github.com/barakugav/FDML.git C:\fdml
 	```
 
-- Create a `Visual Studio` project using `cmake`:
+- BUild using `cmake`:
 	```
 	mkdir C:\fdml_build\
 	cd C:\fdml_build\
 	cmake -A x64 -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DFDML_WITH_PYBINDINGS:BOOL=OFF C:\fdml\
+	cmake --build . -j
 	```
-- Open the solution `C:\fdml_build\FDML.sln` using `Visual Studio` and build `Build -> Build Solution`.
-
 #### Building with Python bindings
-The installation follow the same steps as above, with addition dependencies installation before the creation of the `Visual Studio` project via `cmake`:
+The installation follow the same steps as above, with addition dependencies installation before building via `cmake`:
 - Install `nanobind`
 	```
 	git clone https://github.com/wjakob/nanobind.git C:\fdml_deps\nanobind
@@ -139,7 +138,7 @@ The installation follow the same steps as above, with addition dependencies inst
 	pip install -r C:\fdml\fdmlpy\requirements.txt
 	```
 
-When creating the `Visual Studio` project using `cmake`, pass `-DFDML_WITH_PYBINDINGS:BOOL=ON`, and than build normally via `Build -> Build Solution`.
+When running `cmake`, pass `-DFDML_WITH_PYBINDINGS:BOOL=ON`, and than build normally via `cmake --build .`.
 
 
 ## Linux
