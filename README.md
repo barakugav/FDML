@@ -1,3 +1,5 @@
+[![Build](https://github.com/barakugav/FDML/actions/workflows/build.yaml/badge.svg)](https://github.com/barakugav/FDML/actions/workflows/build.yaml)
+
 # FDML: Few Distance Measurements robot Localization
 
 <div align="center">
@@ -116,7 +118,7 @@ In this guide we will clone the `FDML` repo into `C:\fdml\`, install the depende
 	git clone https://github.com/barakugav/FDML.git C:\fdml
 	```
 
-- BUild using `cmake`:
+- Build using `cmake`:
 	```
 	mkdir C:\fdml_build\
 	cd C:\fdml_build\
