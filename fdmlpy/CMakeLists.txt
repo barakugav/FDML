@@ -34,6 +34,7 @@ set_target_properties(fdmlpy PROPERTIES OUTPUT_NAME fdmlpy)
 set(FDMLPY_LIBRARY_SUFFIX ${NB_SUFFIX})
 set_target_properties(fdmlpy PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${FDMLPY_LIB_DIR}/$<0:>)
 set(FDMLPY_TARGET_LINKER_FILE "fdmlpy${FDMLPY_LIBRARY_SUFFIX}")
+set (FDMLPY_BUILD_DEPENDS fdmlpy)
 
 ################################################################################
 # Stubs (Type Annotation)
@@ -45,6 +46,7 @@ foreach(name IN LISTS FDMLPY_STUBS_SRC_FILES)
   set (FDMLPY_STUBS ${FDMLPY_STUBS} ${FDMLPY_LIB_DIR}/${name})
   configure_file(${FDMLPY_SRC_STUBS_DIR}/${name} ${FDMLPY_LIB_DIR}/${name})
 endforeach()
+list(APPEND FDMLPY_BUILD_DEPENDS ${FDMLPY_STUBS})
 
 ################################################################################
 # Setup
@@ -54,10 +56,34 @@ set (FDMLPY_SRC_SETUP_DIR "${CMAKE_CURRENT_LIST_DIR}")
 configure_file(${FDMLPY_SRC_SETUP_DIR}/setup.py ${FDMLPY_LIB_DIR}/setup.py)
 configure_file(${FDMLPY_SRC_SETUP_DIR}/README.rst ${FDMLPY_LIB_DIR}/README.rst)
 set (FDMLPY_SETUP_FILES ${FDMLPY_LIB_DIR}/setup.py ${FDMLPY_LIB_DIR}/README.rst)
+list(APPEND FDMLPY_BUILD_DEPENDS ${FDMLPY_SETUP_FILES})
 
 ################################################################################
 # Post build
 ################################################################################
+# Add __init__.py
+get_directory("${GMP_LIBRARIES}" GMP_LIBRARY_DIR)
+get_directory("${MPFR_LIBRARIES}" MPFR_LIBRARY_DIR)
+if(WIN32)
+  set(FDMLPY_INIT_SRC "${CMAKE_CURRENT_LIST_DIR}/Windows/__init__.py")
+else()
+  set(FDMLPY_INIT_SRC "${CMAKE_CURRENT_LIST_DIR}/__init__.py")
+endif()
+set(FDMLPY_INIT_TRG "${FDMLPY_LIB_DIR}/__init__.py")
+add_custom_command(
+	OUTPUT ${FDMLPY_INIT_TRG}
+        COMMAND "${CMAKE_COMMAND}"
+        "-DFILE_IN=${FDMLPY_INIT_SRC}"
+        "-DFILE_OUT=${FDMLPY_INIT_TRG}"
+        "-DBoost_LIBRARY_DIRS=${Boost_LIBRARY_DIRS}"
+        "-DGMP_LIBRARY_DIR=${GMP_LIBRARY_DIR}"
+        "-DMPFR_LIBRARY_DIR=${MPFR_LIBRARY_DIR}"
+        -P "${FDML_MODULE_DIR}/BuildTimeFile.cmake"
+        DEPENDS ${FDMLPY_INIT_SRC}
+	VERBATIM)
+
+list(APPEND FDMLPY_BUILD_DEPENDS ${FDMLPY_INIT_TRG})
+
 # Setup application
 set (FDMLPY_BUILD_OUTPUT_DIR "${FDMLPY_LIB_DIR}/dist")
 set (FDMLPY_TAR ${FDMLPY_BUILD_OUTPUT_DIR}/fdmlpy-1.0.tar.gz)
@@ -65,7 +91,6 @@ set (FDMLPY_WHL ${FDMLPY_BUILD_OUTPUT_DIR}/fdmlpy-1.0-py3-none-any.whl)
 set (FDMLPY_BUILD_OUTPUT ${FDMLPY_TAR} ${FDMLPY_WHL})
 set (FDMLPY_BUILD_CMD ${Python_EXECUTABLE})
 set (FDMLPY_BUILD_ARGS -m build ${FDMLPY_LIB_DIR})
-set (FDMLPY_BUILD_DEPENDS fdmlpy ${FDMLPY_STUBS} ${FDMLPY_SETUP_FILES})
 add_custom_command(
   OUTPUT ${FDMLPY_BUILD_OUTPUT}
   COMMAND ${FDMLPY_BUILD_CMD}
