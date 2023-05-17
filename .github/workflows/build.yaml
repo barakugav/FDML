@@ -59,6 +59,16 @@ jobs:
         cmake -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DFDML_WITH_PYBINDINGS:BOOL=ON ${{ github.workspace }}
         make -j
 
+    - name: Zip build artifacts
+      run: |
+        tar -czf ${{ github.workspace }}/build.tar.gz ${{ github.workspace }}/fdml_build/
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-ubuntu
+        path: ${{ github.workspace }}/build.tar.gz
+
 
   build-windows:
     runs-on: windows-latest
@@ -140,3 +150,13 @@ jobs:
         cd ${{ github.workspace }}\fdml_build\
         cmake -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DFDML_WITH_PYBINDINGS:BOOL=ON ${{ github.workspace }}
         cmake --build . -j
+
+    - name: Zip build artifacts
+      run: |
+        Compress-Archive -Path ${{ github.workspace }}\fdml_build\ -DestinationPath ${{ github.workspace }}\build.zip
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-windows
+        path: ${{ github.workspace }}\build.zip
