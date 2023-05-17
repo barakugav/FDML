@@ -9,6 +9,6 @@ setup(# name='fdmlpy',
       author='Barak Ugav, Efi Fogel',
       author_email='barakugav@gmail.com',
       url='https://github.com/barakugav/FDML',
-      package_dir={'fdmlpy': './'},
+      package_dir={'fdmlpy': '.'},
       package_data=package_data,
       license='')
