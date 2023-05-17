@@ -22,8 +22,8 @@ jobs:
 
     - name: Install Boost
       run: |
-        mkdir -p $GITHUB_WORKSPACE/fdml_deps/
-        cd $GITHUB_WORKSPACE/fdml_deps/
+        mkdir -p ${{ github.workspace }}/fdml_deps/
+        cd ${{ github.workspace }}/fdml_deps/
         wget -O boost_1_79_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.79.0/boost_1_79_0.tar.gz/download
         tar xzf boost_1_79_0.tar.gz
         rm boost_1_79_0.tar.gz
@@ -33,31 +33,32 @@ jobs:
 
     - name: Install CGAL
       run: |
-        git clone https://github.com/CGAL/cgal.git $GITHUB_WORKSPACE/fdml_deps/cgal
-        mkdir -p $GITHUB_WORKSPACE/fdml_deps/cgal/build
-        cd $GITHUB_WORKSPACE/fdml_deps/cgal/build
+        git clone https://github.com/CGAL/cgal.git ${{ github.workspace }}/fdml_deps/cgal
+        mkdir -p ${{ github.workspace }}/fdml_deps/cgal/build
+        cd ${{ github.workspace }}/fdml_deps/cgal/build
         cmake ..
 
     - name: Install nanobind
       run: |
-        git clone https://github.com/wjakob/nanobind.git $GITHUB_WORKSPACE/fdml_deps/nanobind
-        cd $GITHUB_WORKSPACE/fdml_deps/nanobind
+        git clone https://github.com/wjakob/nanobind.git ${{ github.workspace }}/fdml_deps/nanobind
+        cd ${{ github.workspace }}/fdml_deps/nanobind
         git submodule update --init
 
     - name: Install Python dependencies
       run: |
-        pip install -r $GITHUB_WORKSPACE/fdmlpy/requirements.txt
+        pip install -r ${{ github.workspace }}/fdmlpy/requirements.txt
 
     - name: Build FDML with bindings
       run: |
-        export BOOST_INCLUDEDIR=$GITHUB_WORKSPACE/fdml_deps/boost_1_79_0
-        export BOOST_LIBRARYDIR=$GITHUB_WORKSPACE/fdml_deps/boost_1_79_0/bin/lib
-        export CGAL_DIR=$GITHUB_WORKSPACE/fdml_deps/cgal/build
-        export nanobind_DIR=$GITHUB_WORKSPACE/fdml_deps/nanobind/
-        mkdir $GITHUB_WORKSPACE/fdml_build/
-          cd $GITHUB_WORKSPACE/fdml_build/
-          cmake -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DFDML_WITH_PYBINDINGS:BOOL=ON $GITHUB_WORKSPACE
-          make -j
+        export BOOST_INCLUDEDIR=${{ github.workspace }}/fdml_deps/boost_1_79_0
+        export BOOST_LIBRARYDIR=${{ github.workspace }}/fdml_deps/boost_1_79_0/bin/lib
+        export CGAL_DIR=${{ github.workspace }}/fdml_deps/cgal/build
+        export nanobind_DIR=${{ github.workspace }}/fdml_deps/nanobind/
+        mkdir ${{ github.workspace }}/fdml_build/
+        cd ${{ github.workspace }}/fdml_build/
+        cmake -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_BUILD_TYPE=Release -DFDML_WITH_PYBINDINGS:BOOL=ON ${{ github.workspace }}
+        make -j
+
 
   build-windows:
     runs-on: windows-latest
