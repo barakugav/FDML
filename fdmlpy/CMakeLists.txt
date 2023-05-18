@@ -1,3 +1,5 @@
+include(CMakePrintHelpers)
+
 set(FDML_LIB_DIR "${CMAKE_BINARY_DIR}/fdml")
 set(FDMLPY_LIB_DIR "${CMAKE_BINARY_DIR}/fdmlpy")
 
@@ -32,8 +34,9 @@ target_link_libraries(fdmlpy PRIVATE
 set_target_properties(fdmlpy PROPERTIES PREFIX "")
 set_target_properties(fdmlpy PROPERTIES OUTPUT_NAME fdmlpy)
 set(FDMLPY_LIBRARY_SUFFIX ${NB_SUFFIX})
-set_target_properties(fdmlpy PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${FDMLPY_LIB_DIR}/$<0:>)
+set_target_properties(fdmlpy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${FDMLPY_LIB_DIR}/$<0:>)
 set(FDMLPY_TARGET_LINKER_FILE "fdmlpy${FDMLPY_LIBRARY_SUFFIX}")
+cmake_print_variables(FDMLPY_TARGET_LINKER_FILE)
 set (FDMLPY_BUILD_DEPENDS fdmlpy)
 
 ################################################################################
