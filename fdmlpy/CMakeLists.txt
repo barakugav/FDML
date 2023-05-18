@@ -27,7 +27,7 @@ nanobind_add_module(fdmlpy
 target_link_libraries(fdmlpy PRIVATE
   fdml
   ${Boost_LIBRARIES}
-  ${PYTHON_LIBRARIES})
+  ${Python_LIBRARIES})
 # don't prepend wrapper library name with lib
 set_target_properties(fdmlpy PROPERTIES PREFIX "")
 set_target_properties(fdmlpy PROPERTIES OUTPUT_NAME fdmlpy)
