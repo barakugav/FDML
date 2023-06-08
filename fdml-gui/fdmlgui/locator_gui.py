@@ -33,12 +33,13 @@ class PolygonsScene():
 
     @staticmethod
     def read_scene(filename):
-        obstacles = []
+        scene_boundary = []
         with open(filename, "r") as f:
             d = json.load(f)
-            if 'obstacles' in d:
-                obstacles = d['obstacles']
-        return obstacles
+            if 'scene_boundary' in d:
+                scene_boundary = [d['scene_boundary']]
+        print("scene_boundary", scene_boundary)
+        return scene_boundary
 
     def load_scene(self, filename):
         self._obstacles = []
