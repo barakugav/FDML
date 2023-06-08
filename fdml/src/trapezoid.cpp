@@ -420,7 +420,7 @@ std::vector<Polygon> Trapezoid::intersect_with_bottom_edge_half_plane(Polygon& p
     /* Create a long segment, defined by bottom edge, which will operate as half plane */
     Segment halfplane_seg(bottom_left + 8*(bottom_left-bottom_right), bottom_right+8*(bottom_right-bottom_left));
 
-    /* Create an arrangment containing the input polygon */
+    /* Create an arrangement containing the input polygon */
     Polygon_set ps;
     ps.insert(poly);
     auto arr = ps.arrangement();
@@ -431,7 +431,7 @@ std::vector<Polygon> Trapezoid::intersect_with_bottom_edge_half_plane(Polygon& p
     /* Insert the half plane segment */
     CGAL::insert(arr, halfplane_seg);
 
-    /* Iterate over the resulting faces in the arrangment and collect all result polygon in the correct half plane */
+    /* Iterate over the resulting faces in the arrangement and collect all result polygon in the correct half plane */
     std::vector<Polygon> res;
     for (auto it = arr.faces_begin(); it != arr.faces_end(); ++it) {
         auto face = it;

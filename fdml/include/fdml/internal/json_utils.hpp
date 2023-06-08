@@ -33,6 +33,9 @@ class FDML_FDML_DECL JsonUtils {
      * @param filename output file
      */
     static void write_segments(const std::vector<Segment>& segments, const std::string& filename);
+
+    static void write_points(const std::vector<Point>& points, const std::string& filename);
+
 };
 
 } // namespace FDML

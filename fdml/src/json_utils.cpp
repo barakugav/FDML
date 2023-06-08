@@ -240,7 +240,8 @@ void JsonUtils::write_polygons(const std::vector<Polygon>& polygons, const std::
         std::vector<boost::json::array> point_objs;
         for (auto it = polygon.vertices_begin(); it != polygon.vertices_end(); ++it)
             point_objs.push_back(point2json(*it));
-        polygon_objs.emplace_back(point_objs.begin(), point_objs.end());
+        boost::json::array polygon_obj(point_objs.begin(), point_objs.end());
+        polygon_objs.emplace_back(polygon_obj);
     }
     std::vector<std::pair<std::string, boost::json::value>> top_lvl_fields;
     top_lvl_fields.emplace_back("polygons", boost::json::array(polygon_objs.begin(), polygon_objs.end()));
@@ -263,6 +264,23 @@ void JsonUtils::write_segments(const std::vector<Segment>& segments, const std::
     }
     std::vector<std::pair<std::string, boost::json::value>> top_lvl_fields;
     top_lvl_fields.emplace_back("segments", boost::json::array(segments_objs.begin(), segments_objs.end()));
+    boost::json::object top_lvl_obj(top_lvl_fields.begin(), top_lvl_fields.end());
+    boost::json::value top_lvl_obj2(top_lvl_obj);
+
+    std::ofstream outfile(filename);
+    json_format_pretty(outfile, top_lvl_obj2);
+    outfile.close();
+}
+
+void JsonUtils::write_points(const std::vector<Point>& points, const std::string& filename) {
+    fdml_debugln("[JsonUtils] writing points into: " << filename);
+    std::vector<boost::json::array> point_objs;
+    for (auto it = points.begin(); it != points.end(); ++it)
+        point_objs.push_back(point2json(*it));
+    boost::json::array points_obj(point_objs.begin(), point_objs.end());
+
+    std::vector<std::pair<std::string, boost::json::value>> top_lvl_fields;
+    top_lvl_fields.emplace_back("points", points_obj);
     boost::json::object top_lvl_obj(top_lvl_fields.begin(), top_lvl_fields.end());
     boost::json::value top_lvl_obj2(top_lvl_obj);
 

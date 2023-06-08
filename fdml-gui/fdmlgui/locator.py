@@ -91,7 +91,9 @@ class Locator:
             with daemons_lock:
                 daemons.add(self.daemon)
 
-            self._exec_cmd("--cmd init --scene {}".format(scene_filename))
+            self._exec_cmd(f"--cmd init --scene {scene_filename}")
+
+            print("daemon started. logfile:", self.logfile.name)
 
     def stop(self):
         with self.lock:
@@ -133,7 +135,7 @@ class Locator:
 
     def _next_outfile(self):
         self.querynum += 1
-        return os.path.join(self._working_dir(), ".outfile{}".format(self.querynum))
+        return os.path.join(self._working_dir(), f".outfile{self.querynum}")
 
     def _exec_cmd_and_read_res(self, cmd, outfile):
         try:
@@ -151,13 +153,20 @@ class Locator:
     def query1(self, d):
         with self.lock:
             outfile = self._next_outfile()
-            data = self._exec_cmd_and_read_res(
-                "--cmd query1 --d {} --out {}".format(d, outfile), outfile)
+            cmd = f"--cmd query1 --d {d} --out {outfile}"
+            data = self._exec_cmd_and_read_res(cmd, outfile)
             return [np.array(polygon) for polygon in data["polygons"]]
 
     def query2(self, d1, d2):
         with self.lock:
             outfile = self._next_outfile()
-            data = self._exec_cmd_and_read_res(
-                "--cmd query2 --d1 {} --d2 {} --out {}".format(d1, d2, outfile), outfile)
+            cmd = f"--cmd query2 --d1 {d1} --d2 {d2} --out {outfile}"
+            data = self._exec_cmd_and_read_res(cmd, outfile)
             return data["segments"]
+
+    def query22(self, d1, d2, d3, d4):
+        with self.lock:
+            outfile = self._next_outfile()
+            cmd = f"--cmd query2_double --d1 {d1} --d2 {d2} --d3 {d3} --d4 {d4} --out {outfile}"
+            data = self._exec_cmd_and_read_res(cmd, outfile)
+            return data["points"]
