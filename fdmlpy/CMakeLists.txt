@@ -103,7 +103,7 @@ set (FDMLPY_BUILD_OUTPUT_DIR "${FDMLPY_LIB_DIR}/dist")
 
 set (FDMLPY_PYTHON_TAG "cp${FDML_PY_MAJOR_MINOR_VERSION}")
 set (FDMLPY_ABI_TAG "cp${FDML_PY_MAJOR_MINOR_VERSION}")
-execute_process(COMMAND ${Python_EXECUTABLE} -c "import distutils;from distutils import util;print(distutils.util.get_platform().replace('-','_').replace('.','_'),end='')" OUTPUT_VARIABLE FDMLPY_PLATFORM_TAG)
+execute_process(COMMAND ${Python_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_platform().replace('-','_').replace('.','_'),end='')" OUTPUT_VARIABLE FDMLPY_PLATFORM_TAG)
 set (FDMLPY_TAR ${FDMLPY_BUILD_OUTPUT_DIR}/${FDMLPY_PACKAGE_NAME}-${FDML_VERSION}.tar.gz)
 set (FDMLPY_WHL ${FDMLPY_BUILD_OUTPUT_DIR}/${FDMLPY_PACKAGE_NAME}-${FDML_VERSION}-${FDMLPY_PYTHON_TAG}-${FDMLPY_ABI_TAG}-${FDMLPY_PLATFORM_TAG}.whl)
 set (FDMLPY_BUILD_OUTPUT ${FDMLPY_TAR} ${FDMLPY_WHL})
