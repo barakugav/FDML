@@ -6,7 +6,7 @@ from setuptools import Extension, setup
 package_data = {'@FDMLPY_PACKAGE_NAME@':
                 ['__init__.py',
                  '@FDMLPY_TARGET_LINKER_FILE@',
-                 '@FDML_TARGET_LINKER_FILE@',
+                 '@FDML_TARGET_LINKER_FILENAME@',
                  'fdmlpy.pyi']}
 
 # Use a custom bdist_wheel to force non-pure wheel file

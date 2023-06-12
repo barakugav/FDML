@@ -40,15 +40,22 @@ set_target_properties(fdmlpy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${FDMLPY_LIB_DI
 set(FDMLPY_TARGET_LINKER_FILE "fdmlpy${FDMLPY_LIBRARY_SUFFIX}")
 cmake_print_variables(FDMLPY_TARGET_LINKER_FILE)
 
+set(FDMLPY_BUILD_DEPENDS fdmlpy)
+
 # On Windows platform (where rpath is not supported) we explicitly bundle
 # the fdml shared library
 if(WIN32)
-  set(FDML_TARGET_LINKER_FILE "../fdml/fdml${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  set(FDML_TARGET_LINKER_FILENAME "fdml${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  set(FDML_TARGET_LINKER_FILE "../fdml/${FDML_TARGET_LINKER_FILENAME}")
+
+  add_custom_command(
+    OUTPUT ${FDMLPY_LIB_DIR}/${FDML_TARGET_LINKER_FILENAME}
+    COMMAND ${CMAKE_COMMAND} -E copy ${FDML_TARGET_LINKER_FILE} ${FDMLPY_LIB_DIR}/.
+    DEPENDS ${FDML_TARGET_LINKER_FILE}
+    VERBATIM)
+
+  list(APPEND FDMLPY_BUILD_DEPENDS ${FDMLPY_LIB_DIR}/${FDML_TARGET_LINKER_FILENAME})
 endif()
-
-
-
-set(FDMLPY_BUILD_DEPENDS fdmlpy)
 
 ################################################################################
 # Stubs (Type Annotation)
