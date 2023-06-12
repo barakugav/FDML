@@ -43,8 +43,10 @@ cmake_print_variables(FDMLPY_TARGET_LINKER_FILE)
 # On Windows platform (where rpath is not supported) we explicitly bundle
 # the fdml shared library
 if(WIN32)
-  set(FDML_TARGET_LINKER_FILE "$<TARGET_LINKER_FILE_DIR:fdml>/fdml${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  set(FDML_TARGET_LINKER_FILE "../fdml/fdml${CMAKE_SHARED_LIBRARY_SUFFIX}")
 endif()
+
+
 
 set(FDMLPY_BUILD_DEPENDS fdmlpy)
 
@@ -65,17 +67,7 @@ list(APPEND FDMLPY_BUILD_DEPENDS ${FDMLPY_STUBS})
 ################################################################################
 # Copy setup
 set (FDMLPY_SRC_SETUP_DIR "${CMAKE_CURRENT_LIST_DIR}")
-
-# The content of the source setup.py file contains a generator expression,
-# which evaluates to the fdml built library full path. configure_file() does not
-# evaluate generator expression. Instead, we read the content, substitute the
-# normal expressions, and then use file(GENERATE...) to evaluate the generator
-# expression.
-# configure_file(${FDMLPY_SRC_SETUP_DIR}/setup.py ${FDMLPY_LIB_DIR}/setup.py)
-file(READ ${FDMLPY_SRC_SETUP_DIR}/setup.py contents)
-string(CONFIGURE "${contents}" contents @ONLY)
-file(GENERATE OUTPUT ${FDMLPY_LIB_DIR}/setup.py CONTENT "${contents}")
-
+configure_file(${FDMLPY_SRC_SETUP_DIR}/setup.py ${FDMLPY_LIB_DIR}/setup.py)
 configure_file(${FDMLPY_SRC_SETUP_DIR}/README.rst ${FDMLPY_LIB_DIR}/README.rst)
 set (FDMLPY_SETUP_FILES ${FDMLPY_LIB_DIR}/setup.py ${FDMLPY_LIB_DIR}/README.rst)
 list(APPEND FDMLPY_BUILD_DEPENDS ${FDMLPY_SETUP_FILES})
