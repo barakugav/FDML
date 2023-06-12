@@ -40,9 +40,11 @@ set_target_properties(fdmlpy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${FDMLPY_LIB_DI
 set(FDMLPY_TARGET_LINKER_FILE "fdmlpy${FDMLPY_LIBRARY_SUFFIX}")
 cmake_print_variables(FDMLPY_TARGET_LINKER_FILE)
 
-# On Windows platform (where rpath is not supported) we bundle the fdml
-# shared library
-set(FDML_TARGET_LINKER_FILE $<TARGET_RUNTIME_DLLS:fdml>)
+# On Windows platform (where rpath is not supported) we explicitly bundle
+# the fdml shared library
+if(WIN32)
+  set(FDML_TARGET_LINKER_FILE "fdml${CMAKE_SHARED_LIBRARY_SUFFIX}")
+endif()
 
 set(FDMLPY_BUILD_DEPENDS fdmlpy)
 
