@@ -2,15 +2,16 @@ import setuptools
 import sysconfig
 from setuptools import Extension, setup
 
-
+# Only on Windows platform @FDML_TARGET_LINKER_FILE@ is substituted with
+# the name of the fdml shared library file (i.e., fdml.dll). On othe platforms
+# is becomes the empty string.
 package_data = {'@FDMLPY_PACKAGE_NAME@':
                 ['__init__.py',
                  '@FDMLPY_TARGET_LINKER_FILE@',
-                 '@FDML_TARGET_LINKER_FILENAME@',
+                 '@FDML_TARGET_LINKER_FILE@',
                  'fdmlpy.pyi']}
 
-# Use a custom bdist_wheel to force non-pure wheel file
-# aka no 'pyX-none-any'
+# Use a custom bdist_wheel to force non-pure wheel file aka no 'pyX-none-any'
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
     class bdist_wheel(_bdist_wheel):
