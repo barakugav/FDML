@@ -1,6 +1,6 @@
 import setuptools
 import sysconfig
-from setuptools import Extension, setup
+from setuptools import setup
 
 # Only on Windows platform @FDML_TARGET_LINKER_FILE@ is substituted with
 # the name of the fdml shared library file (i.e., fdml.dll). On othe platforms
