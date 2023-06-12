@@ -2,8 +2,10 @@ include(CMakePrintHelpers)
 
 set(FDML_LIB_DIR "${CMAKE_BINARY_DIR}/fdml")
 set(FDMLPY_LIB_DIR "${CMAKE_BINARY_DIR}/fdmlpy")
+set(FDMLPY_PACKAGE_NAME "fdml")
 
 find_package(Python ${FDML_PY_MIN_VERSION} COMPONENTS Interpreter Development)
+set(FDML_PY_MAJOR_MINOR_VERSION "${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
 find_package(nanobind CONFIG REQUIRED)
 
 #### Add Packages
@@ -37,7 +39,8 @@ set(FDMLPY_LIBRARY_SUFFIX ${NB_SUFFIX})
 set_target_properties(fdmlpy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${FDMLPY_LIB_DIR}/$<0:>)
 set(FDMLPY_TARGET_LINKER_FILE "fdmlpy${FDMLPY_LIBRARY_SUFFIX}")
 cmake_print_variables(FDMLPY_TARGET_LINKER_FILE)
-set (FDMLPY_BUILD_DEPENDS fdmlpy)
+set(FDML_TARGET_LINKER_FILE $<TARGET_LINKER_FILE:fdml>)
+set(FDMLPY_BUILD_DEPENDS fdmlpy)
 
 ################################################################################
 # Stubs (Type Annotation)
@@ -56,7 +59,17 @@ list(APPEND FDMLPY_BUILD_DEPENDS ${FDMLPY_STUBS})
 ################################################################################
 # Copy setup
 set (FDMLPY_SRC_SETUP_DIR "${CMAKE_CURRENT_LIST_DIR}")
-configure_file(${FDMLPY_SRC_SETUP_DIR}/setup.py ${FDMLPY_LIB_DIR}/setup.py)
+
+# The content of the source setup.py file contains a generator expression,
+# which evaluates to the fdml built library full path. configure_file() does not
+# evaluate generator expression. Instead, we read the content, substitute the
+# normal expressions, and then use file(GENERATE...) to evaluate the generator
+# expression.
+# configure_file(${FDMLPY_SRC_SETUP_DIR}/setup.py ${FDMLPY_LIB_DIR}/setup.py)
+file(READ ${FDMLPY_SRC_SETUP_DIR}/setup.py contents)
+string(CONFIGURE "${contents}" contents @ONLY)
+file(GENERATE OUTPUT ${FDMLPY_LIB_DIR}/setup.py CONTENT "${contents}")
+
 configure_file(${FDMLPY_SRC_SETUP_DIR}/README.rst ${FDMLPY_LIB_DIR}/README.rst)
 set (FDMLPY_SETUP_FILES ${FDMLPY_LIB_DIR}/setup.py ${FDMLPY_LIB_DIR}/README.rst)
 list(APPEND FDMLPY_BUILD_DEPENDS ${FDMLPY_SETUP_FILES})
@@ -89,8 +102,12 @@ list(APPEND FDMLPY_BUILD_DEPENDS ${FDMLPY_INIT_TRG})
 
 # Setup application
 set (FDMLPY_BUILD_OUTPUT_DIR "${FDMLPY_LIB_DIR}/dist")
-set (FDMLPY_TAR ${FDMLPY_BUILD_OUTPUT_DIR}/fdmlpy-1.0.tar.gz)
-set (FDMLPY_WHL ${FDMLPY_BUILD_OUTPUT_DIR}/fdmlpy-1.0-py3-none-any.whl)
+
+set (FDMLPY_PYTHON_TAG "cp${FDML_PY_MAJOR_MINOR_VERSION}")
+set (FDMLPY_ABI_TAG "cp${FDML_PY_MAJOR_MINOR_VERSION}")
+execute_process(COMMAND ${Python_EXECUTABLE} -c "import distutils;from distutils import util;print(distutils.util.get_platform().replace('-','_').replace('.','_'),end='')" OUTPUT_VARIABLE FDMLPY_PLATFORM_TAG)
+set (FDMLPY_TAR ${FDMLPY_BUILD_OUTPUT_DIR}/${FDMLPY_PACKAGE_NAME}-${FDML_VERSION}.tar.gz)
+set (FDMLPY_WHL ${FDMLPY_BUILD_OUTPUT_DIR}/${FDMLPY_PACKAGE_NAME}-${FDML_VERSION}-${FDMLPY_PYTHON_TAG}-${FDMLPY_ABI_TAG}-${FDMLPY_PLATFORM_TAG}.whl)
 set (FDMLPY_BUILD_OUTPUT ${FDMLPY_TAR} ${FDMLPY_WHL})
 set (FDMLPY_BUILD_CMD ${Python_EXECUTABLE})
 set (FDMLPY_BUILD_ARGS -m build ${FDMLPY_LIB_DIR})
