@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14...3.22)
-project(FDML VERSION "1.0.0" LANGUAGES CXX)
+project(FDML VERSION "0.1.0" LANGUAGES CXX)
 
 # Dependencies makefile
 set(dependencies_file cmake/dependencies.cmake)
@@ -35,11 +35,6 @@ endif()
 
 message(STATUS "VERSION=${CMAKE_PROJECT_VERSION}")
 message(STATUS "SOVERSION=${CMAKE_PROJECT_VERSION_MAJOR}")
-
-set(FDML_MAJOR_VERSION 0)
-set(FDML_MINOR_VERSION 1)
-set(FDML_PATCH_VERSION 0)
-set(FDML_VERSION ${FDML_MAJOR_VERSION}.${FDML_MINOR_VERSION}.${FDML_PATCH_VERSION})
 
 # Use C++17 for this directory and its sub-directories.
 set(CMAKE_CXX_STANDARD 17)
@@ -165,9 +160,9 @@ install(EXPORT FDMLTargets
 include (InstallRequiredSystemLibraries)
 #set (CPACK_RESOURCE_FILE_LICENSE
 #     "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
-set(CPACK_GENERATOR TGZ)
-set(CPACK_PACKAGE_VENDOR "Barak Ugav")
-set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "1")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
-include(CPack)
+# set(CPACK_GENERATOR TGZ)
+# set(CPACK_PACKAGE_VENDOR "Barak Ugav")
+# set(CPACK_PACKAGE_VERSION_MAJOR "0")
+# set(CPACK_PACKAGE_VERSION_MINOR "1")
+# set(CPACK_PACKAGE_VERSION_PATCH "0")
+# include(CPack)
