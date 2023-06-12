@@ -33,12 +33,13 @@ class PolygonsScene():
 
     @staticmethod
     def read_scene(filename):
-        obstacles = []
+        scene_boundary = []
         with open(filename, "r") as f:
             d = json.load(f)
-            if 'obstacles' in d:
-                obstacles = d['obstacles']
-        return obstacles
+            if 'scene_boundary' in d:
+                scene_boundary = [d['scene_boundary']]
+        print("scene_boundary", scene_boundary)
+        return scene_boundary
 
     def load_scene(self, filename):
         self._obstacles = []
@@ -156,7 +157,7 @@ class LocatorGUIComponent(GUI):
                                            QtWidgets.QSizePolicy.Minimum)
         self.actions_panel_layout.addItem(spacerItem, 8, 0, 1, 1)
 
-        # == Two measurement query ==
+        # == Antipodal measurement query ==
         # label
         self.m2_label = QtWidgets.QLabel(self.central_widget)
         self.m2_label.setFont(font)
@@ -183,21 +184,48 @@ class LocatorGUIComponent(GUI):
                                            QtWidgets.QSizePolicy.Minimum)
         self.actions_panel_layout.addItem(spacerItem, 13, 0, 1, 1)
 
+        # == Double Antipodal measurement query ==
+        # label
+        self.m22_label = QtWidgets.QLabel(self.central_widget)
+        self.m22_label.setFont(font)
+        self.m22_label.setObjectName("m22_label")
+        self.actions_panel_layout.addWidget(self.m22_label, 14, 0, 1, 1)
+        # d3 input test
+        self.m2_d3_intxt = QtWidgets.QLineEdit(self.central_widget)
+        self.m2_d3_intxt.setFont(font)
+        self.m2_d3_intxt.setObjectName("m2_d3_intxt")
+        self.actions_panel_layout.addWidget(self.m2_d3_intxt, 15, 0, 1, 1)
+        # d4 input test
+        self.m2_d4_intxt = QtWidgets.QLineEdit(self.central_widget)
+        self.m2_d4_intxt.setFont(font)
+        self.m2_d4_intxt.setObjectName("m2_d4_intxt")
+        self.actions_panel_layout.addWidget(self.m2_d4_intxt, 16, 0, 1, 1)
+        # compute button
+        self.m22_compute_button = QtWidgets.QPushButton(self.central_widget)
+        self.m22_compute_button.setFont(font)
+        self.m22_compute_button.setObjectName("m22_compute_button")
+        self.actions_panel_layout.addWidget(
+            self.m22_compute_button, 17, 0, 1, 1)
+
+        spacerItem = QtWidgets.QSpacerItem(200, 0, QtWidgets.QSizePolicy.MinimumExpanding,
+                                           QtWidgets.QSizePolicy.Minimum)
+        self.actions_panel_layout.addItem(spacerItem, 18, 0, 1, 1)
+
         # == misc
         # Clear label
         self.clear_label = QtWidgets.QLabel(self.central_widget)
         self.clear_label.setFont(font)
         self.clear_label.setObjectName("clear_label")
-        self.actions_panel_layout.addWidget(self.clear_label, 14, 0, 1, 1)
+        self.actions_panel_layout.addWidget(self.clear_label, 19, 0, 1, 1)
         # Clear button
         self.clear_button = QtWidgets.QPushButton(self.central_widget)
         self.clear_button.setFont(font)
         self.clear_button.setObjectName("clear_button")
-        self.actions_panel_layout.addWidget(self.clear_button, 15, 0, 1, 1)
+        self.actions_panel_layout.addWidget(self.clear_button, 20, 0, 1, 1)
 
         spacerItem = QtWidgets.QSpacerItem(200, 0, QtWidgets.QSizePolicy.MinimumExpanding,
                                            QtWidgets.QSizePolicy.Minimum)
-        self.actions_panel_layout.addItem(spacerItem, 16, 0, 2, 1)
+        self.actions_panel_layout.addItem(spacerItem, 21, 0, 2, 1)
 
         self.central_layout.addLayout(self.actions_panel_layout, 3, 1, 1, 1)
 
@@ -213,14 +241,21 @@ class LocatorGUIComponent(GUI):
         self.lineEdits['m1_d'] = self.m1_d_intxt
         self.pushButtons['m1_compute'] = self.m1_compute_button
         self.set_label('m1_label', "Single measurement value (d)")
-        self.set_button_text('m1_compute', "Compute Single measurement")
+        self.set_button_text('m1_compute', "Compute Single Measurement")
 
         self.labels['m2_label'] = self.m2_label
         self.lineEdits['m2_d1'] = self.m2_d1_intxt
         self.lineEdits['m2_d2'] = self.m2_d2_intxt
         self.pushButtons['m2_compute'] = self.m2_compute_button
-        self.set_label('m2_label', "Double measurement values (d1, d2)")
-        self.set_button_text('m2_compute', "Compute Double measurement")
+        self.set_label('m2_label', "Antipodal measurements values (d1, d2)")
+        self.set_button_text('m2_compute', "Compute Antipodal Measurements")
+
+        self.labels['m22_label'] = self.m22_label
+        self.lineEdits['m2_d3'] = self.m2_d3_intxt
+        self.lineEdits['m2_d4'] = self.m2_d4_intxt
+        self.pushButtons['m22_compute'] = self.m22_compute_button
+        self.set_label('m22_label', "Second Antipodal measurements values (d3, d4)")
+        self.set_button_text('m22_compute', "Compute Double Antipodal Measurements")
 
         self.labels['clear_label'] = self.clear_label
         self.pushButtons['clear_button'] = self.clear_button
@@ -235,11 +270,13 @@ class LocatorGUI:
         self._locator_worker_lock = threading.Lock()
         self._locator_query1_res = None
         self._locator_query2_res = None
+        self._locator_query22_res = None
         self._gui_comp = LocatorGUIComponent()
         self._writer = Writer(self._gui_comp.logger)
         self._polygon_scene = PolygonsScene(self._gui_comp, self._writer)
         self._displayed_polygons = []
         self._displayed_segments = []
+        self._displayed_discs = []
         self._threadpool = QtCore.QThreadPool()
 
         self._setup_gui_logic()
@@ -257,7 +294,7 @@ class LocatorGUI:
     def _load_scene(self):
         with self._locator_worker_lock:
             if self._locator_worker is not None:
-                self._print("last command is still in proccessing...")
+                self._print("last command is still in processing...")
                 return
             self._locator_worker = {}  # dummy place holder
 
@@ -301,7 +338,7 @@ class LocatorGUI:
 
         with self._locator_worker_lock:
             if self._locator_worker is not None:
-                self._print("last command is still in proccessing...")
+                self._print("last command is still in processing...")
                 return
             self._locator_worker = Worker(self._locator_query1, d)
             self._locator_worker.signals.finished.connect(
@@ -343,7 +380,7 @@ class LocatorGUI:
 
         with self._locator_worker_lock:
             if self._locator_worker is not None:
-                self._print("last command is still in proccessing...")
+                self._print("last command is still in processing...")
                 return
             self._locator_worker = Worker(self._locator_query2, d1, d2)
             self._locator_worker.signals.finished.connect(
@@ -369,12 +406,73 @@ class LocatorGUI:
         with self._locator_worker_lock:
             self._locator_worker = None
 
+    def _query22(self):
+        self._clear_displayed_result()
+
+        d1 = self._gui_comp.get_field('m2_d1')
+        d2 = self._gui_comp.get_field('m2_d2')
+        d3 = self._gui_comp.get_field('m2_d3')
+        d4 = self._gui_comp.get_field('m2_d4')
+        try:
+            d1, d2 = float(d1), float(d2)
+            d3, d4 = float(d3), float(d4)
+        except:
+            d1, d2 = -1, -1
+            d3, d4 = -1, -1
+        if d1 <= 0 or d2 <= 0 or d3 <= 0 or d4 <= 0:
+            self._print("invalid d1 d2 d3 d4 values")
+            return
+
+        with self._locator_worker_lock:
+            if self._locator_worker is not None:
+                self._print("last command is still in processing...")
+                return
+            self._locator_worker = Worker(self._locator_query22, d1, d2, d3, d4)
+            self._locator_worker.signals.finished.connect(
+                self._locator_query22_done)
+        self._threadpool.start(self._locator_worker)
+
+    def _locator_query22(self, d1, d2, d3, d4, is_running):
+        self._print("Locator query with d1 =", d1, "d2 =", d2, "d3 =", d3, "d4 =", d4)
+        if not self._locator.is_running():
+            self._print("Locator was not initialized")
+            return
+        self._locator_query22_res = [
+            self._locator.query2(d1, d2),
+            self._locator.query2(d3, d4),
+            self._locator.query22(d1, d2, d3, d4)
+        ]
+
+    def _locator_query22_done(self, is_running):
+        if self._locator_query22_res is not None:
+            self._print("Locator query is complete")
+            for segment in self._locator_query22_res[0]:
+                line_color = QtGui.QColor(0, 0, 255, 100)
+                gui_segment = self._gui_comp.add_segment(
+                    segment[0][0], segment[0][1], segment[1][0], segment[1][1], line_color)
+                self._displayed_segments.append(gui_segment)
+            for segment in self._locator_query22_res[1]:
+                line_color = QtGui.QColor(127, 51, 0, 100)
+                gui_segment = self._gui_comp.add_segment(
+                    segment[0][0], segment[0][1], segment[1][0], segment[1][1], line_color)
+                self._displayed_segments.append(gui_segment)
+            for point in self._locator_query22_res[2]:
+                disc_color = QtGui.QColor(255, 216, 0, 100)
+                gui_disc = self._gui_comp.add_disc(0.1, point[0], point[1], disc_color)
+                self._displayed_discs.append(gui_disc)
+            self._locator_query22_res = []
+        with self._locator_worker_lock:
+            self._locator_worker = None
+
     def _clear_displayed_result(self):
         for gui_polygon in self._displayed_polygons:
             self._gui_comp.scene.removeItem(gui_polygon.polygon)
         self._displayed_polygons.clear()
         for gui_segment in self._displayed_segments:
             self._gui_comp.scene.removeItem(gui_segment.line)
+        self._displayed_segments.clear()
+        for gui_disc in self._displayed_discs:
+            self._gui_comp.scene.removeItem(gui_disc.disc)
         self._displayed_segments.clear()
 
     def _open_scene_dialog(self):
@@ -393,6 +491,7 @@ class LocatorGUI:
         self._gui_comp.set_logic('scene_load', self._load_scene)
         self._gui_comp.set_logic('m1_compute', self._query1)
         self._gui_comp.set_logic('m2_compute', self._query2)
+        self._gui_comp.set_logic('m22_compute', self._query22)
         self._gui_comp.set_logic('clear_button', self._clear_displayed_result)
 
     def run(self):

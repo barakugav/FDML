@@ -80,6 +80,30 @@ void LocatorDaemon::query(double d1, double d2, const std::string& outfile) cons
     JsonUtils::write_segments(segments, outfile);
 }
 
+void LocatorDaemon::query(double d1, double d2, double d3, double d4, const std::string& outfile) const {
+    fdml_infoln("[LocatorDaemon] Query2 Double: " << d1 << " " << d2 << " " << d3 << " " << d4);
+    check_state();
+
+    std::vector<Segment> segments1;
+    std::vector<Segment> segments2;
+    for (const auto& res : locator->query(d1, d2))
+        segments1.insert(segments1.end(), res.pos.begin(), res.pos.end());
+    for (const auto& res : locator->query(d3, d4))
+        segments2.insert(segments2.end(), res.pos.begin(), res.pos.end());
+
+    std::vector<Point> points;
+    for (const auto& seg1 : segments1) {
+        for (const auto& seg2 : segments2) {
+            CGAL::Object res = CGAL::intersection(seg1, seg2);
+            Point point;
+            if (CGAL::assign(point, res))
+                points.push_back(point);
+        }
+    }
+
+    JsonUtils::write_points(points, outfile);
+}
+
 void LocatorDaemon::run() {
     fdml_infoln("[LocatorDaemon] Daemon is running. Waiting for next command...");
     while (true) {
@@ -125,17 +149,22 @@ int LocatorDaemon::exec_cmd(const std::vector<std::string>& argv, bool& quit) {
         std::string scene_filename;
         double d;
         double d1, d2;
+        double d3, d4;
         std::string out_filename;
 
         boost::program_options::options_description desc{"Options"};
         desc.add_options()("help", "Help message");
         desc.add_options()("cmd", boost::program_options::value<std::string>(&cmd),
-                           "Command [init, query1, query2, quit]");
+                           "Command [init, query1, query2, query2_double, quit]");
         desc.add_options()("scene", boost::program_options::value<std::string>(&scene_filename), "Scene filename");
         desc.add_options()("d", boost::program_options::value<double>(&d), "single measurement value");
         desc.add_options()("d1", boost::program_options::value<double>(&d1), "first value of double measurement query");
         desc.add_options()("d2", boost::program_options::value<double>(&d2),
                            "second value of double measurement query");
+        desc.add_options()("d3", boost::program_options::value<double>(&d3),
+                           "first value of a second double measurement query");
+        desc.add_options()("d4", boost::program_options::value<double>(&d4),
+                           "second value of a second double measurement query");
         desc.add_options()("out", boost::program_options::value<std::string>(&out_filename), "Output file");
 
         const auto options = boost::program_options::parse_command_line(argc, argv_arr, desc);
@@ -166,6 +195,12 @@ int LocatorDaemon::exec_cmd(const std::vector<std::string>& argv, bool& quit) {
                 return FDML_RETCODE_MISSING_ARGS;
             } else
                 query(d1, d2, out_filename);
+        } else if (cmd == std::string("query2_double")) {
+            if (!vm.count("d1") || !vm.count("d2") || !vm.count("d3") || !vm.count("d4") || !vm.count("out")) {
+                fdml_errln("The following flags are required: --d1 --d2 --d3 --d4 --out");
+                return FDML_RETCODE_MISSING_ARGS;
+            } else
+                query(d1, d2, d3, d4, out_filename);
         } else if (cmd == std::string("quit"))
             quit = true;
         else {

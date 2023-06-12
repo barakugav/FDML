@@ -29,25 +29,27 @@ class FDML_FDML_DECL LocatorDaemon {
     void load_scene(const std::string& scene_filename);
 
     /**
-     * @brief Query command of one measurament
+     * @brief Query command of one measurement
      *
      * This function should be called after the load_scene function has been called
      *
-     * @param d the single measurament value
+     * @param d the single measurement value
      * @param outfile path to an output file for the query result (json)
      */
     void query(double d, const std::string& outfile) const;
 
     /**
-     * @brief Query command of two measurament
+     * @brief Query command of two measurement
      *
      * This function should be called after the load_scene function has been called
      *
-     * @param d1 the first measurament value
-     * @param d2 the second measurament value
+     * @param d1 the first measurement value
+     * @param d2 the second measurement value
      * @param outfile path to an output file for the query result (json)
      */
     void query(double d1, double d2, const std::string& outfile) const;
+
+    void query(double d1, double d2, double d3, double d4, const std::string& outfile) const;
 
     /**
      * @brief Run a infinity loop, reading commands from the given cmd_filename
