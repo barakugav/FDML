@@ -43,7 +43,7 @@ cmake_print_variables(FDMLPY_TARGET_LINKER_FILE)
 # On Windows platform (where rpath is not supported) we explicitly bundle
 # the fdml shared library
 if(WIN32)
-  set(FDML_TARGET_LINKER_FILE "fdml${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  set(FDML_TARGET_LINKER_FILE "$<TARGET_LINKER_FILE_DIR:fdml>/fdml${CMAKE_SHARED_LIBRARY_SUFFIX}")
 endif()
 
 set(FDMLPY_BUILD_DEPENDS fdmlpy)
