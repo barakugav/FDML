@@ -81,23 +81,9 @@ include_directories(${Boost_INCLUDE_DIR})
 add_definitions(-DFDML_FDML_SOURCE)
 add_definitions(-DFDML_LIB)
 
-# if (WIN32)
-#   add_definitions(/wd4251)
-# else(WIN32)
-#   add_definitions(-DGL_GLEXT_PROTOTYPES)
-# endif(WIN32)
-
 set_target_properties(fdml PROPERTIES
   VERSION "${CMAKE_PROJECT_VERSION}"
   SOVERSION "${CMAKE_PROJECT_VERSION_MAJOR}")
-
-# Add links
-# if (NOT WIN32)
-#   set (NON_WIN32_LIBRARIES ${X11_LIBRARIES} ${X11_Xxf86vm_LIB})
-#   if (APPLE)
-#     set (NON_WIN32_LIBRARIES ${NON_WIN32_LIBRARIES} /opt/X11/lib/libGL.dylib)
-#   endif(APPLE)
-# endif(NOT WIN32)
 
 target_link_libraries(fdml PRIVATE
   ${Boost_LIBRARIES}

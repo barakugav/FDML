@@ -42,7 +42,7 @@ class Locator:
         self.lock = threading.Lock()
 
         if Locator.get_daemon_exe(verbose=True) is None:
-            raise ValueError()
+            raise ValueError("failed to find daemon executable")
 
     def __del__(self):
         with self.lock:

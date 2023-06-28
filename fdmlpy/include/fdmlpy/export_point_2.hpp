@@ -1,7 +1,4 @@
 
-// SPDX-License-Identifier: LGPL-3.0-or-later.
-// Commercial use is authorized only through a concession contract to purchase a commercial license for CGAL.
-//
 // Author(s): Efi Fogel         <efifogel@gmail.com>
 
 #ifndef FDMLPY_EXPORT_POINT_2_HPP
