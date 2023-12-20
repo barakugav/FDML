@@ -1,0 +1,87 @@
+\documentclass{standalone}
+\usepackage{calc}
+\usepackage{xparse}
+\usepackage{tikz}
+\usetikzlibrary{patterns,calc,arrows,arrows.meta,angles,quotes}
+\usetikzlibrary{decorations.pathreplacing,calligraphy,babel}
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage[caption=false,font=footnotesize]{subfig}
+\tikzset{%
+  point/.style={circle,inner sep=1.25pt,minimum size=1.25pt,draw,fill=#1},
+  point/.default=red
+}
+\definecolor{c0}{rgb}{0.2,0.4,0.67}
+\definecolor{c1}{rgb}{0.67,0.4,0.12}
+\definecolor{c2}{rgb}{0.53,0.6,0.13}
+\definecolor{c3}{rgb}{0.53,0.53,0.4}
+\NewDocumentCommand\witness{mmmO{c2}}{%
+  \node[point=#4] (w0) at (#1) {};
+  \node[point=#4] (w1) at (#2) {};
+  \node[point=#4] (w2) at (#3) {};
+  \draw[#4] (w0)--(w1)--(w2);
+}
+\def\myWitness{\witness{0,0}{\x,\y}{\dc,0}}
+\NewDocumentCommand\crvb{}{%
+  \def\a{-0.618034}
+  \def\b{-1.61803}
+  \def\c{.52573}
+  \def\s{.85065}
+  \draw[c1,parametric,variable=\t,smooth,
+    domain=1:2.6,
+    samples=60]
+  plot
+  ({\a*cos(\t r)*\c-\b*sin(\t r)*\s},{\a*cos(\t r)*\s+\b*sin(\t r)*\c});
+}
+\NewDocumentCommand\sights{O{a}O{b}O{c}O{c2}}{%
+  \node[point=#4] (#1) at (0,1) {};
+  \node[point=#4] (#2) at (1,0) {};
+  \node[point=#4] (#3) at (1,1) {};
+  \draw[#4] (#1)--(#2)--(#3);
+}
+\NewDocumentCommand\elipricArc{mm}{
+  \draw[c1,thick] ($(0, 0) + (0:#1 cm and #2 cm)$(P) arc (0:90:#1 cm and #2 cm);
+}
+\NewDocumentCommand\crv{}{%
+  \begin{scope}[shift={(1,-1)},rotate=270]\coordinate (q1) at (1,0);\end{scope}
+  \begin{scope}[shift={(1.06,-.721)},rotate=250]\coordinate (q2) at (1,0);\end{scope}
+  \begin{scope}[shift={(1.2929,-.5858)},rotate=225]\coordinate (q3) at (1,0);\end{scope}
+  \begin{scope}[shift={(1.655,-.717)},rotate=200]\coordinate (q4) at (1,0);\end{scope}
+  \begin{scope}[shift={(2,-1)},rotate=180]\coordinate (q5) at (1,0);\end{scope}
+  \draw [c1] plot [smooth] coordinates {(q1)(q2)(q3)(q4)(q5)};
+}
+\NewDocumentCommand\obs{}{%
+  \coordinate (q0) at (0.76,0.1);
+  \coordinate (q1) at (3.05,0.1);
+  \coordinate (q2) at (3.05,0.2);
+  \coordinate (q3) at (0.76,0.2);
+  \filldraw[fill=white,draw=c0] (q0) -- (q1) -- (q2) -- (q3) -- cycle;%
+  \node[point=c0] at (q0) {};
+  \node[point=c0] at (q1) {};
+  \node[point=c0] at (q2) {};
+  \node[point=c0] at (q3) {};
+}
+\NewDocumentCommand\witnessB{O{a}O{b}O{c}O{c2}}{%
+  \node[point=#4] (#1) at (0,1) {};
+  \node[point=#4] (#2) at (1,0) {};
+  \node[point=#4] (#3) at (1,1) {};
+  \draw[#4] (#1)--(#2)--(#3);
+}
+\begin{document}
+%\tikzset{every picture/.append style={scale=1}}%\scriptsize
+\begin{tabular}{cccccc}
+  \multicolumn{2}{c}{\input{square1/square1.tex}} &
+  \multicolumn{2}{c}{\input{square3/square3.tex}} &
+  \multicolumn{2}{c}{\input{square2/square2.tex}}\\
+  \multicolumn{2}{c}{$d_1 = 1$, $d_2 = 1$, $\alpha = 90^{\circ}$} &
+  \multicolumn{2}{c}{$d_1 = 1$, $d_2 = \sqrt{2}$, $\alpha = 90^{\circ}$} &
+  \multicolumn{2}{c}{$d_1 = 1$, $d_2 = \sqrt{2}$, $\alpha = 45^{\circ}$}\\
+  \multicolumn{3}{c}{\hspace{44pt}\input{square4/square4.tex}} &
+  \multicolumn{3}{c}{\hspace{8pt}\input{square5/square5.tex}}\\
+  \multicolumn{3}{c}{\hspace{44pt}$d_1 = 1$, $d_2 = \sqrt{2}$, $\alpha = 180^{\circ}$} &
+  \multicolumn{3}{c}{\hspace{8pt}$d_1 = 1$, $d_2 = \sqrt{2}$, $\alpha = 45^{\circ}$}
+  %% \multicolumn{6}{p{\linewidth}}{The free space is filled with a light-gray
+  %%   color. The boundary of the free space is drawn with blue segments.
+  %%   Orange curves contains all the possible locations of the sensor.
+  %%   A pair of green segments with a common endpoint shows a witness.}
+\end{tabular}
+\end{document}
