@@ -136,7 +136,7 @@ jobs:
 
     - name: Install Python dependencies
       run: |
-        pip install -r ${{ github.workspace }}\fdmlpy\requirements.txt
+        python3 -m pip install -r ${{ github.workspace }}\fdmlpy\requirements.txt
 
     - name: Build FDML with bindings
       run: |
