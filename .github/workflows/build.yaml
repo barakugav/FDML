@@ -33,7 +33,7 @@ jobs:
 
     - name: Install CGAL
       run: |
-        git clone https://github.com/CGAL/cgal.git ${{ github.workspace }}/fdml_deps/cgal
+        git clone --depth 1 --branch v5.5.3 https://github.com/CGAL/cgal.git ${{ github.workspace }}/fdml_deps/cgal
         mkdir -p ${{ github.workspace }}/fdml_deps/cgal/build
         cd ${{ github.workspace }}/fdml_deps/cgal/build
         cmake ..
@@ -118,7 +118,7 @@ jobs:
 
     - name: Install CGAL
       run: |
-        git clone https://github.com/CGAL/cgal.git ${{ github.workspace }}\fdml_deps\cgal
+        git clone --depth 1 --branch v5.5.3 https://github.com/CGAL/cgal.git ${{ github.workspace }}\fdml_deps\cgal
         mkdir ${{ github.workspace }}\fdml_deps\cgal\build
         cd ${{ github.workspace }}\fdml_deps\cgal\build
         cmake ..
