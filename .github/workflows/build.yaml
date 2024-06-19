@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Get repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install Cpp build tools
       run: |
@@ -79,7 +79,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Get repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Create dependencies dir
       run: |
