@@ -50,8 +50,8 @@ endif()
 #   endif()
 # endif()
 
-# Set minimal required versions
-set(FDML_PY_MIN_VERSION 3.8)
+# Set required versions
+set(FDML_PY_VERSION 3.11)
 set(FDML_BOOST_MIN_VERSION 1.75.0)
 
 # Find CGAL package
