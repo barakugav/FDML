@@ -3,7 +3,7 @@
 
 set(FDML_LIB_DIR "${CMAKE_BINARY_DIR}/fdml")
 
-find_package(Python3 ${FDML_PY_MIN_VERSION} COMPONENTS Interpreter)
+find_package(Python3 ${FDML_PY_VERSION} EXACT COMPONENTS Interpreter)
 if (WIN32)
   set(FDML_GEN_PROPS_CMD ${Python_EXECUTABLE} ${FDML_GEN_PROPS})
 else()

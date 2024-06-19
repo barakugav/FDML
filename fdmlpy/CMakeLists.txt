@@ -4,7 +4,7 @@ set(FDML_LIB_DIR "${CMAKE_BINARY_DIR}/fdml")
 set(FDMLPY_LIB_DIR "${CMAKE_BINARY_DIR}/fdmlpy")
 set(FDMLPY_PACKAGE_NAME "fdml")
 
-find_package(Python ${FDML_PY_MIN_VERSION} COMPONENTS Interpreter Development)
+find_package(Python ${FDML_PY_VERSION} EXACT COMPONENTS Interpreter Development)
 set(FDML_PY_MAJOR_MINOR_VERSION "${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
 find_package(nanobind CONFIG REQUIRED)
 
