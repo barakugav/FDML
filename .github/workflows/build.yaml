@@ -86,7 +86,7 @@ jobs:
         mkdir ${{ github.workspace }}\fdml_deps\
 
     - name: Install GMP and MPFR (download)
-      uses: suisei-cn/actions-download-file@v1.3.0
+      uses: suisei-cn/actions-download-file@v1.6.0
       id: gmp_mpfr_zip_download
       with:
         url: "https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-win64-auxiliary-libraries-gmp-mpfr.zip"
@@ -103,7 +103,7 @@ jobs:
         rmdir gmp_mpfr_parent
 
     - name: Install Boost (download)
-      uses: suisei-cn/actions-download-file@v1.3.0
+      uses: suisei-cn/actions-download-file@v1.6.0
       id: boost_zip_download
       with:
         url: "https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.zip"
